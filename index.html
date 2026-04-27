@@ -360,7 +360,7 @@
 <script type="text/babel">
 // ── Canvas ────────────────────────────────────────────────────────────────────
 const CANVAS_W   = 2100;
-const CANVAS_H   = 4460;
+const CANVAS_H   = 5400;
 const NODE_W     = 248;
 const NODE_H_EST = 172; // for edge anchor computation only
 
@@ -397,7 +397,7 @@ const NODES = [
   {
     id: 'q0-meta', type: 'data', icon: '🗄️',
     label: 'Q0 — CE Metadata', sublabel: 'BQ Auto · Serial · First',
-    x: 780, y: 305, phase: 'Data Collection',
+    x: 780, y: 355, phase: 'Data Collection',
     badge: 'serial',
     inputs: ['ce_id', 'post_start', 'post_end'],
     outputs: ['combined_entity_name', 'combined_entity_type', 'market', 'country', 'top_page_url'],
@@ -407,7 +407,7 @@ const NODES = [
   {
     id: 'q1-base', type: 'data', icon: '🗄️',
     label: 'Q1 — Base Funnel', sublabel: 'BQ Auto · Serial · After Q0',
-    x: 780, y: 535, phase: 'Data Collection',
+    x: 780, y: 635, phase: 'Data Collection',
     badge: 'serial',
     inputs: ['ce_id', 'pre/post date ranges'],
     outputs: ['users_lp', 'users_select', 'users_checkout', 'users_order_attempted', 'users_order_completed', 'mb_ho', 'channel', 'period'],
@@ -419,7 +419,7 @@ const NODES = [
   {
     id: 'q3-trend', type: 'data', icon: '📈',
     label: 'Q3 — Daily Trend', sublabel: 'BQ Auto · Parallel with Q7',
-    x: 510, y: 765, phase: 'Data Collection',
+    x: 510, y: 915, phase: 'Data Collection',
     badge: 'parallel',
     inputs: ['ce_id', 'pre/post dates', 'primary_mbho'],
     outputs: ['event_date', 'period', 'lp2s_rate/day', 's2c_rate/day', 'c2o_rate/day', 'users_lp/day'],
@@ -429,7 +429,7 @@ const NODES = [
   {
     id: 'q7-ly', type: 'data', icon: '📅',
     label: 'Q7 — 90-day + Last Year', sublabel: 'BQ Auto · Parallel with Q3',
-    x: 1070, y: 765, phase: 'Data Collection',
+    x: 1070, y: 915, phase: 'Data Collection',
     badge: 'parallel',
     inputs: ['ce_id', 'post_end', 'CE-level (no MB/HO filter)'],
     outputs: ['90-day current series', 'LY series (shifted +364d)', 'structural_delta_cvr', 'pre_period_healthy'],
@@ -441,7 +441,7 @@ const NODES = [
   {
     id: 'aggregate', type: 'script', icon: '⚙️',
     label: 'aggregate.py → summary.json', sublabel: 'Shapley · Mix · Trend · LY context',
-    x: 780, y: 995, phase: 'Processing',
+    x: 780, y: 1195, phase: 'Processing',
     badge: null,
     inputs: ['stage0.json', 'stage1.json', 'stage3.json', 'stage7.json'],
     outputs: ['headline rates + deltas', 'shapley{LP2S/S2C/C2O}', 'pct_contribution', 'significant_steps', 'mbho_mix[]', 'channel_mix[]', 'mix_dominance', 'c2o_sub{c2a/a2o}', 'trend_context{series/structural_delta/pre_period_healthy}'],
@@ -453,7 +453,7 @@ const NODES = [
   {
     id: 'mix-decision', type: 'decision', icon: '⚖️',
     label: 'Q1: Is Mix Dominant?', sublabel: 'Routing problem vs funnel problem',
-    x: 780, y: 1245, phase: 'Decision',
+    x: 780, y: 1495, phase: 'Decision',
     badge: null,
     inputs: ['mix_dominance.mbho_mix_share', 'mix_dominance.channel_mix_share', 'mix_dominance.is_dominant'],
     outputs: ['is_dominant: bool → branch'],
@@ -465,7 +465,7 @@ const NODES = [
   {
     id: 'q6-urls', type: 'ref', icon: '🗄️',
     label: 'Q6 — URL Traffic', sublabel: 'BQ Reference · Mix path',
-    x: 200, y: 1490, phase: 'Data Collection',
+    x: 200, y: 1790, phase: 'Data Collection',
     badge: null,
     inputs: ['ce_id', 'pre/post dates', 'primary_mbho'],
     outputs: ['page_url', 'page_type', 'users_lp pre/post', 'lp2s_rate pre/post', 'Δ_rate', 'anomaly_flag'],
@@ -475,7 +475,7 @@ const NODES = [
   {
     id: 'mix-root', type: 'analysis', icon: '🔍',
     label: 'Mix Root Cause', sublabel: 'Campaign / routing / budget analysis',
-    x: 80, y: 1740, phase: 'Analysis',
+    x: 80, y: 2090, phase: 'Analysis',
     badge: null,
     inputs: ['mbho_mix[]', 'channel_mix[]', 'mix_dominance', 'Q6 URL results'],
     outputs: ['root cause narrative', 'DRI: Marketing / Performance Marketing', 'action items'],
@@ -487,7 +487,7 @@ const NODES = [
   {
     id: 'step-decision', type: 'decision', icon: '📊',
     label: 'Q2: Which Step Primary?', sublabel: 'LP2S · S2C · C2O — Shapley ≥ 30%',
-    x: 1100, y: 1490, phase: 'Decision',
+    x: 1100, y: 1790, phase: 'Decision',
     badge: null,
     inputs: ['shapley.shapley{LP2S/S2C/C2O}', 'shapley.pct_contribution', 'shapley.significant_steps'],
     outputs: ['primary_driver', 'significant_steps[]'],
@@ -497,7 +497,7 @@ const NODES = [
   {
     id: 'lp2s-driver', type: 'analysis', icon: '🔬',
     label: 'LP2S Driver Analysis', sublabel: 'Listing Page → Select',
-    x: 415, y: 1740, phase: 'Analysis',
+    x: 415, y: 2090, phase: 'Analysis',
     badge: null,
     inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts'],
     outputs: ['mechanism (pricing/UX/supply/competition)', 'onset: sudden or gradual', 'DRI hypothesis'],
@@ -507,7 +507,7 @@ const NODES = [
   {
     id: 's2c-driver', type: 'analysis', icon: '🔬',
     label: 'S2C Driver Analysis', sublabel: 'Select → Checkout',
-    x: 795, y: 1740, phase: 'Analysis',
+    x: 795, y: 2090, phase: 'Analysis',
     badge: null,
     inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
@@ -517,7 +517,7 @@ const NODES = [
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
     label: 'C2O Driver Analysis', sublabel: 'Checkout → Order',
-    x: 1175, y: 1740, phase: 'Analysis',
+    x: 1175, y: 2090, phase: 'Analysis',
     badge: null,
     inputs: ['shapley.C2O contribution', 'c2o_sub.delta_c2a', 'c2o_sub.delta_a2o', 'trend shape'],
     outputs: ['c2a or a2o sub-metric dominant', 'DRI hypothesis', 'feeds C2A vs A2O decision'],
@@ -527,7 +527,7 @@ const NODES = [
   {
     id: 'c2a-a2o', type: 'decision', icon: '💳',
     label: 'C2A vs A2O Drop?', sublabel: 'Abandonment vs payment failure',
-    x: 1175, y: 1985, phase: 'Decision',
+    x: 1175, y: 2385, phase: 'Decision',
     badge: null,
     inputs: ['c2o_sub.delta_c2a', 'c2o_sub.delta_a2o'],
     outputs: ['DRI: Product/UX (C2A↓)', 'DRI: Payments/Eng (A2O↓)', 'DRI: Both'],
@@ -539,7 +539,7 @@ const NODES = [
   {
     id: 'trend-pattern', type: 'decision', icon: '📉',
     label: 'Q3: Sudden / Gradual / Seasonal?', sublabel: 'Trend shape + LY delta + pre_period_healthy',
-    x: 795, y: 1985, phase: 'Decision',
+    x: 795, y: 2385, phase: 'Decision',
     badge: null,
     inputs: ['trend.pre/post daily series (Q3)', 'trend_context.series (Q7)', 'trend_context.structural_delta_cvr', 'trend_context.pre_period_healthy'],
     outputs: ['pattern: sudden | gradual | seasonal', 'onset_date (if sudden)', 'structural_delta_cvr', 'pre_period_healthy flag'],
@@ -551,7 +551,7 @@ const NODES = [
   {
     id: 'hypothesis', type: 'analysis', icon: '💡',
     label: 'Hypothesis Formation', sublabel: '2–4 falsifiable hypotheses',
-    x: 795, y: 2240, phase: 'Hypothesis',
+    x: 795, y: 2690, phase: 'Hypothesis',
     badge: null,
     inputs: ['Q2 primary driver', 'Q3 pattern (sudden/gradual)', 'mix root cause (if mix path)', 'c2a/a2o DRI', 'hypothesis.md patterns'],
     outputs: ['hypothesis_1…4 (mechanism + segment + date pattern)', 'query plan to test each'],
@@ -563,7 +563,7 @@ const NODES = [
   {
     id: 'custom-select', type: 'decision', icon: '🔎',
     label: 'Custom Query Selection', sublabel: 'Q2 · Q4 · Q5 · Q6 · Custom SQL',
-    x: 795, y: 2490, phase: 'Investigation',
+    x: 795, y: 2990, phase: 'Investigation',
     badge: null,
     inputs: ['hypothesis_1…4', 'primary driver type', 'onset pattern'],
     outputs: ['query plan: which of Q2/Q4/Q5/Q6/custom to run'],
@@ -573,7 +573,7 @@ const NODES = [
   {
     id: 'custom-results', type: 'ref', icon: '🗄️',
     label: 'Custom Query Results', sublabel: 'BQ Reference — hypothesis-driven',
-    x: 795, y: 2740, phase: 'Investigation',
+    x: 795, y: 3290, phase: 'Investigation',
     badge: null,
     inputs: ['selected queries from Q2/Q4/Q5/Q6/custom'],
     outputs: ['dimension cut tables', 'experience-level rates', 'price deltas', 'URL-level anomalies'],
@@ -585,7 +585,7 @@ const NODES = [
   {
     id: 'locus', type: 'decision', icon: '📍',
     label: 'Locus Confirmed?', sublabel: 'Drop concentrated enough to pull recordings',
-    x: 795, y: 2990, phase: 'Investigation',
+    x: 795, y: 3590, phase: 'Investigation',
     badge: null,
     inputs: ['custom query results', 'dimension cuts', 'URL anomalies'],
     outputs: ['locus: URL | device | experience | language | CE-wide', 'recording_trigger: bool'],
@@ -597,7 +597,7 @@ const NODES = [
   {
     id: 'recordings', type: 'tool', icon: '🎬',
     label: 'Mixpanel Session Recordings', sublabel: 'Get-User-Replays-Data tool call',
-    x: 310, y: 3230, phase: 'Evidence',
+    x: 310, y: 3880, phase: 'Evidence',
     badge: null,
     inputs: ['locus (URL / device / experience / language)', 'post_start', 'post_end', 'distinct_id or replay_ids'],
     outputs: ['Recording | Steps observed | Inference (structured table)'],
@@ -609,7 +609,7 @@ const NODES = [
   {
     id: 'transcript', type: 'output', icon: '📝',
     label: 'Investigation Transcript', sublabel: 'ce<id>_<post_start>.md',
-    x: 795, y: 3460, phase: 'Output',
+    x: 795, y: 4160, phase: 'Output',
     badge: null,
     inputs: ['all decision points + rationale', 'queries run', 'hypotheses tested', 'ruled-out findings'],
     outputs: ['~/Documents/RCA skill/transcripts/ce<id>_<date>.md'],
@@ -619,7 +619,7 @@ const NODES = [
   {
     id: 'html-report', type: 'output', icon: '🌐',
     label: 'HTML Report', sublabel: 'Section 1: Summary → Section 2: Actions → Section 3: Analysis',
-    x: 795, y: 3700, phase: 'Output',
+    x: 795, y: 4450, phase: 'Output',
     badge: null,
     inputs: ['summary.json', 'investigation findings', 'session recording table', 'actions.md templates', 'report_structure.md spec'],
     outputs: ['/tmp/cvr_rca_<ce_id>/report.html'],
@@ -629,7 +629,7 @@ const NODES = [
   {
     id: 'evaluation', type: 'eval', icon: '⭐',
     label: 'Evaluation', sublabel: '7-theme rubric · score 1–5 per theme',
-    x: 795, y: 3940, phase: 'Evaluation',
+    x: 795, y: 4740, phase: 'Evaluation',
     badge: null,
     inputs: ['html-report', 'investigation transcript', 'summary.json', 'evaluator.md rubric'],
     outputs: ['~/Documents/RCA skill/evals/ce<id>_<date>.md', 'score per theme (1–5)', 'top 2–3 improvement items'],
@@ -649,7 +649,7 @@ const NODES = [
   {
     id: 'file-context', type: 'file', icon: '📄',
     label: 'context.md', sublabel: 'Business domain + table schemas',
-    x: 1670, y: 310, phase: 'Reference File',
+    x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
     chips: ['CE / MB / HO definitions', 'funnel step meanings', 'DRI quick ref', 'table schemas + query rules'],
@@ -657,7 +657,7 @@ const NODES = [
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
     label: 'hypothesis.md', sublabel: '10 patterns · 21 historical MMPs',
-    x: 1670, y: 2240, phase: 'Reference File',
+    x: 1670, y: 2690, phase: 'Reference File',
     usedBy: ['hypothesis'],
     fileKey: 'hypothesis',
     chips: ['LP2S sudden/gradual', 'S2C sudden/gradual', 'C2A drop', 'A2O drop', 'Mix shift', 'Device/Language/Experience'],
@@ -665,7 +665,7 @@ const NODES = [
   {
     id: 'file-actions', type: 'file', icon: '📄',
     label: 'actions.md', sublabel: '10 root causes → action templates',
-    x: 1670, y: 3700, phase: 'Reference File',
+    x: 1670, y: 4450, phase: 'Reference File',
     usedBy: ['html-report'],
     fileKey: 'actions',
     chips: ['P1/P2/P3 actions', 'DRI per root cause', '10 RCs', 'historical refs'],
@@ -673,7 +673,7 @@ const NODES = [
   {
     id: 'file-report-struct', type: 'file', icon: '📄',
     label: 'report_structure.md', sublabel: '3-section spec + HTML/CSS patterns',
-    x: 1670, y: 3900, phase: 'Reference File',
+    x: 1670, y: 4700, phase: 'Reference File',
     usedBy: ['html-report'],
     fileKey: 'reportStruct',
     chips: ['Section 1/2/3 rules', 'metric card HTML', 'Plotly spec', 'anti-patterns'],
@@ -681,7 +681,7 @@ const NODES = [
   {
     id: 'file-evaluator', type: 'file', icon: '📄',
     label: 'evaluator.md', sublabel: '7-theme rubric + scoring guide',
-    x: 1670, y: 4100, phase: 'Reference File',
+    x: 1670, y: 4950, phase: 'Reference File',
     usedBy: ['evaluation'],
     fileKey: 'evaluator',
     chips: ['7 themes', 'score 1–5', 'high vs low criteria', 'self-honesty check'],
@@ -747,21 +747,21 @@ const EDGES = [
 // ── Canvas section labels ─────────────────────────────────────────────────────
 const SECTION_LABELS = [
   { text: '① Input',               x: 30, y: 42  },
-  { text: '② CE Metadata',         x: 30, y: 277 },
-  { text: '③ Base Funnel',         x: 30, y: 507 },
-  { text: '④ Parallel BQ Queries', x: 30, y: 737 },
-  { text: '⑤ Aggregation',         x: 30, y: 967 },
-  { text: '⑥ Q1: Mix Decision',    x: 30, y: 1217},
-  { text: '⑦ Mix / Step Branches', x: 30, y: 1462},
-  { text: '⑧ Driver Analysis',     x: 30, y: 1712},
-  { text: '⑨ Q2+Q3 Sub-decisions', x: 30, y: 1957},
-  { text: '⑩ Hypothesis',          x: 30, y: 2212},
-  { text: '⑪ Custom Queries',      x: 30, y: 2462},
-  { text: '⑫ Query Results',       x: 30, y: 2712},
-  { text: '⑬ Locus + Recordings',  x: 30, y: 2962},
-  { text: '⑭ Transcript',          x: 30, y: 3432},
-  { text: '⑮ HTML Report',         x: 30, y: 3672},
-  { text: '⑯ Evaluation',          x: 30, y: 3912},
+  { text: '② CE Metadata',         x: 30, y: 327 },
+  { text: '③ Base Funnel',         x: 30, y: 607 },
+  { text: '④ Parallel BQ Queries', x: 30, y: 887 },
+  { text: '⑤ Aggregation',         x: 30, y: 1167 },
+  { text: '⑥ Q1: Mix Decision',    x: 30, y: 1467},
+  { text: '⑦ Mix / Step Branches', x: 30, y: 1762},
+  { text: '⑧ Driver Analysis',     x: 30, y: 2062},
+  { text: '⑨ Q2+Q3 Sub-decisions', x: 30, y: 2357},
+  { text: '⑩ Hypothesis',          x: 30, y: 2662},
+  { text: '⑪ Custom Queries',      x: 30, y: 3562},
+  { text: '⑫ Query Results',       x: 30, y: 3262},
+  { text: '⑬ Locus + Recordings',  x: 30, y: 3562},
+  { text: '⑭ Transcript',          x: 30, y: 4132},
+  { text: '⑮ HTML Report',         x: 30, y: 4422},
+  { text: '⑯ Evaluation',          x: 30, y: 4712},
 ];
 
 // ── File contents (curated markdown rendered in the side panel) ───────────────
@@ -1859,13 +1859,18 @@ function ZoomControls({ onZoom, onReset }) {
 
 // ── App ───────────────────────────────────────────────────────────────────────
 function App() {
-  const [zoom, setZoom]           = useState(0.62);
-  const [pan,  setPan]            = useState({ x: 50, y: 10 });
-  const [selectedNode, setSelected] = useState(null);
-  const [dragging, setDragging]   = useState(false);
+  // Compute initial zoom based on viewport — targets the ~1450px-wide main action column
+  const INIT_ZOOM = Math.min(0.92, Math.max(0.70, (window.innerWidth - 60) / 1500));
+  const INIT_PAN_X = Math.max(20, (window.innerWidth - 1450 * INIT_ZOOM) / 2);
 
-  const dragAnchor = useRef(null); // { startX, startY, panX, panY }
-  const wrapRef    = useRef(null);
+  const [zoom, setZoom]             = useState(INIT_ZOOM);
+  const [pan,  setPan]              = useState({ x: INIT_PAN_X, y: 10 });
+  const [selectedNode, setSelected] = useState(null);
+  const [dragging, setDragging]     = useState(false);
+
+  const dragAnchor  = useRef(null);  // { clientX, clientY, panX, panY }
+  const dragMoved   = useRef(false); // true once mouse moves >4px after mousedown
+  const wrapRef     = useRef(null);
 
   // ── Derived ──────────────────────────────────────────────────────────────
   const nodeMap = useMemo(
@@ -1873,7 +1878,7 @@ function App() {
     []
   );
 
-  // Set of node IDs that should NOT be dimmed when something is selected
+  // IDs that stay fully lit when something is selected (selected + its neighbours)
   const litIds = useMemo(() => {
     if (!selectedNode) return null;
     const s = new Set([selectedNode.id]);
@@ -1892,11 +1897,12 @@ function App() {
   }, []);
 
   const resetView = useCallback(() => {
-    setZoom(0.62);
-    setPan({ x: 50, y: 10 });
+    const z = Math.min(0.92, Math.max(0.70, (window.innerWidth - 60) / 1500));
+    setZoom(z);
+    setPan({ x: Math.max(20, (window.innerWidth - 1450 * z) / 2), y: 10 });
   }, []);
 
-  // Wheel zoom (non-passive so we can preventDefault)
+  // Non-passive wheel listener so we can preventDefault
   useEffect(() => {
     const el = wrapRef.current;
     if (!el) return;
@@ -1912,6 +1918,7 @@ function App() {
   const onMouseDown = useCallback(e => {
     if (e.button !== 0) return;
     setDragging(true);
+    dragMoved.current = false;
     dragAnchor.current = {
       clientX: e.clientX,
       clientY: e.clientY,
@@ -1922,15 +1929,20 @@ function App() {
 
   const onMouseMove = useCallback(e => {
     if (!dragging || !dragAnchor.current) return;
-    setPan({
-      x: dragAnchor.current.panX + (e.clientX - dragAnchor.current.clientX),
-      y: dragAnchor.current.panY + (e.clientY - dragAnchor.current.clientY),
-    });
+    const dx = e.clientX - dragAnchor.current.clientX;
+    const dy = e.clientY - dragAnchor.current.clientY;
+    // Mark as a real drag once we exceed 5px of movement
+    if (!dragMoved.current && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
+      dragMoved.current = true;
+    }
+    setPan({ x: dragAnchor.current.panX + dx, y: dragAnchor.current.panY + dy });
   }, [dragging]);
 
   const onMouseUp = useCallback(() => {
     setDragging(false);
     dragAnchor.current = null;
+    // dragMoved.current intentionally NOT reset here —
+    // it must survive until after the click event fires (which comes after mouseup)
   }, []);
 
   // ── Selection ─────────────────────────────────────────────────────────────
@@ -1940,14 +1952,22 @@ function App() {
 
   const handleClose = useCallback(() => setSelected(null), []);
 
-  // Click on canvas background → deselect
+  // Capture-phase handler on canvas — swallows any click that followed a drag
+  const onClickCapture = useCallback(e => {
+    if (dragMoved.current) {
+      e.stopPropagation();
+      dragMoved.current = false; // reset for next interaction
+    }
+  }, []);
+
+  // Click on canvas background → deselect (only reaches here if not swallowed above)
   const onCanvasClick = useCallback(e => {
-    const target = e.target;
+    const t = e.target;
     if (
-      target === wrapRef.current ||
-      target.classList.contains('canvas-inner') ||
-      target.classList.contains('edges-svg') ||
-      target.tagName === 'svg'
+      t === wrapRef.current ||
+      t.classList.contains('canvas-inner') ||
+      t.tagName === 'svg' ||
+      t.classList.contains('edges-svg')
     ) {
       setSelected(null);
     }
@@ -1975,13 +1995,14 @@ function App() {
         ref={wrapRef}
         className={[
           'canvas-wrap',
-          dragging  ? 'dragging'    : '',
-          panelOpen ? 'panel-open'  : '',
+          dragging  ? 'dragging'   : '',
+          panelOpen ? 'panel-open' : '',
         ].filter(Boolean).join(' ')}
         onMouseDown={onMouseDown}
         onMouseMove={onMouseMove}
         onMouseUp={onMouseUp}
         onMouseLeave={onMouseUp}
+        onClickCapture={onClickCapture}
         onClick={onCanvasClick}
       >
         <div
