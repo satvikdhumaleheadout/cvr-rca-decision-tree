@@ -30,7 +30,7 @@ const NODES = [
     inputs: [],
     outputs: ['ce_id', 'pre_start', 'pre_end', 'post_start', 'post_end'],
     condition: 'Always fires — entry point.\nDefaults to prior full week vs current week if no dates given.',
-    description: 'User invokes /cvr-rca with a CE ID and optional pre/post date ranges. Claude validates inputs, sets default date windows if omitted, and kicks off the baseline pipeline.',
+    description: 'User invokes /cvr-rca. Immediately reads context.md, hypothesis.md, actions.md, and report_structure.md (the "Before you begin" block). Opens the investigation transcript. Validates CE ID + date inputs, sets default date windows if omitted, then kicks off the baseline pipeline.',
   },
 
   // ══ PHASE 2: BQ AUTO — SERIAL ══
@@ -182,9 +182,9 @@ const NODES = [
     x: 795, y: 2385, phase: 'Decision',
     badge: null,
     inputs: ['trend.pre/post daily series (Q3)', 'trend_context.series (Q7)', 'trend_context.structural_delta_cvr', 'trend_context.pre_period_healthy'],
-    outputs: ['pattern: sudden | gradual | seasonal', 'onset_date (if sudden)', 'structural_delta_cvr', 'pre_period_healthy flag'],
-    condition: 'ONLY IF mix_dominance.is_dominant = false.\nFires after step-decision, before hypothesis formation.',
-    description: 'Third mandatory question. Sudden: sharp break on a single date that persists → deploy, config change, or external event. Gradual: steady multi-day or multi-week erosion → structural supply, competitive, or content issue. Seasonal: structural_delta_cvr ≈ 0 → drop matches LY pattern. pre_period_healthy = FALSE means pre was already degraded — Shapley understates true change.',
+    outputs: ['pattern: sudden | gradual | seasonal', 'onset_date (if sudden)', 'structural_delta_cvr', 'pre_period_healthy', 'weekday composition check'],
+    condition: 'ONLY IF mix_dominance.is_dominant = false.\n3 sub-steps: 3a shape, 3b LY overlay, 3c weekday composition.',
+    description: 'Q3 has three sub-steps. 3a: 90-day trend shape — sharp break (something changed that day), gradual erosion (structural issue compounding), or recovery in progress (prior incident). 3b: Compare current_delta_cvr to ly_delta_cvr; compute structural_delta_cvr = current minus LY — calibrates how much is seasonal vs new. 3c: Check weekday composition — a post period with more weekends can produce an apparent drop with no real change. pre_period_healthy = FALSE → pre was already degraded, Shapley understates true change.',
   },
 
   // ══ RECONVERGE: HYPOTHESIS ══
@@ -202,13 +202,13 @@ const NODES = [
   // ══ CUSTOM QUERIES ══
   {
     id: 'custom-select', type: 'decision', icon: '🔎',
-    label: 'Custom Query Selection', sublabel: 'Q2 · Q4 · Q5 · Q6 · Custom SQL',
+    label: 'Custom Query Plan', sublabel: 'Write from scratch · context.md schemas',
     x: 795, y: 2990, phase: 'Investigation',
     badge: null,
     inputs: ['hypothesis_1…4', 'primary driver type', 'onset pattern'],
     outputs: ['query plan: which of Q2/Q4/Q5/Q6/custom to run'],
     condition: 'Always fires after hypothesis formation.',
-    description: 'Claude selects which reference queries to run based on hypotheses. Q2 (dimension cuts — device/language/page_type) for any dimension-specific hypothesis. Q4 (experience-level) for S2C or C2O concentrated in specific TGIDs. Q5 (price analysis) for LP2S + pricing hypothesis. Q6 (URL traffic) for LP routing or mix hypothesis. Custom SQL for cross-cuts or novel hypotheses.',
+    description: 'No pre-built templates. Every query is written from scratch using context.md schemas to test a specific hypothesis. Context.md provides dimension guidance (browsing_country, channel_name, lead_time_days, page_sub_type, previous_page_url, cross-cuts, experience-level with availability proxy) and common investigation patterns per funnel step. Majority-contributor principle + rate×volume rule apply to every result.',
   },
   {
     id: 'custom-results', type: 'ref', icon: '🗄️',
@@ -218,7 +218,7 @@ const NODES = [
     inputs: ['selected queries from Q2/Q4/Q5/Q6/custom'],
     outputs: ['dimension cut tables', 'experience-level rates', 'price deltas', 'URL-level anomalies'],
     condition: 'Fires for each selected query.\nMin 50 users per entity. Majority-contributor principle applied.',
-    description: 'Each query runs via: bq query --use_legacy_sql=false --format=json. Results are compared to hypotheses — confirming, ruling out, or refining. Only entities with ≥50 users qualify as evidence. Absolute impact (rate Δ × volume) is computed before claiming primary driver. Results feed the locus decision.',
+    description: 'Each query is written from scratch and run via bq query CLI. Results compared to hypotheses — confirming, ruling out, or refining. Only majority-contributor entities qualify as evidence (long-tail entities are noise). Always compute absolute impact (rate Δ × user volume) before declaring a driver. Failed queries are logged in the transcript and noted as data gaps in the report — the investigation does not halt.',
   },
 
   // ══ LOCUS DECISION ══
@@ -241,8 +241,8 @@ const NODES = [
     badge: null,
     inputs: ['locus (URL / device / experience / language)', 'post_start', 'post_end', 'distinct_id or replay_ids'],
     outputs: ['Recording | Steps observed | Inference (structured table)'],
-    condition: 'ONLY IF locus is confirmed in a specific segment.\nSkipped for CE-wide diffuse drops.',
-    description: 'Calls Get-User-Replays-Data with the identified locus as filter. Claude reviews recordings looking for: empty availability calendar, broken/slow page load, confusing layout or missing CTA, wrong price displayed, missing translations. Each recording produces one row in the session recordings table: Recording | Steps Observed | Inference.',
+    condition: 'REQUIRED once any concentrated dimension is confirmed.\nSkipping must be explicitly justified in the report.',
+    description: 'Required once a locus is confirmed — any concentrated dimension cut (URL, experience, device, language, page type) is sufficient. Any concentrated signal triggers recordings; all dimensions do not need to be confirmed simultaneously. Skipping without explanation is not acceptable once a locus has been confirmed. Moves finding from "consistent with" to "directly observed". Results presented as structured table: Recording | Steps Observed | Inference (one sentence each on what was proved or ruled out).',
   },
 
   // ══ OUTPUTS ══
@@ -284,15 +284,15 @@ const NODES = [
     x: 1670, y: 70, phase: 'Reference File',
     usedBy: ['user-input'],
     fileKey: 'skill',
-    chips: ['3-question structure', 'all thresholds', 'branching rules', 'query order'],
+    chips: ['lean process orchestrator', '3-sub-step Q3', 'data pull errors', 'recordings required', 'write-from-scratch queries'],
   },
   {
     id: 'file-context', type: 'file', icon: '📄',
-    label: 'context.md', sublabel: 'Business domain + table schemas',
+    label: 'context.md', sublabel: 'Domain knowledge hub — v1.1 expanded',
     x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
-    chips: ['CE / MB / HO definitions', 'funnel step meanings', 'DRI quick ref', 'table schemas + query rules'],
+    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Dimensions guide', 'Investigation Patterns', 'Session Recordings', 'table schemas'],
   },
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
@@ -328,6 +328,14 @@ const NODES = [
   },
 ];
 
+  {
+    id: 'file-worked-example', type: 'file', icon: '📄',
+    label: 'worked_example.md', sublabel: 'Two end-to-end investigation walkthroughs',
+    x: 1670, y: 2890, phase: 'Reference File',
+    usedBy: ['hypothesis'],
+    fileKey: 'workedExample',
+    chips: ['Mix-dominant walkthrough', 'Conversion + locus walkthrough', 'French × iOS cross-cut', 'session recordings'],
+  },
 // ── Edge definitions ───────────────────────────────────────────────────────────
 // type: 'always' | 'conditional' | 'consults'
 const EDGES = [
@@ -382,6 +390,7 @@ const EDGES = [
   { id:'c4',  from:'file-actions',     to:'html-report',   type:'consults', label:'action templates'          },
   { id:'c5',  from:'file-report-struct',to:'html-report',  type:'consults', label:'HTML/CSS spec'             },
   { id:'c6',  from:'file-evaluator',   to:'evaluation',    type:'consults', label:'7-theme rubric'            },
+  { id:'c7',  from:'file-worked-example', to:'hypothesis',  type:'consults', label:'worked examples'           },
 ];
 
 // ── Canvas section labels ─────────────────────────────────────────────────────
@@ -407,92 +416,87 @@ const SECTION_LABELS = [
 // ── File contents (curated markdown rendered in the side panel) ───────────────
 const FILE_CONTENTS = {
 
-skill: `# SKILL.md — Master Decision Protocol
+skill: `# SKILL.md — Master Decision Protocol (v1.1)
 
 ## Purpose
-Defines every rule Claude follows during CVR-RCA. Read at invocation. Overrides any default behaviour.
+Pure process orchestrator. Domain knowledge, query rules, investigation patterns, and worked examples live in \`context.md\` and \`worked_example.md\`. This file tells you what steps to follow and when to pivot.
 
 ---
 
-## Invocation
+## Before You Begin (always)
+
+\`\`\`bash
+cat context.md           # domain vocab, schemas, query rules, investigation patterns
+cat hypothesis.md        # historical priors from 21 MMPs
+cat actions.md           # root cause → action mappings
+cat report_structure.md  # output spec (3-section layout)
 \`\`\`
-/cvr-rca <ce_id> <pre_start> <pre_end> <post_start> <post_end>
-\`\`\`
-Defaults to prior full week vs current week if dates omitted.
 
 ---
 
 ## Execution Order
 
-| Step | Action | Mode |
-|------|--------|------|
-| 1 | Run Q0 (CE metadata) | Serial |
-| 2 | Run Q1 (base funnel) | Serial, after Q0 |
-| 3 | Run Q3 + Q7 | Parallel, after Q1 |
-| 4 | Run aggregate.py → summary.json | Serial, after Q3+Q7 |
-| 5 | Answer three mandatory questions | Claude reads summary.json |
-| 6 | Form 2–4 falsifiable hypotheses | Consult hypothesis.md |
-| 7 | Run custom queries to test each | Q2/Q4/Q5/Q6/custom |
-| 8 | Pull session recordings if locus found | Get-User-Replays-Data |
-| 9 | Write investigation transcript | Markdown file |
-| 10 | Write HTML report | 3-section structure |
-| 11 | Evaluate against 7-theme rubric | evaluator.md |
+| Step | Action |
+|------|--------|
+| 1 | Run baseline pipeline → summary.json |
+| 2 | Open investigation transcript |
+| 3 | Answer 3 mandatory questions |
+| 4 | Consult hypothesis.md; form 2–4 falsifiable hypotheses |
+| 5 | Write + run custom queries (from scratch, context.md schemas) |
+| 6 | Pull session recordings if locus confirmed (REQUIRED) |
+| 7 | Write investigation transcript |
+| 8 | Write HTML report (report_structure.md) |
+| 9 | Evaluate against 7-theme rubric (evaluator.md) |
 
 ---
 
-## The Three Mandatory Questions
-
-### Q1: Is this a routing problem or a conversion problem?
+## Q1: Routing or conversion?
 - Read \`mix_dominance.is_dominant\`
-- **TRUE** → traffic routing story. Skip Shapley deep-dive. Run Q6. DRI: Marketing.
-- **FALSE** → funnel problem. Continue to Q2 and Q3.
-- Threshold: either \`mbho_mix_share\` or \`channel_mix_share\` > 50% of |ΔCVR|
+- TRUE → traffic/routing story. Investigate where traffic shifted. DRI: Marketing.
+- FALSE → funnel problem → Q2 and Q3
 
-### Q2: Which funnel step is the primary driver?
-- Read \`shapley.pct_contribution\`
-- Step is significant if |contribution / ΔCVR| ≥ **0.30** (30%)
-- Multiple steps can be significant simultaneously
-- primary_driver = step with largest |Shapley value|
+## Q2: Which step is primary?
+- Read \`shapley\`. Steps with < ~10% of delta: skip deep-dive.
+- Multiple steps can be significant simultaneously.
 
-### Q3: Was this sudden, gradual, or seasonal?
-- **Sudden**: sharp break on a single date → deploy, config change, external event
-- **Gradual**: steady erosion over days/weeks → structural issue
-- **Seasonal**: \`structural_delta_cvr ≈ 0\` → drop matches last-year pattern
-- Check \`pre_period_healthy\`: if FALSE, pre was already degraded — Shapley understates true change
+## Q3: Sudden, gradual, or seasonal? (3 sub-steps)
+- **3a:** 90-day trend shape — sharp break / gradual erosion / recovery in progress
+- **3b:** Compare \`current_delta_cvr\` to \`ly_delta_cvr\`. Compute \`structural_delta_cvr\`.
+- **3c:** Check weekday composition — more weekends in post = apparent drop, no real change.
+- Check \`pre_period_healthy\`: FALSE means Shapley understates true change.
 
 ---
 
-## Key Thresholds
-
-| Metric | Threshold | Meaning |
-|--------|-----------|---------|
-| Shapley contribution | ≥ 30% | Step is a significant driver |
-| Mix dominance | > 50% of ΔCVR | Routing story, not funnel |
-| Min users per entity | 50 | Below = noise; exclude from evidence |
-| URL anomaly | ≥15% rel + ≥3pp abs | Significant drop on a URL |
-| Pre-period health | ≥ 95% of lookback avg | Pre is a clean baseline |
+## Data Pull Errors — Log and Continue
+When any query fails or returns empty:
+1. Log in transcript (error, impact, workaround)
+2. Add ⚠️ data-gap note in report where missing data would appear
+3. Continue using available data
+4. Use "consistent with" not "confirmed by" if missing data was material
 
 ---
 
-## Hypothesis Rules
-- Must name a **mechanism** (not an observation)
-- Must name the **segment** it would affect
-- Must name the **date pattern** expected if true
-- ✅ "The Apr 8 mobile deploy broke the date-picker on iOS, causing LP2S to drop on mobile from that date"
-- ❌ "LP2S dropped, possibly due to UX or pricing"
+## Session Recordings — Required Once Locus Confirmed
+Any concentrated dimension cut is sufficient (URL, experience, device, language, page type). If skipped, report must explicitly state why. Skipping without explanation is not acceptable once a locus is confirmed.
 
 ---
 
-## Custom Query Rules
-- Always \`COUNT(DISTINCT user_id)\` — never \`COUNT(*)\`
-- Never sum user counts across dimensions
-- Apply \`advertising_channel_type != 'PERFORMANCE_MAX'\` filter to every query
-- Compute **absolute impact** (rate Δ × volume) before claiming primary driver
+## Changelog
+
+| # | Date | Change |
+|---|------|--------|
+| c001–c002 | 2026-04-24 | Initial framework: 3 questions, Shapley, mix decomp, evaluator |
+| c003 | 2026-04-24 | Majority-contributor principle; rate × volume rule; recordings required |
+| c004 | 2026-04-24 | Recordings trigger fixed to disjunctive; data pull errors section added |
+| c005 | 2026-04-24 | P1/P2/P3 action card priority badges |
+| c006 | 2026-04-27 | Removed Q2/Q4/Q5/Q6 template pointers; all querying now write-from-scratch |
+| c007 | 2026-04-27 | Stripped to pure process; domain content → context.md + worked_example.md |
+| c008 | 2026-04-27 | Removed stale internal references and redundant restatements |
 `,
 
-context: `# context.md — Business Domain Reference
+context: `# context.md — Domain Knowledge Hub (v1.1)
 
-Read before interpreting any data, writing callouts, or making analytical decisions.
+Read before touching any data, writing callouts, or forming hypotheses. This file owns all domain knowledge — query rules, interpretation guides, dimension guidance, and investigation patterns.
 
 ---
 
@@ -568,6 +572,8 @@ Users in dimension cuts (language, page_type, device) are NOT additive. The same
 - \`is_microbrand_page\` = TRUE → MB; FALSE → HO
 - \`has_order_completed\` uses Order Confirmation Page as proxy (reliable for CVR)
 - **Do not use** \`flow_type\` (doesn't exist), \`session_date\` (doesn't exist)
+
+**New in v1.1:** Query Principles (majority-contributor + rate×volume), Q3 Trend Interpretation (3 sub-steps), Dimensions to Query and When, Common Investigation Patterns per funnel step, Session Recordings guidance.
 `,
 
 hypothesis: `# hypothesis.md — Historical Patterns Reference
@@ -767,6 +773,43 @@ Use when writing Section 2 of the report. Match confirmed root cause to category
 | Review highlights and inclusions — ensure core selling points explicit | Content | P1 |
 | Check image count and quality — minimum 3 images per product | Content / Media | P2 |
 | Refresh LFC and shoulder pages for MB microsites | Content / SEO | P2 |
+`,
+
+workedExample: `# worked_example.md — Two End-to-End Walkthroughs
+
+These show how the investigation process plays out when evidence is clear. Not templates — demonstrations of reasoning.
+
+---
+
+## Example 1: Mix-dominant story
+
+**Q1:** \`mix_dominance\` shows MB share grew 43% → 52%. MB CVR stable. HO CVR stable. Mix effect explains 58% of ΔCVR.
+
+*Routing story — skip Shapley deep-dive.* Investigate: why did MB share grow?
+
+**Custom query:** \`COUNT(DISTINCT user_id)\` by \`page_url\` for MB sessions, pre vs post. Two collection-page URLs show 40% traffic drop. Everything else held.
+
+**Finding:** Those URLs were receiving paid search traffic in the pre period and stopped. CVR drop is an artefact of a campaign change, not a funnel break.
+
+**Report:** CVR card, mix table, URL traffic comparison for those 2 pages, one action card to Marketing. No Shapley bar — steps didn't break, Shapley would mislead.
+
+---
+
+## Example 2: Conversion-dominant, concentrated locus
+
+**Q1:** \`mix_dominance.is_dominant\` = false → funnel path.
+
+**Q2:** Shapley: S2C carries 68% of ΔCVR. LP2S and C2O are small.
+
+**Q3:** Daily trend: sharp break on Apr 8. LY overlay: no similar drop → structural, not seasonal.
+
+**Dimension cuts:** Device: iOS Mweb −4.1pp. Language: French −6pp. Two concentrated signals.
+
+**Cross-cut query:** S2C by \`page_url\` WHERE \`language = 'French'\` AND \`device_type LIKE '%Mweb%'\`. One experience's select page: S2C 19% → 4%.
+
+**Session recordings:** Pulled for that URL × French × post period. Users consistently see empty date picker — no available dates loading for French locale after Apr 8.
+
+**Report:** CVR verdict, mix ruled out, Shapley bar, S2C trend, device + language cuts, URL finding, session recordings table, Supply + Product action cards. LP2S and C2O sections omitted — they were not the story.
 `,
 
 reportStruct: `# report_structure.md — HTML Report Spec
