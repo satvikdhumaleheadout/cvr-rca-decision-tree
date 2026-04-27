@@ -326,8 +326,6 @@ const NODES = [
     fileKey: 'evaluator',
     chips: ['7 themes', 'score 1–5', 'high vs low criteria', 'self-honesty check'],
   },
-];
-
   {
     id: 'file-worked-example', type: 'file', icon: '📄',
     label: 'worked_example.md', sublabel: 'Two end-to-end investigation walkthroughs',
