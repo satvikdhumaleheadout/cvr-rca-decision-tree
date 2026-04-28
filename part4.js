@@ -1,5 +1,5 @@
-// ── App ───────────────────────────────────────────────────────────────────────
-function App() {
+// ── App (Decision Tree view) ──────────────────────────────────────────────────
+function DecisionTreeView() {
   // Compute initial zoom based on viewport — targets the ~1450px-wide main action column
   const INIT_ZOOM = Math.min(0.92, Math.max(0.70, (window.innerWidth - 60) / 1500));
   const INIT_PAN_X = Math.max(20, (window.innerWidth - 1450 * INIT_ZOOM) / 2);
@@ -72,7 +72,6 @@ function App() {
     if (!dragging || !dragAnchor.current) return;
     const dx = e.clientX - dragAnchor.current.clientX;
     const dy = e.clientY - dragAnchor.current.clientY;
-    // Mark as a real drag once we exceed 5px of movement
     if (!dragMoved.current && (Math.abs(dx) > 5 || Math.abs(dy) > 5)) {
       dragMoved.current = true;
     }
@@ -82,8 +81,6 @@ function App() {
   const onMouseUp = useCallback(() => {
     setDragging(false);
     dragAnchor.current = null;
-    // dragMoved.current intentionally NOT reset here —
-    // it must survive until after the click event fires (which comes after mouseup)
   }, []);
 
   // ── Selection ─────────────────────────────────────────────────────────────
@@ -93,15 +90,13 @@ function App() {
 
   const handleClose = useCallback(() => setSelected(null), []);
 
-  // Capture-phase handler on canvas — swallows any click that followed a drag
   const onClickCapture = useCallback(e => {
     if (dragMoved.current) {
       e.stopPropagation();
-      dragMoved.current = false; // reset for next interaction
+      dragMoved.current = false;
     }
   }, []);
 
-  // Click on canvas background → deselect (only reaches here if not swallowed above)
   const onCanvasClick = useCallback(e => {
     const t = e.target;
     if (
@@ -117,20 +112,6 @@ function App() {
   // ── Render ────────────────────────────────────────────────────────────────
   return (
     <>
-      {/* ── Top bar ── */}
-      <div className="topbar">
-        <span className="topbar-logo">CVR<span>·</span>RCA</span>
-        <div className="topbar-pill">Decision Tree</div>
-        <div className="topbar-pill" style={{
-          background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
-        }}>
-          {NODES.length} nodes · {EDGES.length} edges
-        </div>
-        <div className="topbar-hint">
-          Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
-        </div>
-      </div>
-
       {/* ── Canvas ── */}
       <div
         ref={wrapRef}
@@ -154,34 +135,16 @@ function App() {
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           }}
         >
-          {/* SVG edges — rendered first so nodes sit on top */}
-          <SvgEdges
-            edges={EDGES}
-            nodeMap={nodeMap}
-            selectedId={selectedNode?.id || null}
-          />
+          <SvgEdges edges={EDGES} nodeMap={nodeMap} selectedId={selectedNode?.id || null} />
 
-          {/* Phase separator lines */}
           {SECTION_LABELS.slice(1).map(sec => (
-            <div
-              key={`sep-${sec.text}`}
-              className="phase-line"
-              style={{ top: sec.y - 20 }}
-            />
+            <div key={`sep-${sec.text}`} className="phase-line" style={{ top: sec.y - 20 }} />
           ))}
-
-          {/* Section labels */}
           {SECTION_LABELS.map(sec => (
-            <div
-              key={sec.text}
-              className="section-label"
-              style={{ left: sec.x, top: sec.y }}
-            >
+            <div key={sec.text} className="section-label" style={{ left: sec.x, top: sec.y }}>
               {sec.text}
             </div>
           ))}
-
-          {/* Node cards */}
           {NODES.map(node => (
             <NodeCard
               key={node.id}
@@ -194,20 +157,59 @@ function App() {
         </div>
       </div>
 
-      {/* ── Side panel ── */}
-      <SidePanel
-        node={selectedNode}
-        nodeMap={nodeMap}
-        edges={EDGES}
-        onClose={handleClose}
-      />
-
-      {/* ── Legend ── */}
+      <SidePanel node={selectedNode} nodeMap={nodeMap} edges={EDGES} onClose={handleClose} />
       <Legend />
-
-      {/* ── Zoom controls ── */}
       <ZoomControls onZoom={applyZoom} onReset={resetView} />
     </>
+  );
+}
+
+// ── Root App — owns the top-level tab switcher ────────────────────────────────
+function App() {
+  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs'
+
+  return (
+    <div className="app-shell">
+
+      {/* ── Top navigation bar ── */}
+      <div className="top-nav">
+        <span className="top-nav-logo">CVR · RCA</span>
+        <div className="top-nav-divider" />
+        <button
+          className={`tab-pill${activeTab === 'tree' ? ' active' : ''}`}
+          onClick={() => setActiveTab('tree')}>
+          🗺 Decision Tree
+        </button>
+        <button
+          className={`tab-pill${activeTab === 'runs' ? ' active' : ''}`}
+          onClick={() => setActiveTab('runs')}>
+          🧪 Test Runs
+        </button>
+
+        {/* Stats pill — only visible on tree tab */}
+        {activeTab === 'tree' && (
+          <div className="topbar-pill" style={{
+            marginLeft: 4,
+            background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
+          }}>
+            {NODES.length} nodes · {EDGES.length} edges
+          </div>
+        )}
+
+        {activeTab === 'tree' && (
+          <div className="topbar-hint">
+            Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
+          </div>
+        )}
+      </div>
+
+      {/* ── Tab content ── */}
+      <div className="tab-content">
+        {activeTab === 'tree' && <DecisionTreeView />}
+        {activeTab === 'runs' && <TestRunsExplorer />}
+      </div>
+
+    </div>
   );
 }
 

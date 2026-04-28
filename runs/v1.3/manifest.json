@@ -1,0 +1,39 @@
+{
+  "version": "v1.3",
+  "version_date": "2026-04-28",
+  "version_summary": "Investigation tree model + unified run folder",
+  "runs": [
+    {
+      "id": "ce1549_2026-02-26_2026-04-26",
+      "ce_id": "1549",
+      "ce_name": "Keukenhof Tickets",
+      "pre_period": "2026-02-26 → 2026-03-27",
+      "post_period": "2026-03-28 → 2026-04-26",
+      "run_date": "",
+      "eval_score": 28,
+      "eval_max": 35,
+      "root_cause_summary": "This RCA correctly identified a specific, quantified mechanism — progressive peak-date sellout on TGID 10118 (Keukenhof Entry Tick…",
+      "files": {
+        "report": "runs/v1.3/ce1549_2026-02-26_2026-04-26/report.html",
+        "transcript": "runs/v1.3/ce1549_2026-02-26_2026-04-26/transcript.md",
+        "evaluation": "runs/v1.3/ce1549_2026-02-26_2026-04-26/evaluation.md"
+      }
+    },
+    {
+      "id": "ce189_2026-02-26_2026-04-26",
+      "ce_id": "189",
+      "ce_name": "Vatican Museums",
+      "pre_period": "2026-02-26 → 2026-03-27",
+      "post_period": "2026-03-28 → 2026-04-26",
+      "run_date": "2026-04-27",
+      "eval_score": 26,
+      "eval_max": 35,
+      "root_cause_summary": "The RCA correctly identified peak-season pricing increases (+3.5%–12.6%) and availability tightening as the primary S2C driver, gr…",
+      "files": {
+        "report": "runs/v1.3/ce189_2026-02-26_2026-04-26/report.html",
+        "transcript": "runs/v1.3/ce189_2026-02-26_2026-04-26/transcript.md",
+        "evaluation": "runs/v1.3/ce189_2026-02-26_2026-04-26/evaluation.md"
+      }
+    }
+  ]
+}

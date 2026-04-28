@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Vatican Museums (CE 189)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #1a1a2e; line-height: 1.55; }
+    header { background: #1a1a2e; color: #fff; padding: 28px 40px 24px; }
+    header .eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #8892a4; margin-bottom: 6px; }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #8892a4; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e0e4ef; }
+    .metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card { background: #fff; border-radius: 10px; padding: 18px 16px 16px; border: 1px solid #e8ebf4; }
+    .metric-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #8892a4; margin-bottom: 8px; }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta { font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 12px; margin-top: 6px; display: inline-block; }
+    .delta-neg { background: #fdecea; color: #c62828; }
+    .delta-pos { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout { background: #fff; border-left: 4px solid #e53935; border-radius: 0 10px 10px 0; padding: 24px 28px; margin-bottom: 8px; border-top: 1px solid #e8ebf4; border-right: 1px solid #e8ebf4; border-bottom: 1px solid #e8ebf4; }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8892a4; margin-bottom: 4px; }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 16px; }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row { font-size: 13px; color: #555; margin-bottom: 16px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .dri-badge { background: #e8edf7; color: #3a4a8a; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 8px; }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 20px; }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line { font-size: 14px; font-weight: 600; color: #c62828; background: #fdecea; border-radius: 6px; padding: 8px 14px; margin-bottom: 18px; }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #8892a4; padding: 8px 12px; border-bottom: 2px solid #e8ebf4; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s-offset { background: #2e7d32; }
+    .shapley-s2c { background: #c62828; }
+    .shapley-c2o { background: #d6a832; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; flex-wrap: wrap; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Vatican Museums — CE 189</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-02-26 – 2026-03-27</span>
+    <span>📅 Post: 2026-03-28 – 2026-04-26</span>
+    <span>🌍 Italy · Rome</span>
+    <span>🔗 <a href="https://www.thevaticantickets.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">thevaticantickets.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ─────────────────────────────────────────────────── SECTION 1 -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values"><span class="pre">4.52%</span><span class="post">3.93%</span></div>
+      <div class="delta delta-neg">Δ −0.60pp / −13.2%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values"><span class="pre">39.2%</span><span class="post">41.5%</span></div>
+      <div class="delta delta-pos">Δ +2.3pp / +5.9%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values"><span class="pre">29.1%</span><span class="post">26.1%</span></div>
+      <div class="delta delta-neg">Δ −3.05pp / −10.5%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values"><span class="pre">39.6%</span><span class="post">36.3%</span></div>
+      <div class="delta delta-neg">Δ −3.34pp / −8.4%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Traffic (LP)</div>
+      <div class="values"><span class="pre">146K</span><span class="post">193K</span></div>
+      <div class="delta delta-pos">Δ +46.8K / +32%</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">S2C fell from 29.1% to 26.1% (−3.05pp), broad across all top Vatican experiences, with tour products hit hardest (EXP 9379 guided tour −8.5pp). C2O also fell −3.34pp, with both checkout abandonment (C2A −2.66pp) and payment failures (A2O −2.40pp) increasing. LP2S improved +2.3pp, partially offsetting the impact.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">Peak spring tourist season (Mar 28–Apr 26) brought simultaneous price increases (+3.5% to +12.6% across top experiences) and tightening availability (main SKU EXP 6732 lost 2.2 available days; Vatican Gardens tour collapsed from 5.6 to 1.8 available days). Users reaching the date picker faced higher prices with fewer bookable dates — the combination drove elevated S2C abandonment. At checkout, peak-season prices created sticker shock (C2A drop), and live inventory contention as popular time slots were captured by competing buyers during payment processing (A2O drop).</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual onset from Mar 28 — no single-day step change, consistent with seasonal pricing and supply dynamics rather than a specific deploy. S2C accelerated downward in the final 4 days of the post period (Apr 23–26: 0.242 → 0.212) as late-April/early-May dates progressively sold through. Easter closure (Apr 3–5) contributed a minor additional dip (~0.3pp of the 3.05pp S2C drop).</div>
+    </div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── SECTION 2 -->
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Vatican Gardens tour (EXP 16466) availability collapsed to 1.8 days in the 30-day window — days to first available date jumped from 10.7 to 21.5 days, indicating a probable SP API cut-off configuration change beyond normal peak-season dynamics.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Ops / BDM</span>
+      <span>+ Supply team</span>
+    </div>
+    <ul>
+      <li>Audit API cut-off period settings for EXP 16466 (Vatican Museums Tickets with Vatican Gardens Open Bus Tour) — the jump from 10.7 to 21.5 days to first available date suggests the SP shortened release windows or extended minimum lead time. Compare against EXP 16466's settings in the pre period and the SP's own direct-booking availability.</li>
+      <li>Negotiate next-day and near-term release windows with the Vatican Gardens SP to restore availability horizon to the pre-period level (5.6 available days in the next 30-day window).</li>
+      <li>If SP constraints persist, explore sourcing an additional SP for Vatican Gardens to reduce single-vendor dependency.</li>
+      <li>For EXP 9379 (Guided Tour, S2C −8.5pp): audit slot capacity — guided tours have fixed group sizes and may have sold through peak-season capacity faster than self-guided. Check if additional time slots or group size increases can be negotiated with the SP for April–May.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Peak-season pricing increases of 3.5%–12.6% drove broad S2C decline across the CE — most severely on EXP 7998 (Guided Tour + St Peter's Basilica, +$9.45 price increase, S2C −3.8pp) and EXP 9379 (Guided Tour, +$3.88, S2C −8.5pp).</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">BDM / Growth</span>
+    </div>
+    <ul>
+      <li>Review EXP 7998 pricing: price rose from $75.10 to $84.55 (+12.6%) in the post period while S2C dropped −3.8pp. Check if this pricing change is deliberate (SP rate increase) or reflects ILF / fee additions. If margin allows, evaluate whether a partial price rollback or discount badge would recover S2C.</li>
+      <li>Review EXP 9379 pricing: $64.97 to $68.85 (+6%) with S2C falling −8.5pp — the steepest drop in the CE. For a guided tour this price gap matters more; explore whether all mandatory fees are included in the displayed price or revealed only at checkout (C2A sticker shock).</li>
+      <li>For EXP 6732 (main STL, 83% of CE traffic): +$1.29 price increase is modest; the S2C drop is largely availability-driven. Monitor whether availability further tightens going into May.</li>
+      <li>Run a competitive price check vs GYG/Viator for EXP 7998 and EXP 9379 at current post-period prices to confirm HO is not pricing itself out of the market during peak season.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">C2O declined −3.34pp across all devices (both C2A −2.66pp and A2O −2.40pp), with Android Mweb showing the largest A2O drop (−3.3pp) — consistent with live inventory failure during peak-season payment processing.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Payments / Engineering</span>
+      <span>+ Product (iOS checkout)</span>
+    </div>
+    <ul>
+      <li>Investigate live inventory failure rate for the post period (Mar 28–Apr 26): check whether the A2O drop reflects slots selling between checkout start and payment confirmation. For a high-demand, capacity-constrained attraction like the Vatican, this is a known failure mode. Examine order_attempted_events_v2 for failure_reason codes.</li>
+      <li>iOS Mweb C2A dropped −4.2pp (51.3%→47.1%): audit checkout form on iOS Safari for any friction introduced post-Mar 28 — new required field, broken autofill, or promo code UI change. This is the largest C2A drop by device and iOS Mweb carries 6,928 checkout users in the post period.</li>
+      <li>Android Mweb A2O dropped −3.3pp (83.4%→80.1%): check payment gateway error logs for Android-specific failure codes in the post period. Elevated A2O failure on Android can indicate card decline rate, fraud rule, or FX display issue specific to that device.</li>
+      <li>Verify all mandatory fees (entry surcharges, booking fees) are surfaced at the listing/select stage rather than appearing for the first time at checkout — peak-season prices amplify the price-shock effect on C2A.</li>
+    </ul>
+  </div>
+
+  <!-- ─────────────────────────────────────────────────── SECTION 3 -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <!-- Shapley -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">S2C and C2O jointly drove the CVR drop. LP2S improved (+2.3pp) and partially offset the decline — without that improvement, the CVR drop would have been 40% larger.</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s-offset" style="flex: 22">LP2S +22%</div>
+      <div class="shapley-bar shapley-s2c" style="flex: 43">S2C 43%</div>
+      <div class="shapley-bar shapley-c2o" style="flex: 35">C2O 35%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#2e7d32"></span>LP2S +0.0024pp offset (improved — green = reduced impact)</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −0.0047pp · 78% of ΔCVR</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O −0.0037pp · 62% of ΔCVR</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = −0.60pp. Bar widths are proportional to absolute Shapley contribution. S2C carries 43% and C2O 35% of the gross negative impact; LP2S's improvement (22%) partially offsets. Because LP2S improved, S2C and C2O together must account for more than 100% of the net CVR drop — they do (78% + 62% = 140%, minus LP2S offset of 40% = 100%).
+    </p>
+  </div>
+
+  <!-- Mix -->
+  <div class="analysis-block">
+    <div class="block-title">MB / HO Mix Analysis</div>
+    <div class="verdict-line neutral">Mix ruled out — both MB and HO show conversion-dominant effects. Traffic routing is not the story.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th><th class="num">Pre Share</th><th class="num">Post Share</th><th class="num">Δ Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th><th class="num">Δ CVR</th><th>Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB (primary)</strong></td><td class="num">95.5%</td><td class="num">95.0%</td><td class="num">−0.5pp</td>
+          <td class="num">4.51%</td><td class="num">3.99%</td><td class="num neg">−0.52pp</td><td>Conversion</td>
+        </tr>
+        <tr>
+          <td>HO</td><td class="num">4.5%</td><td class="num">5.0%</td><td class="num">+0.5pp</td>
+          <td class="num">9.37%</td><td class="num">7.20%</td><td class="num neg">−2.17pp</td><td>Conversion</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      MB traffic share held flat (95.5%→95.0%). Both segments show conversion_effect dominant — the drop is a product/supply issue, not a traffic routing issue. HO's larger CVR drop (−2.17pp) on a small 5% share contributes only −0.10pp to overall CVR.
+    </p>
+  </div>
+
+  <!-- Daily S2C trend -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C Trend — pre vs post</div>
+    <div class="verdict-line">S2C declined from the first day of the post period (no warm-up), with a sharp Easter dip Apr 3–5 and an accelerating tail-off Apr 23–26. No recovery — the full post period averages 26.1% vs 29.1% pre.</div>
+    <div class="chart-container" id="s2c-trend" style="height:280px;"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Easter Sunday 2026 fell on April 5. The Vatican Museums are closed Good Friday (Apr 3) and Easter Sunday (Apr 5) — driving near-zero S2C on those days (0.232 and 0.228). These 3 Easter days contribute approximately 0.3pp of the 3.05pp aggregate S2C drop. The more significant signal is Apr 23–26 (0.242→0.242→0.217→0.212): a 4-day declining tail consistent with late-April and early-May dates progressively selling through as peak season intensifies.
+    </p>
+  </div>
+
+  <!-- Daily C2O trend -->
+  <div class="analysis-block">
+    <div class="block-title">Daily C2O Trend — pre vs post</div>
+    <div class="verdict-line">C2O shows two distinct depressed windows: Mar 28–Apr 2 (−4pp below pre avg) and Apr 6–9 post-Easter surge (−8pp below pre avg, the sharpest C2O depression in the post period).</div>
+    <div class="chart-container" id="c2o-trend" style="height:280px;"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Apr 6–9 (Easter Monday through the post-Easter rush) shows C2O of 0.320, 0.305, 0.305, 0.318 — vs pre avg 0.396. This is the period of peak on-the-ground tourism in Rome. Higher LP2S on those days (0.465–0.481) confirms high-intent but likely last-minute visitors who reached checkout at elevated peak prices and either abandoned (C2A) or found their chosen slot already sold (A2O).
+    </p>
+  </div>
+
+  <!-- 90-day CVR + LY -->
+  <div class="analysis-block">
+    <div class="block-title">90-Day CVR Trend + Last Year Overlay</div>
+    <div class="verdict-line neutral">No structural deterioration — this year's CVR is better than LY by +0.47pp after seasonal adjustment. Last year's comparison window was distorted by Easter 2025 (Apr 20) falling at the end of the post period.</div>
+    <div class="chart-container" id="trend-90d" style="height:300px;"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      LY CVR collapsed Apr 20–26 due to Easter 2025 falling on April 20 — Vatican website received 36,000–42,000 users/day with near-zero CVR (0.8–1.4%) as the museum was closed. This is why <code>ly_delta_cvr = −1.04pp</code> (larger than this year's −0.57pp). <code>structural_delta_cvr = +0.0047</code> — the CE is performing 0.47pp better than LY once Easter timing is accounted for. The current CVR drop is seasonal, not structural.
+    </p>
+  </div>
+
+  <!-- Experience-level table -->
+  <div class="analysis-block">
+    <div class="block-title">Experience-Level S2C · Availability · Price</div>
+    <div class="verdict-line">The S2C drop is CE-wide — not confined to one experience. All top products show combined price increases and availability tightening. EXP 16466 (Vatican Gardens) shows a disproportionate availability collapse warranting immediate investigation.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th class="num">Post Select</th>
+          <th class="num">Share</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+          <th class="num">Avail 30d Δ</th>
+          <th class="num">Days to 1st Δ</th>
+          <th class="num">Price Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>6732</strong> — STL Skip-the-Line Tickets</td>
+          <td class="num">66,566</td><td class="num">83%</td>
+          <td class="num">26.6%</td><td class="num">22.8%</td>
+          <td class="num neg">−3.7pp</td>
+          <td class="num neg">−2.2 days</td>
+          <td class="num">0.2→0.2</td>
+          <td class="num neg">+$1.29</td>
+        </tr>
+        <tr>
+          <td><strong>7998</strong> — Guided Tour + St Peter's</td>
+          <td class="num">15,039</td><td class="num">19%</td>
+          <td class="num">26.1%</td><td class="num">22.3%</td>
+          <td class="num neg">−3.8pp</td>
+          <td class="num neg">−0.7 days</td>
+          <td class="num">0.2→0.3</td>
+          <td class="num neg">+$9.45</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>9379</strong> — Guided Tour</td>
+          <td class="num">5,614</td><td class="num">7%</td>
+          <td class="num">22.0%</td><td class="num">13.5%</td>
+          <td class="num neg">−8.5pp</td>
+          <td class="num neg">−1.8 days</td>
+          <td class="num">0.1→0.1</td>
+          <td class="num neg">+$3.88</td>
+        </tr>
+        <tr>
+          <td><strong>29277</strong> — Early Morning Tour</td>
+          <td class="num">2,435</td><td class="num">3%</td>
+          <td class="num">13.9%</td><td class="num">12.1%</td>
+          <td class="num neg">−1.8pp</td>
+          <td class="num neg">−3.5 days</td>
+          <td class="num">0.8→1.3</td>
+          <td class="num neg">+$6.14</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>16466</strong> — Vatican Gardens Bus Tour ⚠️</td>
+          <td class="num">1,165</td><td class="num">1.5%</td>
+          <td class="num">12.5%</td><td class="num">8.6%</td>
+          <td class="num neg">−3.9pp</td>
+          <td class="num neg">−3.8 days</td>
+          <td class="num neg">10.7→21.5</td>
+          <td class="num">−$0.93</td>
+        </tr>
+        <tr>
+          <td><strong>10479</strong> — St Peter's Basilica Guided Tour</td>
+          <td class="num">1,904</td><td class="num">2.4%</td>
+          <td class="num">20.9%</td><td class="num">21.1%</td>
+          <td class="num">+0.1pp</td>
+          <td class="num">−1.2 days</td>
+          <td class="num">0.0→0.1</td>
+          <td class="num">—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      EXP 6732 accounts for 83% of select traffic. Its −3.7pp S2C drop combined with a 3.5% price increase and 2.2-day availability reduction is the single largest contributor to CE-level S2C (rate × volume = 83% weight × −3.7pp). EXP 9379 (guided tour) shows the steepest rate drop (−8.5pp) with a 6% price increase — small-group tours have fixed capacity that fills faster during peak season. EXP 16466 (Vatican Gardens bus tour) is a structural anomaly: days-to-first-available jumped from 10.7 to 21.5 days despite flat pricing, strongly suggesting an API cut-off change.
+    </p>
+  </div>
+
+  <!-- Device C2O -->
+  <div class="analysis-block">
+    <div class="block-title">Device × C2O Decomposition</div>
+    <div class="verdict-line">C2O decline is broad across all devices — no device-specific UX regression. iOS Mweb shows the largest C2A drop; Android Mweb shows the largest A2O drop.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th class="num">Post Checkout</th>
+          <th class="num">Pre C2A</th><th class="num">Post C2A</th><th class="num">Δ C2A</th>
+          <th class="num">Pre A2O</th><th class="num">Post A2O</th><th class="num">Δ A2O</th>
+          <th class="num">Pre C2O</th><th class="num">Post C2O</th><th class="num">Δ C2O</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>iOS Mweb</strong></td>
+          <td class="num">6,928</td>
+          <td class="num">51.3%</td><td class="num">47.1%</td><td class="num neg">−4.2pp</td>
+          <td class="num">87.2%</td><td class="num">85.3%</td><td class="num neg">−1.9pp</td>
+          <td class="num">44.8%</td><td class="num">40.2%</td><td class="num neg">−4.6pp</td>
+        </tr>
+        <tr>
+          <td>Desktop</td>
+          <td class="num">9,943</td>
+          <td class="num">41.4%</td><td class="num">39.5%</td><td class="num neg">−1.9pp</td>
+          <td class="num">88.5%</td><td class="num">86.1%</td><td class="num neg">−2.4pp</td>
+          <td class="num">36.6%</td><td class="num">34.0%</td><td class="num neg">−2.6pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Android Mweb</strong></td>
+          <td class="num">3,949</td>
+          <td class="num">46.1%</td><td class="num">43.6%</td><td class="num neg">−2.5pp</td>
+          <td class="num">83.4%</td><td class="num">80.1%</td><td class="num neg">−3.3pp</td>
+          <td class="num">38.4%</td><td class="num">34.9%</td><td class="num neg">−3.5pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Desktop C2A (−1.9pp) is the smallest C2A drop — desktop users are more deliberate and less price-sensitive. iOS Mweb's −4.2pp C2A drop is the largest: mobile users are more sensitive to final-price display and are more likely to abandon if checkout shows a higher price than the listing. Android Mweb's −3.3pp A2O drop (payment failure) is notable — this is the largest A2O decline by device and warrants gateway log investigation for the post period.
+    </p>
+  </div>
+
+  <!-- Lead time -->
+  <div class="analysis-block">
+    <div class="block-title">Lead Time Distribution (Checkout Users)</div>
+    <div class="verdict-line neutral">Far-out bookings (15+ days) fell from 46.2% to 41.5% share — consistent with peak-season dates filling up. Absolute volumes grew across all buckets due to +25% overall checkout traffic growth.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Lead Time Bucket</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th><th class="num">Δ Share</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Same-day (0 days)</td><td class="num">3,116</td><td class="num">3,246</td><td class="num">17.1%</td><td class="num">14.3%</td><td class="num neg">−2.8pp</td></tr>
+        <tr><td>1 day</td><td class="num">834</td><td class="num">1,222</td><td class="num">4.6%</td><td class="num">5.4%</td><td class="num pos">+0.8pp</td></tr>
+        <tr><td>2–3 days</td><td class="num">1,279</td><td class="num">1,851</td><td class="num">7.0%</td><td class="num">8.1%</td><td class="num pos">+1.1pp</td></tr>
+        <tr><td>4–7 days</td><td class="num">1,829</td><td class="num">2,224</td><td class="num">10.0%</td><td class="num">9.8%</td><td class="num">−0.3pp</td></tr>
+        <tr><td>8–14 days</td><td class="num">2,305</td><td class="num">3,163</td><td class="num">12.7%</td><td class="num">13.9%</td><td class="num pos">+1.3pp</td></tr>
+        <tr class="highlight-row"><td><strong>15+ days</strong></td><td class="num">8,410</td><td class="num">9,443</td><td class="num">46.2%</td><td class="num neg"><strong>41.5%</strong></td><td class="num neg">−4.7pp</td></tr>
+        <tr><td>Unknown</td><td class="num">442</td><td class="num">1,581</td><td class="num">2.4%</td><td class="num">7.0%</td><td class="num pos">+4.6pp</td></tr>
+        <tr><td><strong>Total</strong></td><td class="num"><strong>18,215</strong></td><td class="num"><strong>22,730</strong></td><td class="num">100%</td><td class="num">100%</td><td class="num">—</td></tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The 15+ day bucket fell from 46.2% to 41.5% share despite growing in absolute volume (+12% from 8,410 to 9,443). This redistribution — combined with same-day share also falling (−2.8pp) — reflects peak-season dynamics: many users attempting to book far-out spring dates (May+) hit limited availability and don't reach checkout at all (S2C drop), so those users are underrepresented in the checkout population. The unknown bucket growth (+4.6pp, 442→1,581) may reflect data quality in experience_date assignment during the high-traffic Easter period.
+    </p>
+  </div>
+
+  <!-- Ruled out -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond the peak-season pricing + availability story already confirmed.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>MB/HO Mix:</strong> MB held 95.5%→95.0% share (flat). Both segments show conversion_effect dominant. Not a routing story.</li>
+      <li style="margin-bottom:8px;"><strong>Device (UX regression):</strong> All three devices (iOS, Android, Desktop) show C2O drops of −2.6pp to −4.6pp. The pattern is broad, not concentrated — no evidence of a device-specific UX or layout regression. The iOS C2A drop (−4.2pp) and Android A2O drop (−3.3pp) are actionable findings but not caused by a deploy-specific UI change.</li>
+      <li style="margin-bottom:8px;"><strong>Structural deterioration vs LY:</strong> structural_delta_cvr = +0.0047. After removing the seasonal Easter timing effect (Easter 2025 fell Apr 20 vs Easter 2026 Apr 5, distorting the LY comparison window), CE 189 is performing 0.47pp better than last year on a like-for-like basis.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Not available — all CE 189 users are anonymous $device: IDs on the MB microsite (thevaticantickets.com). Mixpanel session recording is not captured for this user segment.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-04-27 · CVR-RCA · CE 189 Vatican Museums</footer>
+
+<!-- ───────────── PLOTLY CHARTS ───────────── -->
+<script>
+// ── S2C DAILY TREND ──
+const preDates = ['2026-02-26','2026-02-27','2026-02-28','2026-03-01','2026-03-02','2026-03-03','2026-03-04','2026-03-05','2026-03-06','2026-03-07','2026-03-08','2026-03-09','2026-03-10','2026-03-11','2026-03-12','2026-03-13','2026-03-14','2026-03-15','2026-03-16','2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-21','2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27'];
+const preS2C  = [0.2594,0.2895,0.2678,0.2788,0.286,0.2942,0.268,0.2789,0.2693,0.25,0.2713,0.2891,0.3202,0.3126,0.2836,0.2742,0.2589,0.2816,0.2901,0.3115,0.3001,0.2906,0.2825,0.2905,0.3053,0.3096,0.3096,0.3069,0.2997,0.2945];
+const postDates = ['2026-03-28','2026-03-29','2026-03-30','2026-03-31','2026-04-01','2026-04-02','2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07','2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14','2026-04-15','2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21','2026-04-22','2026-04-23','2026-04-24','2026-04-25','2026-04-26'];
+const postS2C = [0.2657,0.263,0.2646,0.2689,0.2651,0.2715,0.2324,0.2169,0.2278,0.2634,0.2531,0.251,0.2525,0.2584,0.2689,0.2879,0.2771,0.2911,0.2939,0.2964,0.2871,0.2805,0.2639,0.2709,0.2612,0.2646,0.2394,0.2419,0.2165,0.2116];
+
+const preS2CMean  = preS2C.reduce((a,b)=>a+b,0)/preS2C.length;
+const postS2CMean = postS2C.reduce((a,b)=>a+b,0)/postS2C.length;
+
+Plotly.newPlot('s2c-trend', [
+  {type:'scatter',mode:'lines+markers',name:'Pre (Feb 26–Mar 27)',x:preDates,y:preS2C,line:{color:'#6c8ebf',width:2.5},marker:{size:4,color:'#6c8ebf'}},
+  {type:'scatter',mode:'lines+markers',name:'Post (Mar 28–Apr 26)',x:postDates,y:postS2C,line:{color:'#c62828',width:2.5},marker:{size:4,color:'#c62828'}}
+], {
+  height:280,
+  yaxis:{tickformat:'.0%',title:'S2C Rate',range:[0.18,0.36]},
+  xaxis:{title:'Date'},
+  plot_bgcolor:'#fff',paper_bgcolor:'#fff',
+  font:{family:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',color:'#1a1a2e'},
+  legend:{orientation:'h',y:-0.35},
+  margin:{l:55,r:20,t:20,b:60},
+  shapes:[
+    {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preS2CMean,y1:preS2CMean,line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+    {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postS2CMean,y1:postS2CMean,line:{color:'#c62828',dash:'dot',width:1.5}},
+    {type:'rect',x0:'2026-04-02',x1:'2026-04-06',y0:0.18,y1:0.36,fillcolor:'rgba(198,40,40,0.06)',line:{width:0}},
+    {type:'rect',x0:'2026-04-22',x1:'2026-04-26',y0:0.18,y1:0.36,fillcolor:'rgba(198,40,40,0.06)',line:{width:0}}
+  ],
+  annotations:[
+    {x:preDates[14],y:preS2CMean,text:'Pre avg 29.1%',font:{color:'#6c8ebf',size:11},showarrow:false,yshift:12},
+    {x:postDates[14],y:postS2CMean,text:'Post avg 26.1%',font:{color:'#c62828',size:11},showarrow:false,yshift:-16},
+    {x:'2026-04-04',y:0.20,text:'Easter<br>Apr 3–5',font:{color:'#c62828',size:10},showarrow:false},
+    {x:'2026-04-25',y:0.19,text:'Sellout<br>Apr 23–26',font:{color:'#c62828',size:10},showarrow:false}
+  ]
+}, {responsive:true});
+
+// ── C2O DAILY TREND ──
+const preC2O  = [0.3889,0.4565,0.4202,0.3855,0.4183,0.439,0.4,0.3498,0.4059,0.4169,0.4357,0.3921,0.42,0.397,0.4051,0.4371,0.4232,0.3792,0.3839,0.3913,0.4154,0.4016,0.3735,0.4057,0.3752,0.3676,0.3787,0.3995,0.386,0.3781];
+const postC2O = [0.351,0.3785,0.3342,0.3545,0.3723,0.3626,0.3879,0.3509,0.3719,0.3203,0.3045,0.3048,0.3184,0.3437,0.3862,0.371,0.3475,0.3756,0.369,0.4123,0.36,0.3959,0.4023,0.398,0.3898,0.4088,0.387,0.3601,0.3976,0.3067];
+
+const preC2OMean  = preC2O.reduce((a,b)=>a+b,0)/preC2O.length;
+const postC2OMean = postC2O.reduce((a,b)=>a+b,0)/postC2O.length;
+
+Plotly.newPlot('c2o-trend', [
+  {type:'scatter',mode:'lines+markers',name:'Pre (Feb 26–Mar 27)',x:preDates,y:preC2O,line:{color:'#6c8ebf',width:2.5},marker:{size:4,color:'#6c8ebf'}},
+  {type:'scatter',mode:'lines+markers',name:'Post (Mar 28–Apr 26)',x:postDates,y:postC2O,line:{color:'#c62828',width:2.5},marker:{size:4,color:'#c62828'}}
+], {
+  height:280,
+  yaxis:{tickformat:'.0%',title:'C2O Rate',range:[0.28,0.48]},
+  xaxis:{title:'Date'},
+  plot_bgcolor:'#fff',paper_bgcolor:'#fff',
+  font:{family:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',color:'#1a1a2e'},
+  legend:{orientation:'h',y:-0.35},
+  margin:{l:55,r:20,t:20,b:60},
+  shapes:[
+    {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preC2OMean,y1:preC2OMean,line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+    {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postC2OMean,y1:postC2OMean,line:{color:'#c62828',dash:'dot',width:1.5}},
+    {type:'rect',x0:'2026-04-05',x1:'2026-04-10',y0:0.28,y1:0.48,fillcolor:'rgba(198,40,40,0.07)',line:{width:0}}
+  ],
+  annotations:[
+    {x:preDates[14],y:preC2OMean,text:'Pre avg 39.6%',font:{color:'#6c8ebf',size:11},showarrow:false,yshift:12},
+    {x:postDates[14],y:postC2OMean,text:'Post avg 36.3%',font:{color:'#c62828',size:11},showarrow:false,yshift:-16},
+    {x:'2026-04-07',y:0.295,text:'Easter surge<br>Apr 6–9',font:{color:'#c62828',size:10},showarrow:false}
+  ]
+}, {responsive:true});
+
+// ── 90-DAY CVR + LY OVERLAY ──
+const ctx90 = [
+  ['2026-01-27',0.041404],['2026-01-28',0.04346],['2026-01-29',0.042471],['2026-01-30',0.049869],['2026-01-31',0.042875],
+  ['2026-02-01',0.044069],['2026-02-02',0.049069],['2026-02-03',0.05034],['2026-02-04',0.039503],['2026-02-05',0.042542],
+  ['2026-02-06',0.040875],['2026-02-07',0.037983],['2026-02-08',0.040612],['2026-02-09',0.044967],['2026-02-10',0.039895],
+  ['2026-02-11',0.036126],['2026-02-12',0.039574],['2026-02-13',0.039073],['2026-02-14',0.033623],['2026-02-15',0.033173],
+  ['2026-02-16',0.040959],['2026-02-17',0.038034],['2026-02-18',0.03785],['2026-02-19',0.03799],['2026-02-20',0.035041],
+  ['2026-02-21',0.036272],['2026-02-22',0.034041],['2026-02-23',0.036364],['2026-02-24',0.034042],['2026-02-25',0.035646],
+  ['2026-02-26',0.039602],['2026-02-27',0.046626],['2026-02-28',0.039567],
+  ['2026-03-01',0.040741],['2026-03-02',0.046284],['2026-03-03',0.046773],['2026-03-04',0.039246],['2026-03-05',0.038278],
+  ['2026-03-06',0.041777],['2026-03-07',0.038402],['2026-03-08',0.049054],['2026-03-09',0.050046],['2026-03-10',0.056868],
+  ['2026-03-11',0.053817],['2026-03-12',0.045568],['2026-03-13',0.048811],['2026-03-14',0.04342],['2026-03-15',0.045907],
+  ['2026-03-16',0.045944],['2026-03-17',0.0535],['2026-03-18',0.053074],['2026-03-19',0.046516],['2026-03-20',0.043383],
+  ['2026-03-21',0.050305],['2026-03-22',0.050346],['2026-03-23',0.051065],['2026-03-24',0.05365],['2026-03-25',0.057092],
+  ['2026-03-26',0.054346],['2026-03-27',0.053167],
+  ['2026-03-28',0.039982],['2026-03-29',0.04484],['2026-03-30',0.042519],['2026-03-31',0.046579],
+  ['2026-04-01',0.043972],['2026-04-02',0.04297],['2026-04-03',0.035352],['2026-04-04',0.02541],['2026-04-05',0.028359],
+  ['2026-04-06',0.042473],['2026-04-07',0.039298],['2026-04-08',0.035915],['2026-04-09',0.037965],['2026-04-10',0.036114],
+  ['2026-04-11',0.044023],['2026-04-12',0.047009],['2026-04-13',0.043542],['2026-04-14',0.048394],['2026-04-15',0.050712],
+  ['2026-04-16',0.052319],['2026-04-17',0.043841],['2026-04-18',0.045422],['2026-04-19',0.048318],['2026-04-20',0.048635],
+  ['2026-04-21',0.045757],['2026-04-22',0.048867],['2026-04-23',0.040542],['2026-04-24',0.039843],['2026-04-25',0.035853],
+  ['2026-04-26',0.02788]
+];
+const ly90 = [
+  ['2026-01-27',0.025447],['2026-01-28',0.024614],['2026-01-29',0.02635],['2026-01-30',0.029154],['2026-01-31',0.025825],
+  ['2026-02-01',0.029799],['2026-02-02',0.029257],['2026-02-03',0.030274],['2026-02-04',0.030148],['2026-02-05',0.031241],
+  ['2026-02-06',0.029446],['2026-02-07',0.027814],['2026-02-08',0.028102],['2026-02-09',0.028994],['2026-02-10',0.032515],
+  ['2026-02-11',0.033993],['2026-02-12',0.038289],['2026-02-13',0.034386],['2026-02-14',0.02934],['2026-02-15',0.033402],
+  ['2026-02-16',0.03248],['2026-02-17',0.033289],['2026-02-18',0.032722],['2026-02-19',0.030895],['2026-02-20',0.034163],
+  ['2026-02-21',0.03381],['2026-02-22',0.028244],['2026-02-23',0.029982],['2026-02-24',0.033851],['2026-02-25',0.033108],
+  ['2026-02-26',0.03536],['2026-02-27',0.034598],['2026-02-28',0.033067],
+  ['2026-03-01',0.034924],['2026-03-02',0.041113],['2026-03-03',0.044376],['2026-03-04',0.046285],['2026-03-05',0.040169],
+  ['2026-03-06',0.039673],['2026-03-07',0.035412],['2026-03-08',0.044226],['2026-03-09',0.041895],['2026-03-10',0.046459],
+  ['2026-03-11',0.044697],['2026-03-12',0.046466],['2026-03-13',0.035965],['2026-03-14',0.037304],['2026-03-15',0.042663],
+  ['2026-03-16',0.037927],['2026-03-17',0.041472],['2026-03-18',0.046809],['2026-03-19',0.042594],['2026-03-20',0.037107],
+  ['2026-03-21',0.036048],['2026-03-22',0.042135],['2026-03-23',0.03945],['2026-03-24',0.043879],['2026-03-25',0.042479],
+  ['2026-03-26',0.039808],['2026-03-27',0.039722],
+  ['2026-03-28',0.030771],['2026-03-29',0.037351],['2026-03-30',0.043422],['2026-03-31',0.046162],
+  ['2026-04-01',0.038585],['2026-04-02',0.046221],['2026-04-03',0.041858],['2026-04-04',0.039309],['2026-04-05',0.038778],
+  ['2026-04-06',0.037062],['2026-04-07',0.038774],['2026-04-08',0.037544],['2026-04-09',0.038211],['2026-04-10',0.038758],
+  ['2026-04-11',0.030563],['2026-04-12',0.036311],['2026-04-13',0.038454],['2026-04-14',0.033592],['2026-04-15',0.04034],
+  ['2026-04-16',0.035239],['2026-04-17',0.02719],['2026-04-18',0.022907],['2026-04-19',0.020599],['2026-04-20',0.007986],
+  ['2026-04-21',0.007512],['2026-04-22',0.009712],['2026-04-23',0.011382],['2026-04-24',0.009021],['2026-04-25',0.005721],
+  ['2026-04-26',0.013659]
+];
+
+Plotly.newPlot('trend-90d', [
+  {type:'scatter',mode:'lines',name:'Current Year (2026)',x:ctx90.map(d=>d[0]),y:ctx90.map(d=>d[1]),line:{color:'#6c8ebf',width:2},fill:'none'},
+  {type:'scatter',mode:'lines',name:'Last Year (2025)',x:ly90.map(d=>d[0]),y:ly90.map(d=>d[1]),line:{color:'#9e9e9e',width:1.5,dash:'dash'},fill:'none'}
+], {
+  height:300,
+  yaxis:{tickformat:'.1%',title:'CVR'},
+  xaxis:{title:'Date'},
+  plot_bgcolor:'#fff',paper_bgcolor:'#fff',
+  font:{family:'-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif',color:'#1a1a2e'},
+  legend:{orientation:'h',y:-0.35},
+  margin:{l:55,r:20,t:20,b:60},
+  shapes:[
+    {type:'rect',x0:'2026-03-28',x1:'2026-04-26',y0:0,y1:0.07,fillcolor:'rgba(198,40,40,0.05)',line:{width:0}},
+    {type:'line',x0:'2026-03-28',x1:'2026-03-28',y0:0,y1:0.07,line:{color:'#c62828',dash:'dot',width:1.5}}
+  ],
+  annotations:[
+    {x:'2026-04-10',y:0.065,text:'Post period →',font:{color:'#c62828',size:11},showarrow:false},
+    {x:'2026-04-22',y:0.005,text:'Easter 2025<br>(Apr 20)',font:{color:'#9e9e9e',size:10},showarrow:true,ax:0,ay:-20,arrowcolor:'#9e9e9e',arrowsize:0.7}
+  ]
+}, {responsive:true});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "versions": [
+    {
+      "version": "v1.3",
+      "version_date": "2026-04-28",
+      "version_summary": "Investigation tree model + unified run folder",
+      "manifest": "runs/v1.3/manifest.json"
+    }
+  ]
+}

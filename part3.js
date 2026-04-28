@@ -524,3 +524,272 @@ function ZoomControls({ onZoom, onReset }) {
     </div>
   );
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// TEST RUNS EXPLORER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── Score colour helper ───────────────────────────────────────────────────────
+function scoreColor(score, max) {
+  const pct = score / max;
+  if (pct >= 0.80) return '#16a34a';   // green
+  if (pct >= 0.65) return '#d97706';   // amber
+  return '#dc2626';                     // red
+}
+
+// ── Markdown viewer (marked + highlight.js) ───────────────────────────────────
+function MarkdownViewer({ url }) {
+  const [html, setHtml]     = useState('');
+  const [status, setStatus] = useState('loading'); // loading | ok | error
+
+  useEffect(() => {
+    if (!url) return;
+    setStatus('loading');
+    setHtml('');
+    fetch(url)
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(text => {
+        // Configure marked with highlight.js
+        if (window.marked && window.hljs) {
+          window.marked.setOptions({
+            highlight: (code, lang) => {
+              if (lang && window.hljs.getLanguage(lang)) {
+                return window.hljs.highlight(code, { language: lang }).value;
+              }
+              return window.hljs.highlightAuto(code).value;
+            },
+            gfm: true, breaks: false,
+          });
+          setHtml(window.marked.parse(text));
+        } else {
+          // fallback: plain text pre-wrap
+          setHtml(`<pre style="white-space:pre-wrap">${text.replace(/</g,'&lt;')}</pre>`);
+        }
+        setStatus('ok');
+      })
+      .catch(() => setStatus('error'));
+  }, [url]);
+
+  if (status === 'loading') return (
+    <div className="tr-loading"><div className="tr-spinner" /><span>Loading…</span></div>
+  );
+  if (status === 'error') return (
+    <div className="tr-loading">⚠️ Could not load file.</div>
+  );
+  return (
+    <div className="tr-md-wrap">
+      <div className="md-body" dangerouslySetInnerHTML={{ __html: html }} />
+    </div>
+  );
+}
+
+// ── Run sidebar card ──────────────────────────────────────────────────────────
+function RunCard({ run, version, active, onClick }) {
+  const color = scoreColor(run.eval_score, run.eval_max);
+  const fillPct = Math.round((run.eval_score / run.eval_max) * 100);
+  return (
+    <div className={`tr-run-card${active ? ' active' : ''}`} onClick={onClick}>
+      <span className="tr-card-version-badge">{version}</span>
+      <div className="tr-card-top">
+        <span className="tr-card-ce-name">{run.ce_name}</span>
+        <span className="tr-card-ce-id">CE {run.ce_id}</span>
+      </div>
+      <div className="tr-card-dates">
+        <span title="Pre period">Pre {run.pre_period.split(' → ')[0]}</span>
+        {' → '}
+        <span title="Post period end">Post {run.post_period.split(' → ')[1]}</span>
+      </div>
+      <div className="tr-card-score-row">
+        <div className="tr-score-bar-wrap">
+          <div className="tr-score-bar"
+            style={{ width: `${fillPct}%`, background: color }} />
+        </div>
+        <span className="tr-score-label" style={{ color }}>{run.eval_score}/{run.eval_max}</span>
+      </div>
+      <div className="tr-card-rc">{run.root_cause_summary}</div>
+    </div>
+  );
+}
+
+// ── Main TestRunsExplorer ─────────────────────────────────────────────────────
+function TestRunsExplorer() {
+  const [versionIndex, setVersionIndex]     = useState([]);   // from runs/index.json
+  const [manifests, setManifests]           = useState({});   // version → manifest data
+  const [selectedVersion, setSelectedVersion] = useState('all');
+  const [selectedRun, setSelectedRun]       = useState(null); // { run, version }
+  const [activeSubTab, setActiveSubTab]     = useState('report');
+  const [indexLoading, setIndexLoading]     = useState(true);
+  const [indexError, setIndexError]         = useState(false);
+
+  // Load index.json on mount
+  useEffect(() => {
+    fetch('runs/index.json')
+      .then(r => { if (!r.ok) throw new Error(); return r.json(); })
+      .then(data => {
+        setVersionIndex(data.versions || []);
+        // Fetch all manifests in parallel
+        return Promise.all(
+          (data.versions || []).map(v =>
+            fetch(v.manifest)
+              .then(r => r.json())
+              .then(m => ({ version: v.version, manifest: m }))
+          )
+        );
+      })
+      .then(results => {
+        const m = {};
+        results.forEach(({ version, manifest }) => { m[version] = manifest; });
+        setManifests(m);
+        setIndexLoading(false);
+      })
+      .catch(() => { setIndexError(true); setIndexLoading(false); });
+  }, []);
+
+  // Build flat run list filtered by selected version
+  const filteredRuns = useMemo(() => {
+    const all = [];
+    Object.entries(manifests).forEach(([version, manifest]) => {
+      (manifest.runs || []).forEach(run => {
+        all.push({ run, version });
+      });
+    });
+    if (selectedVersion === 'all') return all;
+    return all.filter(({ version }) => version === selectedVersion);
+  }, [manifests, selectedVersion]);
+
+  const allVersions = useMemo(() => Object.keys(manifests).sort(), [manifests]);
+
+  // Sub-tabs available for selected run
+  const subTabs = useMemo(() => {
+    if (!selectedRun) return [];
+    const { run } = selectedRun;
+    const tabs = [];
+    if (run.files.report)     tabs.push({ id: 'report',     label: '📄 Report' });
+    if (run.files.transcript) tabs.push({ id: 'transcript', label: '📝 Transcript' });
+    if (run.files.evaluation) tabs.push({ id: 'evaluation', label: '⭐ Evaluation' });
+    return tabs;
+  }, [selectedRun]);
+
+  // Reset subtab when run changes
+  useEffect(() => {
+    if (subTabs.length) setActiveSubTab(subTabs[0].id);
+  }, [selectedRun]);
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  if (indexLoading) return (
+    <div className="tr-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        <div className="tr-spinner" /><span>Loading test runs…</span>
+      </div>
+    </div>
+  );
+
+  if (indexError) return (
+    <div className="tr-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        ⚠️ Could not load runs/index.json — make sure test runs have been pushed.
+      </div>
+    </div>
+  );
+
+  const activeRun = selectedRun?.run;
+  const color = activeRun ? scoreColor(activeRun.eval_score, activeRun.eval_max) : '#64748b';
+
+  return (
+    <div className="tr-shell">
+
+      {/* ── Sidebar ── */}
+      <div className="tr-sidebar">
+        <div className="tr-sidebar-header">
+          <div className="tr-sidebar-title">Test Runs</div>
+          <div className="tr-version-pills">
+            <button
+              className={`tr-vpill${selectedVersion === 'all' ? ' active' : ''}`}
+              onClick={() => setSelectedVersion('all')}>
+              All
+            </button>
+            {allVersions.map(v => (
+              <button
+                key={v}
+                className={`tr-vpill${selectedVersion === v ? ' active' : ''}`}
+                onClick={() => setSelectedVersion(v)}>
+                {v}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="tr-run-list">
+          {filteredRuns.length === 0 && (
+            <div className="tr-empty">No runs for this version yet.</div>
+          )}
+          {filteredRuns.map(({ run, version }) => (
+            <RunCard
+              key={`${version}-${run.id}`}
+              run={run}
+              version={version}
+              active={selectedRun?.run.id === run.id && selectedRun?.version === version}
+              onClick={() => setSelectedRun({ run, version })}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Main content ── */}
+      <div className="tr-main">
+        {!selectedRun ? (
+          <div className="tr-main-empty">
+            <div className="tr-main-empty-icon">🧪</div>
+            <div className="tr-main-empty-text">Select a run from the sidebar</div>
+          </div>
+        ) : (
+          <>
+            {/* Run header strip */}
+            <div className="tr-run-header">
+              <div>
+                <div className="tr-run-header-name">{activeRun.ce_name} — CE {activeRun.ce_id}</div>
+                <div className="tr-run-header-meta">
+                  Pre {activeRun.pre_period} &nbsp;·&nbsp; Post {activeRun.post_period}
+                  {activeRun.run_date && ` · Evaluated ${activeRun.run_date}`}
+                </div>
+              </div>
+              <div className="tr-run-header-score" style={{ color }}>
+                {activeRun.eval_score}/{activeRun.eval_max} pts
+              </div>
+            </div>
+
+            {/* Sub-tab bar */}
+            <div className="tr-subtab-bar">
+              {subTabs.map(tab => (
+                <button
+                  key={tab.id}
+                  className={`tr-subtab${activeSubTab === tab.id ? ' active' : ''}`}
+                  onClick={() => setActiveSubTab(tab.id)}>
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Content */}
+            {activeSubTab === 'report' && (
+              <iframe
+                key={activeRun.files.report}
+                src={activeRun.files.report}
+                className="tr-report-frame"
+                title={`Report — ${activeRun.ce_name}`}
+                sandbox="allow-scripts allow-same-origin"
+              />
+            )}
+            {activeSubTab === 'transcript' && (
+              <MarkdownViewer key={activeRun.files.transcript} url={activeRun.files.transcript} />
+            )}
+            {activeSubTab === 'evaluation' && (
+              <MarkdownViewer key={activeRun.files.evaluation} url={activeRun.files.evaluation} />
+            )}
+          </>
+        )}
+      </div>
+
+    </div>
+  );
+}

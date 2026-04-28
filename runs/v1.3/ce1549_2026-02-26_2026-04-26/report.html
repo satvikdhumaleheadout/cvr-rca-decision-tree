@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Keukenhof Tickets (CE 1549)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #1a1a2e; line-height: 1.55; }
+    header { background: #1a1a2e; color: #fff; padding: 28px 40px 24px; }
+    header .eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #8892a4; margin-bottom: 6px; }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #8892a4; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e0e4ef; }
+    .metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card { background: #fff; border-radius: 10px; padding: 18px 16px 16px; border: 1px solid #e8ebf4; }
+    .metric-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #8892a4; margin-bottom: 8px; }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta { font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 12px; margin-top: 6px; display: inline-block; }
+    .delta-neg { background: #fdecea; color: #c62828; }
+    .delta-pos { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout { background: #fff; border-left: 4px solid #e53935; border-radius: 0 10px 10px 0; padding: 24px 28px; margin-bottom: 8px; border-top: 1px solid #e8ebf4; border-right: 1px solid #e8ebf4; border-bottom: 1px solid #e8ebf4; }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8892a4; margin-bottom: 4px; }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 16px; }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row { font-size: 13px; color: #555; margin-bottom: 16px; display: flex; gap: 6px; align-items: center; }
+    .dri-badge { background: #e8edf7; color: #3a4a8a; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 8px; }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 20px; }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line { font-size: 14px; font-weight: 600; color: #c62828; background: #fdecea; border-radius: 6px; padding: 8px 14px; margin-bottom: 18px; }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #8892a4; padding: 8px 12px; border-bottom: 2px solid #e8ebf4; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c { background: #c62828; }
+    .shapley-c2o { background: #d6a832; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Keukenhof Tickets — CE 1549</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-02-26 – 2026-03-27</span>
+    <span>📅 Post: 2026-03-28 – 2026-04-26</span>
+    <span>🌍 Benelux · Netherlands</span>
+    <span>🔗 <a href="https://keukenhof.tickets-amsterdam.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">keukenhof.tickets-amsterdam.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values"><span class="pre">3.88%</span><span class="post">4.40%</span></div>
+      <div class="delta delta-pos">Δ +0.52pp / +13.4%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values"><span class="pre">32.1%</span><span class="post">39.6%</span></div>
+      <div class="delta delta-pos">Δ +7.5pp / +23.5%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values"><span class="pre">26.8%</span><span class="post">24.8%</span></div>
+      <div class="delta delta-neg">Δ −2.0pp / −7.5%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values"><span class="pre">45.3%</span><span class="post">44.9%</span></div>
+      <div class="delta delta-flat">Δ −0.4pp / −0.9%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP Users</div>
+      <div class="values"><span class="pre">67K</span><span class="post">139K</span></div>
+      <div class="delta delta-pos">Δ +71.7K / +107%</div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">S2C fell −2pp (26.8% → 24.8%), driven primarily by Keukenhof Entry Tickets (TGID 10118) — the highest-volume experience — where S2C declined from 25.8% to 21.1% on 32,675 post-period select-page visitors (≈ −1,536 checkouts). Overall CVR still rose +0.52pp because LP2S improved +7.5pp (seasonal uplift) and Google Ads traffic doubled, driving a paid-traffic mix effect that outweighs the S2C headwind.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">Peak-season dates for Keukenhof progressively sold out. As Google Ads traffic accelerated through April (+128% vs pre), forward inventory was consumed faster than it could replenish: available days in the 30-day booking window for TGID 10118 dropped from 31 (full availability, Mar 28) to 15 (Apr 26). Users who arrived at the date picker seeking specific peak-April/May visit dates found those slots unavailable. 30d+ advance bookings collapsed 90% (751 pre-period checkouts → 77 post), confirming far-out inventory is exhausted.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual onset from Apr 2; availability measurably declining from Apr 11 (count_days_available_30d: 31 → 30 → … → 15 by Apr 26). No single break-point — consistent with progressive date sellout as peak demand accumulated through April. The Keukenhof season runs through mid-May; the supply constraint is worsening as remaining open days are now fewer.</div>
+    </div>
+  </div>
+
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Peak-season dates for Keukenhof Entry Tickets (TGID 10118) are sold out — available inventory window dropped from 31 to 15 days, costing ~1,500 checkouts in the post period alone.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Ops / BDM</span>
+      <span>+ Supply team</span>
+    </div>
+    <ul>
+      <li>Check immediately whether the Keukenhof SP has held-back capacity for remaining peak dates (late April through mid-May park closure); request release of any unreleased inventory for the HO/MB channel.</li>
+      <li>Review API cut-off period settings — ensure minimum lead-time is as short as the SP will allow to maximise near-term visible availability at the date picker.</li>
+      <li>Audit TGID 41053 (Combo: Entry + Audio Guide + Parking, S2C −9.7pp on 2,674 select users) for separate parking capacity constraints that may be independently throttling selection.</li>
+      <li>Urgency: Keukenhof closes mid-May — each remaining week of sold-out dates is permanent lost revenue. Escalate supply negotiation within 48 hours.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">Mobile S2C (22–23%) is 11pp below desktop (34%) and declined in the post period while desktop held flat — a growing gap as paid traffic (predominantly mobile) doubled.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Product</span>
+      <span>+ Performance Marketing</span>
+    </div>
+    <ul>
+      <li>Audit the Keukenhof date-picker UX on iOS Safari and Android Chrome under peak load: specifically check how sold-out dates are displayed (are greyed-out slots clearly labelled?), date navigation speed, and the clarity of the "no availability" state.</li>
+      <li>Consider surfacing an alternative-date suggestion or waitlist option when a user's preferred date is unavailable — capturing intent from users who currently abandon on finding peak dates sold out.</li>
+      <li>Evaluate TGID 27249 (Tulip Experience + Tulip Fields, S2C improved +5.3pp to 21.8%) as an overflow product to surface more prominently when entry ticket availability is thin — users who can't book standard entry may convert on this if it's presented as an alternative.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p3">P3</div>
+      <div class="cause">Structural CVR improvement vs last year is only +0.09pp — the post-period gain is mostly seasonal. Pre-season supply planning is the lever to capture incremental CVR next year.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Growth / Analytics</span>
+      <span>+ BDM</span>
+    </div>
+    <ul>
+      <li>Before next Keukenhof season (late March 2027): negotiate pre-allocation of peak-date ticket blocks with the SP so inventory is secured before demand accelerates in April.</li>
+      <li>Set up a weekly S2C and availability monitor for this CE during Mar–May — trigger a P1 supply escalation if count_days_available_30d drops below 20 during peak season.</li>
+      <li>Things To Do (SEO) traffic surged 6.8× into peak season (1,103 → 7,492 users, CVR 3.4% vs 4.6% Google Ads average) — validate that these organic visitors land on the most conversion-optimised collection pages; a landing page mismatch would further widen the gap.</li>
+    </ul>
+  </div>
+
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">LP2S is the dominant positive driver (+169.5% of ΔCVR). S2C is a −62.5% headwind. CVR improved despite S2C declining because LP2S overcompensated by 2.7×.</div>
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex:170">LP2S +170%</div>
+      <div class="shapley-bar shapley-s2c" style="flex:63">S2C −63%</div>
+      <div class="shapley-bar shapley-c2o" style="flex:7">−7%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S +0.0087pp (+169.5%)</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −0.0032pp (−62.5%)</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O −0.0004pp (−7.0%)</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = +0.0052pp. LP2S alone contributed +0.0087pp — seasonal uplift in purchase intent and paid traffic growth drove far more users through the listing-to-select step. S2C gave back 0.0032pp due to peak-date availability constraints. The net result is a +13% CVR improvement, but S2C is the reason the gain is not +20%+.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Channel Mix — paid vs organic</div>
+    <div class="verdict-line">Paid traffic share grew from 72.7% to 81.2% (+8.5pp). Google Ads added 57,687 users (+128%) at stable CVR — this mix shift toward high-intent paid visitors is the primary CVR improvement mechanism.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre Users</th>
+          <th class="num">Post Users</th>
+          <th class="num">Δ Users</th>
+          <th class="num">Pre CVR</th>
+          <th class="num">Post CVR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">44,904</td>
+          <td class="num">102,591</td>
+          <td class="num pos">+57,687</td>
+          <td class="num">4.4%</td>
+          <td class="num">4.6%</td>
+        </tr>
+        <tr>
+          <td><strong>Microsoft Ads</strong></td>
+          <td class="num">4,399</td>
+          <td class="num">7,942</td>
+          <td class="num pos">+3,543</td>
+          <td class="num">4.8%</td>
+          <td class="num">4.8%</td>
+        </tr>
+        <tr>
+          <td><strong>Things To Do (SEO)</strong></td>
+          <td class="num">1,103</td>
+          <td class="num">7,492</td>
+          <td class="num pos">+6,389</td>
+          <td class="num">1.5%</td>
+          <td class="num">3.4%</td>
+        </tr>
+        <tr>
+          <td><strong>Others / Direct</strong></td>
+          <td class="num">19,299</td>
+          <td class="num">27,503</td>
+          <td class="num pos">+8,204</td>
+          <td class="num">3.1%</td>
+          <td class="num">4.6%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Google Ads is the growth engine — it added 57,687 users (+128%) at 4.6% CVR. Things To Do (SEO) surged 6.8× into peak Keukenhof season but converts at 3.4% — below the CE average — creating a slight dilutive effect. The overall CVR improvement is dominated by mix shift toward Google Ads, not by per-channel conversion rate improvement.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">MB / HO Mix</div>
+    <div class="verdict-line neutral">MB/HO mix ruled out as independent driver — MB (93% of traffic) CVR improved from 3.97% to 4.54%. HO grew from 3.0% to 6.7% share but remains a small contributor.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th>
+          <th class="num">Post Users</th>
+          <th class="num">Pre Share</th>
+          <th class="num">Post Share</th>
+          <th class="num">Pre CVR</th>
+          <th class="num">Post CVR</th>
+          <th class="num">Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">67,342</td>
+          <td class="num">135,126</td>
+          <td class="num">97.0%</td>
+          <td class="num">93.3%</td>
+          <td class="num">3.97%</td>
+          <td class="num pos">4.54%</td>
+          <td class="num">Conversion</td>
+        </tr>
+        <tr>
+          <td><strong>HO</strong></td>
+          <td class="num">2,087</td>
+          <td class="num">9,695</td>
+          <td class="num">3.0%</td>
+          <td class="num">6.7%</td>
+          <td class="num">4.7%</td>
+          <td class="num">4.5%</td>
+          <td class="num">Mix</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      MB is the overwhelmingly dominant channel (93%+ of traffic) and its CVR improved — the CVR gain is real, not a routing artefact. The channel_mix_share dominance (1.197) is driven by the paid/organic split within MB traffic, not by HO routing.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Daily Funnel Trend — LP2S and S2C</div>
+    <div class="verdict-line">LP2S climbed from ~18% (late Feb) to ~40–44% (April) — a full seasonal ramp. S2C peaked at 30–32% in late March as the park opened, then declined to 22–25% through April as peak dates sold out.</div>
+    <div class="chart-container">
+      <div id="trend-lp2s"></div>
+      <div id="trend-s2c" style="margin-top:20px;"></div>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      LP2S improvement is unambiguously seasonal — Keukenhof's tulip season ramps from late February to peak in April. S2C tells a different story: it was improving through the pre period (30%+ in mid-March as opening day approached) then declined from Apr 2 onwards as peak-date inventory was consumed. The S2C decline is not a reversal of an existing trend — it is a new post-period phenomenon caused by availability constraints.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">90-Day CVR Trend with Last-Year Overlay</div>
+    <div class="verdict-line neutral">Seasonal pattern confirmed — structural improvement vs last year is only +0.09pp. The post-period CVR rise almost exactly mirrors last year's same-calendar-position uplift.</div>
+    <div class="chart-container"><div id="trend-90day"></div></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Current year (blue) and last year (grey dashed) track closely through the 90-day window. Current ΔCVR = +0.77pp vs LY ΔCVR = +0.68pp at the same calendar position — structural delta of +0.09pp. This CE is performing in line with LY peak season. Notably, LY S2C in April fell as low as 17–18% (vs current 22–25%), suggesting LY had more severe availability constraints. The post window (shaded red) shows current CVR holding around 4.5–5.5% — healthy for peak season.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">S2C by Experience — concentration analysis</div>
+    <div class="verdict-line">TGID 10118 (Keukenhof Entry Tickets) carries the largest absolute impact: −4.7pp on 32,675 select-page visitors ≈ −1,536 checkouts. TGID 27249 partially offsets with +460 checkouts gained.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th class="num">Post Select Users</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+          <th class="num">Checkout Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>10118 · Keukenhof Entry Tickets</strong></td>
+          <td class="num">32,675</td>
+          <td class="num">25.8%</td>
+          <td class="num">21.1%</td>
+          <td class="num neg">−4.7pp</td>
+          <td class="num neg">−1,536</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>16429 · Entry + Transfers from Amsterdam</strong></td>
+          <td class="num">17,867</td>
+          <td class="num">22.5%</td>
+          <td class="num">21.1%</td>
+          <td class="num neg">−1.4pp</td>
+          <td class="num neg">−250</td>
+        </tr>
+        <tr>
+          <td><strong>27249 · Tulip Experience + Tulip Fields</strong></td>
+          <td class="num">8,674</td>
+          <td class="num">16.5%</td>
+          <td class="num pos">21.8%</td>
+          <td class="num pos">+5.3pp</td>
+          <td class="num pos">+460</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>41053 · Combo: Entry + Audio Guide + Parking</strong></td>
+          <td class="num">2,674</td>
+          <td class="num">28.7%</td>
+          <td class="num">19.0%</td>
+          <td class="num neg">−9.7pp</td>
+          <td class="num neg">−259</td>
+        </tr>
+        <tr>
+          <td><strong>10122 · Keukenhof + Zaanse Schans Day Trip</strong></td>
+          <td class="num">1,299</td>
+          <td class="num">17.8%</td>
+          <td class="num">17.7%</td>
+          <td class="num">−0.1pp</td>
+          <td class="num">—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      S2C decline is concentrated in experiences requiring a timed entry ticket tied to specific park dates — exactly where availability constraints bind. TGID 27249 (Tulip Experience, combining park entry with tulip fields visit under a different supply chain) actually improved S2C, and is the natural overflow product for users who find entry ticket dates sold out. Its rise also suggests that demand is real and redirectable — not suppressed by intent.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Availability Proxy + Lead-Time Distribution — TGID 10118</div>
+    <div class="verdict-line">Available booking days in the 30-day forward window declined from 31 (full) to 15 by Apr 26. 30d+ advance bookings collapsed 90% (751 pre → 77 post) — far-out dates are exhausted.</div>
+    <div class="chart-container"><div id="avail-chart"></div></div>
+    <table style="margin-top:16px;">
+      <thead>
+        <tr>
+          <th>Lead-Time Bucket</th>
+          <th class="num">Pre Users at Checkout</th>
+          <th class="num">Pre Share</th>
+          <th class="num">Post Users</th>
+          <th class="num">Post Share</th>
+          <th class="num">Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0–2 days</td>
+          <td class="num">700</td>
+          <td class="num">20.9%</td>
+          <td class="num">2,702</td>
+          <td class="num">38.2%</td>
+          <td class="num pos">+2,002</td>
+        </tr>
+        <tr>
+          <td>3–6 days</td>
+          <td class="num">320</td>
+          <td class="num">9.5%</td>
+          <td class="num">1,689</td>
+          <td class="num">23.8%</td>
+          <td class="num pos">+1,369</td>
+        </tr>
+        <tr>
+          <td>7–13 days</td>
+          <td class="num">555</td>
+          <td class="num">16.5%</td>
+          <td class="num">1,510</td>
+          <td class="num">21.3%</td>
+          <td class="num pos">+955</td>
+        </tr>
+        <tr>
+          <td>14–29 days</td>
+          <td class="num">1,028</td>
+          <td class="num">30.6%</td>
+          <td class="num">1,104</td>
+          <td class="num">15.6%</td>
+          <td class="num">+76</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>30+ days</strong></td>
+          <td class="num">751</td>
+          <td class="num">22.4%</td>
+          <td class="num neg"><strong>77</strong></td>
+          <td class="num neg"><strong>1.1%</strong></td>
+          <td class="num neg">−674 (−90%)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      In the pre period, advance bookers (30d+) represented 22% of all checkouts for TGID 10118. In the post period they virtually disappeared — just 77 users booked 30+ days ahead. These are users who would plan May visits; they can no longer find available dates. Meanwhile near-term bookings (0-6d) tripled as the only remaining slots are same-week. Users who arrive at the date picker wanting a specific April/May date and find it sold out are abandoning the funnel — this is the S2C loss in quantitative form.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">S2C by Device</div>
+    <div class="verdict-line">S2C decline concentrated in mobile — iOS Mweb −1.7pp, Android Mweb −2.4pp. Desktop S2C held flat (+0.8pp). LP2S improved strongly across all devices.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th class="num">Post Users</th>
+          <th class="num">Pre LP2S</th>
+          <th class="num">Post LP2S</th>
+          <th class="num">Δ LP2S</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>iOS Mweb</strong></td>
+          <td class="num">74,748</td>
+          <td class="num">30.9%</td>
+          <td class="num">39.7%</td>
+          <td class="num pos">+8.8pp</td>
+          <td class="num">24.1%</td>
+          <td class="num">22.4%</td>
+          <td class="num neg">−1.7pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Android Mweb</strong></td>
+          <td class="num">31,867</td>
+          <td class="num">32.3%</td>
+          <td class="num">40.2%</td>
+          <td class="num pos">+7.9pp</td>
+          <td class="num">24.4%</td>
+          <td class="num">22.0%</td>
+          <td class="num neg">−2.4pp</td>
+        </tr>
+        <tr>
+          <td><strong>Desktop</strong></td>
+          <td class="num">31,844</td>
+          <td class="num">33.7%</td>
+          <td class="num">38.6%</td>
+          <td class="num pos">+4.9pp</td>
+          <td class="num">32.8%</td>
+          <td class="num">33.6%</td>
+          <td class="num pos">+0.8pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Desktop S2C is both higher in absolute terms (34%) and held stable — desktop users are advance planners with greater date flexibility. Mobile users (77% of post traffic) show S2C decline consistent with higher proportions of last-minute / on-site visitors who encounter sold-out near-term dates. No device-specific UX regression is evident — the pattern is consistent with availability constraints affecting mobile-browsing user profiles disproportionately.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond what the availability constraint already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>MB page sub-type:</strong> Collection pages dominate (114K post users, 82% of MB traffic). Collection LP2S improved 35.7% → 41.0% and S2C declined 26.4% → 24.5% — consistent with the CE-wide S2C decline driven by TGID 10118 availability. No anomalous sub-type pattern.</li>
+      <li style="margin-bottom:8px;"><strong>C2O sub-decomposition (C2A / A2O):</strong> C2A improved slightly (+1.9pp: 52.8% → 54.7%). A2O declined −3.7pp (85.7% → 82.0%) — modest, within normal range; no evidence of a payment gateway or fraud issue. C2O at 44.9% is within expected range for this CE.</li>
+      <li style="margin-bottom:8px;"><strong>Pricing — TGID 10118:</strong> Listed price was stable throughout both periods (~$24.65–$25.40). Price is not a contributor to the S2C decline.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Attempted for 6 users sampled from TGID 10118 select-page drop-offs (Apr 2–20); no Mixpanel recordings were available. Findings are described as "consistent with" peak-date sellout rather than directly observed.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-04-27 · CVR-RCA · CE 1549 Keukenhof Tickets</footer>
+
+<script>
+(function() {
+  var preDates = ["2026-02-26","2026-02-27","2026-02-28","2026-03-01","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27"];
+  var preLp2s = [0.1935,0.1829,0.1798,0.1819,0.1815,0.2243,0.2342,0.2309,0.2323,0.2512,0.2715,0.3021,0.3046,0.3019,0.3176,0.3387,0.3295,0.3306,0.3765,0.3636,0.3857,0.3734,0.3427,0.3665,0.3506,0.3739,0.3774,0.3879,0.3847,0.3698];
+  var postDates = ["2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26"];
+  var postLp2s = [0.3629,0.3671,0.3757,0.3817,0.4064,0.3969,0.4232,0.4444,0.4046,0.407,0.3823,0.3963,0.3864,0.3942,0.3837,0.3778,0.379,0.3741,0.379,0.3832,0.4153,0.3972,0.3886,0.3911,0.3972,0.3943,0.3814,0.428,0.3998,0.3737];
+  var preMeanLp = preLp2s.reduce(function(a,b){return a+b;},0)/preLp2s.length;
+  var postMeanLp = postLp2s.reduce(function(a,b){return a+b;},0)/postLp2s.length;
+
+  Plotly.newPlot('trend-lp2s', [
+    {type:'scatter',mode:'lines+markers',name:'Pre (Feb 26–Mar 27)',x:preDates,y:preLp2s,line:{color:'#6c8ebf',width:2.5},marker:{size:3,color:'#6c8ebf'}},
+    {type:'scatter',mode:'lines+markers',name:'Post (Mar 28–Apr 26)',x:postDates,y:postLp2s,line:{color:'#2e7d32',width:2.5},marker:{size:3,color:'#2e7d32'}}
+  ], {
+    height:240, title:{text:'LP2S Daily Rate',font:{size:13}},
+    yaxis:{tickformat:'.0%',range:[0.1,0.5]}, xaxis:{title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',color:'#1a1a2e',size:11},
+    legend:{orientation:'h',y:-0.25}, margin:{l:55,r:20,t:40,b:60},
+    shapes:[
+      {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preMeanLp,y1:preMeanLp,line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+      {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postMeanLp,y1:postMeanLp,line:{color:'#2e7d32',dash:'dot',width:1.5}}
+    ],
+    annotations:[
+      {x:preDates[12],y:preMeanLp,text:'Pre avg '+(preMeanLp*100).toFixed(0)+'%',font:{color:'#6c8ebf',size:11},showarrow:false,yshift:12},
+      {x:postDates[12],y:postMeanLp,text:'Post avg '+(postMeanLp*100).toFixed(0)+'%',font:{color:'#2e7d32',size:11},showarrow:false,yshift:12}
+    ]
+  }, {responsive:true});
+
+  var preS2c = [0.1971,0.172,0.1958,0.2283,0.213,0.245,0.3247,0.2958,0.2642,0.2633,0.2809,0.3056,0.2642,0.3034,0.3132,0.3032,0.2633,0.2916,0.3005,0.2589,0.2627,0.2997,0.2898,0.2813,0.2805,0.3001,0.2724,0.254,0.264,0.2976];
+  var postS2c = [0.2844,0.2733,0.3036,0.3184,0.2988,0.2446,0.2465,0.2281,0.243,0.2544,0.2722,0.2591,0.2526,0.2417,0.2562,0.2651,0.2669,0.2537,0.261,0.2415,0.2458,0.2563,0.247,0.2606,0.2277,0.2449,0.2573,0.2786,0.2431,0.2256];
+  var preMeanS2 = preS2c.reduce(function(a,b){return a+b;},0)/preS2c.length;
+  var postMeanS2 = postS2c.reduce(function(a,b){return a+b;},0)/postS2c.length;
+
+  Plotly.newPlot('trend-s2c', [
+    {type:'scatter',mode:'lines+markers',name:'Pre (Feb 26–Mar 27)',x:preDates,y:preS2c,line:{color:'#6c8ebf',width:2.5},marker:{size:3,color:'#6c8ebf'}},
+    {type:'scatter',mode:'lines+markers',name:'Post (Mar 28–Apr 26)',x:postDates,y:postS2c,line:{color:'#c62828',width:2.5},marker:{size:3,color:'#c62828'}}
+  ], {
+    height:240, title:{text:'S2C Daily Rate',font:{size:13}},
+    yaxis:{tickformat:'.0%',range:[0.15,0.38]}, xaxis:{title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',color:'#1a1a2e',size:11},
+    legend:{orientation:'h',y:-0.25}, margin:{l:55,r:20,t:40,b:60},
+    shapes:[
+      {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preMeanS2,y1:preMeanS2,line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+      {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postMeanS2,y1:postMeanS2,line:{color:'#c62828',dash:'dot',width:1.5}}
+    ],
+    annotations:[
+      {x:preDates[12],y:preMeanS2,text:'Pre avg '+(preMeanS2*100).toFixed(1)+'%',font:{color:'#6c8ebf',size:11},showarrow:false,yshift:12},
+      {x:postDates[12],y:postMeanS2,text:'Post avg '+(postMeanS2*100).toFixed(1)+'%',font:{color:'#c62828',size:11},showarrow:false,yshift:-16}
+    ]
+  }, {responsive:true});
+})();
+
+(function() {
+  var currentDates = ["2026-01-27","2026-01-28","2026-01-29","2026-01-30","2026-01-31","2026-02-01","2026-02-02","2026-02-03","2026-02-04","2026-02-05","2026-02-06","2026-02-07","2026-02-08","2026-02-09","2026-02-10","2026-02-11","2026-02-12","2026-02-13","2026-02-14","2026-02-15","2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20","2026-02-21","2026-02-22","2026-02-23","2026-02-24","2026-02-25","2026-02-26","2026-02-27","2026-02-28","2026-03-01","2026-03-02","2026-03-03","2026-03-04","2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26"];
+  var currentCvr = [0.012571,0.00885,0.008889,0.015625,0.006508,0.013378,0.007752,0.01854,0.006283,0.011751,0.011292,0.01367,0.013252,0.011538,0.011445,0.0185,0.01034,0.011551,0.019173,0.019055,0.023411,0.011993,0.016559,0.012461,0.022928,0.019636,0.017578,0.020484,0.014744,0.021522,0.019002,0.023425,0.014435,0.02121,0.012811,0.025424,0.036787,0.023595,0.036805,0.035043,0.036856,0.046214,0.041112,0.050326,0.046236,0.049622,0.048719,0.051088,0.056611,0.043601,0.042953,0.052478,0.049194,0.050472,0.046974,0.05,0.042548,0.043843,0.045698,0.050887,0.053654,0.042655,0.059541,0.051561,0.053027,0.043626,0.046822,0.045705,0.043609,0.053201,0.054127,0.047394,0.046401,0.044785,0.044612,0.051232,0.049156,0.044933,0.051598,0.044065,0.04687,0.047296,0.045253,0.048498,0.041816,0.048079,0.052024,0.047494,0.041602,0.035055];
+  var lyDates = ["2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-02","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-08","2025-02-09","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-15","2025-02-16","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-22","2025-02-23","2025-02-24","2025-02-25","2025-02-26","2025-02-27","2025-02-28","2025-03-01","2025-03-02","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-08","2025-03-09","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-14","2025-03-15","2025-03-16","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-22","2025-03-23","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-03-29","2025-03-30","2025-03-31","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-05","2025-04-06","2025-04-07","2025-04-08","2025-04-09","2025-04-10","2025-04-11","2025-04-12","2025-04-13","2025-04-14","2025-04-15","2025-04-16","2025-04-17","2025-04-18","2025-04-19","2025-04-20","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-26"];
+  var lyCvr = [0.00237,0.010651,0.00618,0.010914,0.008037,0.012291,0.013292,0.01882,0.017788,0.015302,0.016813,0.012195,0.020768,0.02152,0.019608,0.027901,0.02027,0.017335,0.025566,0.022734,0.026923,0.022687,0.026657,0.029551,0.027478,0.025625,0.023496,0.031354,0.030038,0.027239,0.0347,0.037254,0.032939,0.037694,0.03285,0.032224,0.031257,0.029967,0.029509,0.028486,0.02787,0.034742,0.037566,0.031947,0.034648,0.033898,0.031223,0.033898,0.039833,0.041634,0.037095,0.042286,0.042966,0.046601,0.041543,0.038051,0.044027,0.037152,0.046402,0.045932,0.050268,0.046099,0.04759,0.035212,0.05386,0.047183,0.055714,0.048207,0.049259,0.043194,0.044916,0.046558,0.050477,0.043601,0.044825,0.048862,0.051814,0.047047,0.046209,0.035896,0.033765,0.032993,0.028125,0.037949,0.037694,0.038814,0.039801,0.040459,0.03831,0.036403];
+
+  Plotly.newPlot('trend-90day', [
+    {type:'scatter',mode:'lines',name:'Current Year (2026)',x:currentDates,y:currentCvr,line:{color:'#6c8ebf',width:2}},
+    {type:'scatter',mode:'lines',name:'Last Year (2025)',x:lyDates,y:lyCvr,line:{color:'#9e9e9e',dash:'dash',width:1.5}}
+  ], {
+    height:280,
+    yaxis:{tickformat:'.1%',title:'CVR'},
+    xaxis:{title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',color:'#1a1a2e',size:11},
+    legend:{orientation:'h',y:-0.2},
+    margin:{l:55,r:20,t:30,b:60},
+    shapes:[
+      {type:'rect',x0:'2026-03-28',x1:'2026-04-26',y0:0,y1:1,xref:'x',yref:'paper',fillcolor:'rgba(198,40,40,0.05)',line:{width:0}},
+      {type:'line',x0:'2026-03-28',x1:'2026-03-28',y0:0,y1:1,xref:'x',yref:'paper',line:{color:'#c62828',dash:'dot',width:1}}
+    ],
+    annotations:[{x:'2026-04-10',y:0.063,text:'Post period',font:{color:'#c62828',size:10},showarrow:false}]
+  }, {responsive:true});
+})();
+
+(function() {
+  var dates = ["2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03","2026-04-04","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26"];
+  var avail = [31,31,31,31,31,31,31,31,31,31,31,31,31,30,29,28,27,26,25,24,22,22,21,20,19,18,17,16,15];
+  var s2c = [0.2844,0.2733,0.3036,0.3184,0.2988,0.2446,0.2465,0.2281,0.2544,0.2722,0.2591,0.2526,0.2417,0.2562,0.2651,0.2669,0.2537,0.261,0.2415,0.2458,0.2563,0.247,0.2606,0.2277,0.2449,0.2573,0.2786,0.2431,0.2256];
+
+  Plotly.newPlot('avail-chart', [
+    {type:'scatter',mode:'lines+markers',name:'Available days (30d window)',x:dates,y:avail,line:{color:'#6c8ebf',width:2.5},marker:{size:4},yaxis:'y'},
+    {type:'scatter',mode:'lines+markers',name:'S2C rate (TGID 10118)',x:dates,y:s2c,line:{color:'#c62828',width:2.5},marker:{size:4},yaxis:'y2'}
+  ], {
+    height:260,
+    yaxis:{title:'Available days (30d)',range:[10,35],titlefont:{color:'#6c8ebf'}},
+    yaxis2:{title:'S2C rate',overlaying:'y',side:'right',tickformat:'.0%',range:[0.15,0.38],titlefont:{color:'#c62828'}},
+    xaxis:{title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',color:'#1a1a2e',size:11},
+    legend:{orientation:'h',y:-0.25},
+    margin:{l:55,r:65,t:30,b:60}
+  }, {responsive:true});
+})();
+</script>
+
+</body>
+</html>
