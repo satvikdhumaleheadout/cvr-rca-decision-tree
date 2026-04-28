@@ -797,3 +797,278 @@ function TestRunsExplorer() {
     </div>
   );
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CHANGELOG EXPLORER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── CHANGELOG.md parser ───────────────────────────────────────────────────────
+function parseChangelog(text) {
+  const results = [];
+  const lines   = text.split('\n');
+
+  let v            = null;   // current version object
+  let f            = null;   // current file section
+  let summaryMode  = false;
+  let summaryLines = [];
+
+  // Flush helpers
+  const flushFile = () => {
+    // Only keep file sections that actually have bullet changes
+    if (f && v && f.changes.length > 0) v.files.push(f);
+    f = null;
+  };
+  const flushVersion = () => {
+    if (!v) return;
+    if (summaryMode) {
+      v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim();
+      summaryMode = false; summaryLines = [];
+    }
+    flushFile();
+    results.push(v);
+    v = null;
+  };
+
+  for (const raw of lines) {
+    const line = raw;
+
+    // ── Version heading  ## [v1.3] — 2026-04-28 — Title
+    const vm = line.match(/^## \[(v[\d.]+)\] — (\d{4}-\d{2}-\d{2}) — (.+)/);
+    if (vm) { flushVersion(); v = { version: vm[1], date: vm[2], title: vm[3].trim(), summary: '', files: [] }; continue; }
+    if (!v) continue;
+
+    // ── Summary start
+    if (line.match(/^\*\*Summary:\*\*/)) {
+      summaryMode = true;
+      summaryLines.push(line.replace(/^\*\*Summary:\*\*\s*/, '').trim());
+      continue;
+    }
+
+    // ── Section heading (### ...) — stop summary collection
+    if (line.startsWith('###')) {
+      if (summaryMode) { v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim(); summaryMode = false; summaryLines = []; }
+      continue;
+    }
+
+    // ── Trailing footer / hr
+    if (line.trim() === '---' || line.startsWith('*Each future')) {
+      if (summaryMode) { v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim(); summaryMode = false; summaryLines = []; }
+      continue;
+    }
+
+    // ── Continue collecting summary (multi-paragraph)
+    // Stop if we hit a clear file-heading pattern (line is just **bold**)
+    if (summaryMode) {
+      const isBoldHeading = line.match(/^\*\*[^*\n]+\*\*(?:\s*\([^)]+\))?$/);
+      if (!isBoldHeading) { summaryLines.push(line.trim()); continue; }
+      // Otherwise fall through to file heading handling
+      v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim();
+      summaryMode = false; summaryLines = [];
+    }
+
+    // ── File heading — **`SKILL.md`** (c003 → c007)  or  **Category name**
+    const fm = line.match(/^\*\*(.+?)\*\*(?:\s*\(([^)]+)\))?$/);
+    if (fm) {
+      flushFile();
+      const rawName = fm[1].replace(/`/g, '').trim();
+      f = { fileName: rawName, commitRange: fm[2] || null, changes: [] };
+      continue;
+    }
+
+    // ── Bullet under a file section
+    if (f && line.match(/^[-*] /)) {
+      const bulletText = line.replace(/^[-*]\s*/, '').trim();
+      // Try commit pattern:  **c012 — Name:** detail  or  **c012:** detail
+      const cm = bulletText.match(/^\*\*(c\d+)(?:\s*[—–-]\s*([^:*\n]+))?\*\*:?\s*([\s\S]*)/);
+      if (cm) {
+        f.changes.push({
+          commitId: cm[1],
+          name:     (cm[2] || '').replace(/\*\*/g, '').trim(),
+          detail:   cm[3].replace(/\*\*/g, '').replace(/`/g, '').trim(),
+          subItems: [],
+        });
+      } else {
+        f.changes.push({
+          commitId: null, name: null,
+          detail: bulletText.replace(/\*\*/g, '').replace(/`/g, '').trim(),
+          subItems: [],
+        });
+      }
+      continue;
+    }
+
+    // ── Indented sub-bullet — attach to last change
+    if (f && f.changes.length > 0 && line.match(/^\s{2,}[-*] /)) {
+      const sub = line.replace(/^\s+[-*]\s*/, '').replace(/\*\*/g, '').replace(/`/g, '').trim();
+      f.changes[f.changes.length - 1].subItems.push(sub);
+    }
+  }
+
+  flushVersion();
+  return results.reverse(); // newest first
+}
+
+// ── File card colour by type ──────────────────────────────────────────────────
+function fileCardStyle(fileName) {
+  const n = fileName.toLowerCase();
+  if (n === 'skill.md' || n === 'skill' || n.includes('core skill'))
+    return { bg: '#eef2ff', fg: '#4338ca', border: '#c7d2fe', dot: '#6366f1' };
+  if (n.startsWith('references/') || n.includes('context') || n.includes('hypothesis')
+      || n.includes('worked') || n.includes('actions') || n.includes('report_struct')
+      || n.includes('evaluator') || n.includes('reference file') || n.includes('sql pipeline'))
+    return { bg: '#f0fdfa', fg: '#0f766e', border: '#99f6e4', dot: '#14b8a6' };
+  if (n.startsWith('scripts/') || n.includes('.sh') || n.includes('.py')
+      || n.includes('script') || n.includes('report template') || n.includes('evaluation rubric'))
+    return { bg: '#faf5ff', fg: '#7e22ce', border: '#e9d5ff', dot: '#a855f7' };
+  if (n === 'removed' || n.startsWith('removed'))
+    return { bg: '#fef2f2', fg: '#b91c1c', border: '#fecaca', dot: '#ef4444' };
+  return { bg: '#f8fafc', fg: '#475569', border: '#e2e8f0', dot: '#94a3b8' };
+}
+
+// ── Version sidebar card ──────────────────────────────────────────────────────
+function VersionCard({ v, isLatest, active, onClick }) {
+  const changedCount = v.files.length;
+  return (
+    <div className={`cl-version-card${active ? ' active' : ''}`} onClick={onClick}>
+      <div className="cl-version-row">
+        <span className="cl-version-tag">{v.version}</span>
+        {isLatest && <span className="cl-latest-tag">Latest</span>}
+      </div>
+      <div className="cl-version-date">{v.date}</div>
+      <div className="cl-version-meta">
+        {changedCount} file{changedCount !== 1 ? 's' : ''} changed
+      </div>
+    </div>
+  );
+}
+
+// ── File change card ──────────────────────────────────────────────────────────
+function FileChangeCard({ file }) {
+  const s = fileCardStyle(file.fileName);
+  return (
+    <div className="cl-file-card" style={{ borderColor: s.border }}>
+      <div className="cl-file-header" style={{ background: s.bg }}>
+        <span className="cl-file-dot" style={{ background: s.dot }} />
+        <span className="cl-file-name" style={{ color: s.fg }}>{file.fileName}</span>
+        {file.commitRange && (
+          <span className="cl-commit-range">{file.commitRange}</span>
+        )}
+      </div>
+      <div className="cl-changes">
+        {file.changes.map((change, i) => (
+          <div key={i} className="cl-change">
+            {change.commitId && (
+              <span className="cl-commit-badge">{change.commitId}</span>
+            )}
+            <div className="cl-change-body">
+              {change.name && <span className="cl-change-name">{change.name}</span>}
+              <span className="cl-change-detail">{change.detail}</span>
+              {change.subItems && change.subItems.length > 0 && (
+                <ul className="cl-sub-items">
+                  {change.subItems.map((sub, si) => <li key={si}>{sub}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ChangelogExplorer ────────────────────────────────────────────────────
+function ChangelogExplorer() {
+  const [versions, setVersions]     = useState([]);
+  const [status, setStatus]         = useState('loading');
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  useEffect(() => {
+    fetch('changelog/CHANGELOG.md')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(text => {
+        const parsed = parseChangelog(text);
+        setVersions(parsed);
+        setStatus('ok');
+      })
+      .catch(() => setStatus('error'));
+  }, []);
+
+  if (status === 'loading') return (
+    <div className="cl-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        <div className="tr-spinner" /><span>Loading changelog…</span>
+      </div>
+    </div>
+  );
+  if (status === 'error') return (
+    <div className="cl-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        ⚠️ Could not load changelog/CHANGELOG.md
+      </div>
+    </div>
+  );
+
+  const selected = versions[selectedIdx];
+
+  return (
+    <div className="cl-shell">
+
+      {/* ── Version sidebar ── */}
+      <div className="cl-sidebar">
+        <div className="cl-sidebar-header">
+          <div className="cl-sidebar-title">Versions</div>
+        </div>
+        {versions.map((v, i) => (
+          <VersionCard
+            key={v.version}
+            v={v}
+            isLatest={i === 0}
+            active={i === selectedIdx}
+            onClick={() => setSelectedIdx(i)}
+          />
+        ))}
+      </div>
+
+      {/* ── Detail panel ── */}
+      <div className="cl-main">
+        {selected ? (
+          <div className="cl-detail">
+
+            {/* Header */}
+            <div className="cl-detail-header">
+              <div className="cl-detail-top">
+                <span className="cl-detail-vtag">{selected.version}</span>
+                <span className="cl-detail-date">{selected.date}</span>
+                {selectedIdx === 0 && (
+                  <span className="cl-detail-latest-badge">Latest</span>
+                )}
+              </div>
+              <div className="cl-detail-title">{selected.title}</div>
+            </div>
+
+            {/* Summary */}
+            {selected.summary && (
+              <div className="cl-summary">{selected.summary}</div>
+            )}
+
+            {/* File change cards */}
+            {selected.files.length > 0 && (
+              <>
+                <div className="cl-section-label">Changes by file</div>
+                <div className="cl-files">
+                  {selected.files.map((file, fi) => (
+                    <FileChangeCard key={fi} file={file} />
+                  ))}
+                </div>
+              </>
+            )}
+
+          </div>
+        ) : (
+          <div className="cl-empty">No changelog entries found.</div>
+        )}
+      </div>
+
+    </div>
+  );
+}

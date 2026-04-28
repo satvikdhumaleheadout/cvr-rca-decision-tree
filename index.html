@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVR-RCA · Decision Tree</title>
+  <title>CVR RCA Skill</title>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -351,6 +351,103 @@
     }
     .zoom-btn:hover { background: var(--surface2); }
 
+    /* ══════════════════════════════════════════════
+       CHANGELOG EXPLORER
+       ══════════════════════════════════════════════ */
+    .cl-shell { position: absolute; inset: 0; display: flex; overflow: hidden; background: var(--bg); }
+
+    /* Sidebar */
+    .cl-sidebar {
+      width: 190px; flex-shrink: 0; display: flex; flex-direction: column;
+      background: var(--surface); border-right: 1px solid var(--border); overflow-y: auto;
+    }
+    .cl-sidebar-header { padding: 14px 16px 12px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .cl-sidebar-title { font-size: 12px; font-weight: 700; color: var(--text-sm); text-transform: uppercase; letter-spacing: 0.06em; }
+
+    .cl-version-card {
+      padding: 13px 16px; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: all 0.13s; border-left: 3px solid transparent;
+    }
+    .cl-version-card:hover { background: var(--surface2); }
+    .cl-version-card.active { background: #eef2ff; border-left-color: var(--accent); }
+    .cl-version-row { display: flex; align-items: center; gap: 7px; margin-bottom: 3px; }
+    .cl-version-tag { font-size: 15px; font-weight: 800; color: var(--accent); }
+    .cl-latest-tag {
+      font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+      background: #dcfce7; color: #15803d; padding: 2px 5px; border-radius: 4px;
+    }
+    .cl-version-date { font-size: 11px; color: var(--text-sm); margin-bottom: 2px; }
+    .cl-version-meta { font-size: 11px; color: var(--text-xs); }
+
+    /* Main scrollable panel */
+    .cl-main { flex: 1; overflow-y: auto; }
+    .cl-detail { padding: 32px 40px; max-width: 860px; }
+
+    /* Detail header */
+    .cl-detail-header { margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+    .cl-detail-top { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+    .cl-detail-vtag { font-size: 26px; font-weight: 800; color: var(--accent); }
+    .cl-detail-date { font-size: 13px; color: var(--text-sm); font-weight: 500; }
+    .cl-detail-latest-badge {
+      font-size: 10px; font-weight: 700; background: #dcfce7; color: #15803d;
+      padding: 3px 8px; border-radius: 8px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .cl-detail-title { font-size: 20px; font-weight: 700; color: var(--text); line-height: 1.3; }
+
+    /* Summary card */
+    .cl-summary {
+      font-size: 14px; line-height: 1.75; color: var(--text-sm);
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 4px solid #818cf8;
+      padding: 16px 20px; border-radius: 0 10px 10px 0; margin-bottom: 28px;
+    }
+
+    /* Section label above file cards */
+    .cl-section-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--text-xs); margin-bottom: 12px;
+    }
+
+    /* File change cards */
+    .cl-files { display: flex; flex-direction: column; gap: 10px; }
+    .cl-file-card { border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .cl-file-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 14px; border-bottom: 1px solid var(--border);
+    }
+    .cl-file-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .cl-file-name {
+      font-size: 12.5px; font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+    }
+    .cl-commit-range {
+      margin-left: auto; font-size: 11px; color: var(--text-xs);
+      font-family: 'SF Mono', 'Fira Code', 'Menlo', monospace;
+      background: var(--surface2); padding: 2px 7px; border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+
+    /* Change rows inside a file card */
+    .cl-changes { padding: 11px 14px; display: flex; flex-direction: column; gap: 9px; }
+    .cl-change { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.6; }
+    .cl-commit-badge {
+      flex-shrink: 0; margin-top: 2px;
+      font-size: 10px; font-weight: 700; font-family: 'SF Mono', 'Fira Code', monospace;
+      padding: 2px 6px; border-radius: 5px;
+      background: #e0e7ff; color: #4338ca; border: 1px solid #c7d2fe;
+      white-space: nowrap;
+    }
+    .cl-change-body { color: var(--text); }
+    .cl-change-name { font-weight: 600; color: var(--text); margin-right: 5px; }
+    .cl-change-detail { color: #374151; }
+    .cl-sub-items {
+      margin: 5px 0 0 14px; padding: 0; list-style: disc;
+      font-size: 12.5px; color: var(--text-sm); display: flex; flex-direction: column; gap: 3px;
+    }
+
+    /* Empty state */
+    .cl-empty { padding: 60px 40px; text-align: center; color: var(--text-xs); font-size: 14px; }
+
     /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-track { background: transparent; }
@@ -534,7 +631,8 @@
 <body>
   <div id="root"></div>
   <!-- PARTS 2 + 3 + 4 go inside one <script type="text/babel"> block below -->
-<script type="text/babel">
+</body>
+</html>
 // ── Canvas ────────────────────────────────────────────────────────────────────
 const CANVAS_W   = 2100;
 const CANVAS_H   = 5400;
@@ -1549,7 +1647,6 @@ Step back after completing the RCA and grade your own work honestly. This is not
 `,
 
 };
-
 // ── Globals from Framer Motion UMD ───────────────────────────────────────────
 const { motion, AnimatePresence } = window.Motion;
 const { useState, useMemo, useEffect, useRef, useCallback } = React;
@@ -2350,6 +2447,280 @@ function TestRunsExplorer() {
   );
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+// CHANGELOG EXPLORER
+// ══════════════════════════════════════════════════════════════════════════════
+
+// ── CHANGELOG.md parser ───────────────────────────────────────────────────────
+function parseChangelog(text) {
+  const results = [];
+  const lines   = text.split('\n');
+
+  let v            = null;   // current version object
+  let f            = null;   // current file section
+  let summaryMode  = false;
+  let summaryLines = [];
+
+  // Flush helpers
+  const flushFile = () => {
+    // Only keep file sections that actually have bullet changes
+    if (f && v && f.changes.length > 0) v.files.push(f);
+    f = null;
+  };
+  const flushVersion = () => {
+    if (!v) return;
+    if (summaryMode) {
+      v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim();
+      summaryMode = false; summaryLines = [];
+    }
+    flushFile();
+    results.push(v);
+    v = null;
+  };
+
+  for (const raw of lines) {
+    const line = raw;
+
+    // ── Version heading  ## [v1.3] — 2026-04-28 — Title
+    const vm = line.match(/^## \[(v[\d.]+)\] — (\d{4}-\d{2}-\d{2}) — (.+)/);
+    if (vm) { flushVersion(); v = { version: vm[1], date: vm[2], title: vm[3].trim(), summary: '', files: [] }; continue; }
+    if (!v) continue;
+
+    // ── Summary start
+    if (line.match(/^\*\*Summary:\*\*/)) {
+      summaryMode = true;
+      summaryLines.push(line.replace(/^\*\*Summary:\*\*\s*/, '').trim());
+      continue;
+    }
+
+    // ── Section heading (### ...) — stop summary collection
+    if (line.startsWith('###')) {
+      if (summaryMode) { v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim(); summaryMode = false; summaryLines = []; }
+      continue;
+    }
+
+    // ── Trailing footer / hr
+    if (line.trim() === '---' || line.startsWith('*Each future')) {
+      if (summaryMode) { v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim(); summaryMode = false; summaryLines = []; }
+      continue;
+    }
+
+    // ── Continue collecting summary (multi-paragraph)
+    // Stop if we hit a clear file-heading pattern (line is just **bold**)
+    if (summaryMode) {
+      const isBoldHeading = line.match(/^\*\*[^*\n]+\*\*(?:\s*\([^)]+\))?$/);
+      if (!isBoldHeading) { summaryLines.push(line.trim()); continue; }
+      // Otherwise fall through to file heading handling
+      v.summary = summaryLines.join(' ').replace(/\s+/g, ' ').trim();
+      summaryMode = false; summaryLines = [];
+    }
+
+    // ── File heading — **`SKILL.md`** (c003 → c007)  or  **Category name**
+    const fm = line.match(/^\*\*(.+?)\*\*(?:\s*\(([^)]+)\))?$/);
+    if (fm) {
+      flushFile();
+      const rawName = fm[1].replace(/`/g, '').trim();
+      f = { fileName: rawName, commitRange: fm[2] || null, changes: [] };
+      continue;
+    }
+
+    // ── Bullet under a file section
+    if (f && line.match(/^[-*] /)) {
+      const bulletText = line.replace(/^[-*]\s*/, '').trim();
+      // Try commit pattern:  **c012 — Name:** detail  or  **c012:** detail
+      const cm = bulletText.match(/^\*\*(c\d+)(?:\s*[—–-]\s*([^:*\n]+))?\*\*:?\s*([\s\S]*)/);
+      if (cm) {
+        f.changes.push({
+          commitId: cm[1],
+          name:     (cm[2] || '').replace(/\*\*/g, '').trim(),
+          detail:   cm[3].replace(/\*\*/g, '').replace(/`/g, '').trim(),
+          subItems: [],
+        });
+      } else {
+        f.changes.push({
+          commitId: null, name: null,
+          detail: bulletText.replace(/\*\*/g, '').replace(/`/g, '').trim(),
+          subItems: [],
+        });
+      }
+      continue;
+    }
+
+    // ── Indented sub-bullet — attach to last change
+    if (f && f.changes.length > 0 && line.match(/^\s{2,}[-*] /)) {
+      const sub = line.replace(/^\s+[-*]\s*/, '').replace(/\*\*/g, '').replace(/`/g, '').trim();
+      f.changes[f.changes.length - 1].subItems.push(sub);
+    }
+  }
+
+  flushVersion();
+  return results.reverse(); // newest first
+}
+
+// ── File card colour by type ──────────────────────────────────────────────────
+function fileCardStyle(fileName) {
+  const n = fileName.toLowerCase();
+  if (n === 'skill.md' || n === 'skill' || n.includes('core skill'))
+    return { bg: '#eef2ff', fg: '#4338ca', border: '#c7d2fe', dot: '#6366f1' };
+  if (n.startsWith('references/') || n.includes('context') || n.includes('hypothesis')
+      || n.includes('worked') || n.includes('actions') || n.includes('report_struct')
+      || n.includes('evaluator') || n.includes('reference file') || n.includes('sql pipeline'))
+    return { bg: '#f0fdfa', fg: '#0f766e', border: '#99f6e4', dot: '#14b8a6' };
+  if (n.startsWith('scripts/') || n.includes('.sh') || n.includes('.py')
+      || n.includes('script') || n.includes('report template') || n.includes('evaluation rubric'))
+    return { bg: '#faf5ff', fg: '#7e22ce', border: '#e9d5ff', dot: '#a855f7' };
+  if (n === 'removed' || n.startsWith('removed'))
+    return { bg: '#fef2f2', fg: '#b91c1c', border: '#fecaca', dot: '#ef4444' };
+  return { bg: '#f8fafc', fg: '#475569', border: '#e2e8f0', dot: '#94a3b8' };
+}
+
+// ── Version sidebar card ──────────────────────────────────────────────────────
+function VersionCard({ v, isLatest, active, onClick }) {
+  const changedCount = v.files.length;
+  return (
+    <div className={`cl-version-card${active ? ' active' : ''}`} onClick={onClick}>
+      <div className="cl-version-row">
+        <span className="cl-version-tag">{v.version}</span>
+        {isLatest && <span className="cl-latest-tag">Latest</span>}
+      </div>
+      <div className="cl-version-date">{v.date}</div>
+      <div className="cl-version-meta">
+        {changedCount} file{changedCount !== 1 ? 's' : ''} changed
+      </div>
+    </div>
+  );
+}
+
+// ── File change card ──────────────────────────────────────────────────────────
+function FileChangeCard({ file }) {
+  const s = fileCardStyle(file.fileName);
+  return (
+    <div className="cl-file-card" style={{ borderColor: s.border }}>
+      <div className="cl-file-header" style={{ background: s.bg }}>
+        <span className="cl-file-dot" style={{ background: s.dot }} />
+        <span className="cl-file-name" style={{ color: s.fg }}>{file.fileName}</span>
+        {file.commitRange && (
+          <span className="cl-commit-range">{file.commitRange}</span>
+        )}
+      </div>
+      <div className="cl-changes">
+        {file.changes.map((change, i) => (
+          <div key={i} className="cl-change">
+            {change.commitId && (
+              <span className="cl-commit-badge">{change.commitId}</span>
+            )}
+            <div className="cl-change-body">
+              {change.name && <span className="cl-change-name">{change.name}</span>}
+              <span className="cl-change-detail">{change.detail}</span>
+              {change.subItems && change.subItems.length > 0 && (
+                <ul className="cl-sub-items">
+                  {change.subItems.map((sub, si) => <li key={si}>{sub}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ChangelogExplorer ────────────────────────────────────────────────────
+function ChangelogExplorer() {
+  const [versions, setVersions]     = useState([]);
+  const [status, setStatus]         = useState('loading');
+  const [selectedIdx, setSelectedIdx] = useState(0);
+
+  useEffect(() => {
+    fetch('changelog/CHANGELOG.md')
+      .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
+      .then(text => {
+        const parsed = parseChangelog(text);
+        setVersions(parsed);
+        setStatus('ok');
+      })
+      .catch(() => setStatus('error'));
+  }, []);
+
+  if (status === 'loading') return (
+    <div className="cl-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        <div className="tr-spinner" /><span>Loading changelog…</span>
+      </div>
+    </div>
+  );
+  if (status === 'error') return (
+    <div className="cl-shell">
+      <div className="tr-loading" style={{ flex: 1 }}>
+        ⚠️ Could not load changelog/CHANGELOG.md
+      </div>
+    </div>
+  );
+
+  const selected = versions[selectedIdx];
+
+  return (
+    <div className="cl-shell">
+
+      {/* ── Version sidebar ── */}
+      <div className="cl-sidebar">
+        <div className="cl-sidebar-header">
+          <div className="cl-sidebar-title">Versions</div>
+        </div>
+        {versions.map((v, i) => (
+          <VersionCard
+            key={v.version}
+            v={v}
+            isLatest={i === 0}
+            active={i === selectedIdx}
+            onClick={() => setSelectedIdx(i)}
+          />
+        ))}
+      </div>
+
+      {/* ── Detail panel ── */}
+      <div className="cl-main">
+        {selected ? (
+          <div className="cl-detail">
+
+            {/* Header */}
+            <div className="cl-detail-header">
+              <div className="cl-detail-top">
+                <span className="cl-detail-vtag">{selected.version}</span>
+                <span className="cl-detail-date">{selected.date}</span>
+                {selectedIdx === 0 && (
+                  <span className="cl-detail-latest-badge">Latest</span>
+                )}
+              </div>
+              <div className="cl-detail-title">{selected.title}</div>
+            </div>
+
+            {/* Summary */}
+            {selected.summary && (
+              <div className="cl-summary">{selected.summary}</div>
+            )}
+
+            {/* File change cards */}
+            {selected.files.length > 0 && (
+              <>
+                <div className="cl-section-label">Changes by file</div>
+                <div className="cl-files">
+                  {selected.files.map((file, fi) => (
+                    <FileChangeCard key={fi} file={file} />
+                  ))}
+                </div>
+              </>
+            )}
+
+          </div>
+        ) : (
+          <div className="cl-empty">No changelog entries found.</div>
+        )}
+      </div>
+
+    </div>
+  );
+}
 // ── App (Decision Tree view) ──────────────────────────────────────────────────
 function DecisionTreeView() {
   // Compute initial zoom based on viewport — targets the ~1450px-wide main action column
@@ -2518,14 +2889,14 @@ function DecisionTreeView() {
 
 // ── Root App — owns the top-level tab switcher ────────────────────────────────
 function App() {
-  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs'
+  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog'
 
   return (
     <div className="app-shell">
 
       {/* ── Top navigation bar ── */}
       <div className="top-nav">
-        <span className="top-nav-logo">CVR · RCA</span>
+        <span className="top-nav-logo">CVR RCA Skill</span>
         <div className="top-nav-divider" />
         <button
           className={`tab-pill${activeTab === 'tree' ? ' active' : ''}`}
@@ -2536,6 +2907,11 @@ function App() {
           className={`tab-pill${activeTab === 'runs' ? ' active' : ''}`}
           onClick={() => setActiveTab('runs')}>
           🧪 Test Runs
+        </button>
+        <button
+          className={`tab-pill${activeTab === 'changelog' ? ' active' : ''}`}
+          onClick={() => setActiveTab('changelog')}>
+          📋 Changelog
         </button>
 
         {activeTab === 'tree' && (
@@ -2556,6 +2932,7 @@ function App() {
       <div className="tab-content">
         {activeTab === 'tree' && <DecisionTreeView />}
         {activeTab === 'runs' && <TestRunsExplorer />}
+        {activeTab === 'changelog' && <ChangelogExplorer />}
       </div>
 
     </div>
@@ -2564,5 +2941,3 @@ function App() {
 
 // ── Mount ─────────────────────────────────────────────────────────────────────
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
-
-</script></body></html>

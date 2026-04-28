@@ -166,14 +166,14 @@ function DecisionTreeView() {
 
 // ── Root App — owns the top-level tab switcher ────────────────────────────────
 function App() {
-  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs'
+  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog'
 
   return (
     <div className="app-shell">
 
       {/* ── Top navigation bar ── */}
       <div className="top-nav">
-        <span className="top-nav-logo">CVR · RCA</span>
+        <span className="top-nav-logo">CVR RCA Skill</span>
         <div className="top-nav-divider" />
         <button
           className={`tab-pill${activeTab === 'tree' ? ' active' : ''}`}
@@ -184,6 +184,11 @@ function App() {
           className={`tab-pill${activeTab === 'runs' ? ' active' : ''}`}
           onClick={() => setActiveTab('runs')}>
           🧪 Test Runs
+        </button>
+        <button
+          className={`tab-pill${activeTab === 'changelog' ? ' active' : ''}`}
+          onClick={() => setActiveTab('changelog')}>
+          📋 Changelog
         </button>
 
         {activeTab === 'tree' && (
@@ -204,6 +209,7 @@ function App() {
       <div className="tab-content">
         {activeTab === 'tree' && <DecisionTreeView />}
         {activeTab === 'runs' && <TestRunsExplorer />}
+        {activeTab === 'changelog' && <ChangelogExplorer />}
       </div>
 
     </div>
