@@ -186,20 +186,17 @@ function App() {
           🧪 Test Runs
         </button>
 
-        {/* Stats pill — only visible on tree tab */}
         {activeTab === 'tree' && (
-          <div className="topbar-pill" style={{
-            marginLeft: 4,
-            background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
-          }}>
-            {NODES.length} nodes · {EDGES.length} edges
-          </div>
-        )}
-
-        {activeTab === 'tree' && (
-          <div className="topbar-hint">
-            Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
-          </div>
+          <>
+            <div className="topbar-hint" style={{ marginLeft: 'auto' }}>
+              Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
+            </div>
+            <div className="topbar-pill" style={{
+              background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
+            }}>
+              {NODES.length} nodes · {EDGES.length} edges
+            </div>
+          </>
         )}
       </div>
 

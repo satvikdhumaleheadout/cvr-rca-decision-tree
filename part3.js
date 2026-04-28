@@ -541,7 +541,9 @@ function scoreColor(score, max) {
 function MarkdownViewer({ url }) {
   const [html, setHtml]     = useState('');
   const [status, setStatus] = useState('loading'); // loading | ok | error
+  const bodyRef = useRef(null);
 
+  // Fetch + parse markdown
   useEffect(() => {
     if (!url) return;
     setStatus('loading');
@@ -549,26 +551,24 @@ function MarkdownViewer({ url }) {
     fetch(url)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(text => {
-        // Configure marked with highlight.js
-        if (window.marked && window.hljs) {
-          window.marked.setOptions({
-            highlight: (code, lang) => {
-              if (lang && window.hljs.getLanguage(lang)) {
-                return window.hljs.highlight(code, { language: lang }).value;
-              }
-              return window.hljs.highlightAuto(code).value;
-            },
-            gfm: true, breaks: false,
-          });
-          setHtml(window.marked.parse(text));
+        if (window.marked) {
+          // marked@12: plain parse — no deprecated setOptions highlight callback
+          setHtml(window.marked.parse(text, { gfm: true, breaks: false }));
         } else {
-          // fallback: plain text pre-wrap
-          setHtml(`<pre style="white-space:pre-wrap">${text.replace(/</g,'&lt;')}</pre>`);
+          setHtml(`<pre style="white-space:pre-wrap;font-size:13px">${text.replace(/</g,'&lt;')}</pre>`);
         }
         setStatus('ok');
       })
       .catch(() => setStatus('error'));
   }, [url]);
+
+  // After HTML is injected into the DOM, highlight any <pre><code> blocks
+  useEffect(() => {
+    if (status !== 'ok' || !bodyRef.current || !window.hljs) return;
+    bodyRef.current.querySelectorAll('pre code').forEach(block => {
+      window.hljs.highlightElement(block);
+    });
+  }, [html, status]);
 
   if (status === 'loading') return (
     <div className="tr-loading"><div className="tr-spinner" /><span>Loading…</span></div>
@@ -578,7 +578,7 @@ function MarkdownViewer({ url }) {
   );
   return (
     <div className="tr-md-wrap">
-      <div className="md-body" dangerouslySetInnerHTML={{ __html: html }} />
+      <div ref={bodyRef} className="md-body" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
@@ -589,23 +589,27 @@ function RunCard({ run, version, active, onClick }) {
   const fillPct = Math.round((run.eval_score / run.eval_max) * 100);
   return (
     <div className={`tr-run-card${active ? ' active' : ''}`} onClick={onClick}>
-      <span className="tr-card-version-badge">{version}</span>
-      <div className="tr-card-top">
-        <span className="tr-card-ce-name">{run.ce_name}</span>
+      {/* Row 1: CE ID + version badge */}
+      <div className="tr-card-meta-row">
         <span className="tr-card-ce-id">CE {run.ce_id}</span>
+        <span className="tr-card-version-badge">{version}</span>
       </div>
+      {/* Row 2: CE name */}
+      <div className="tr-card-ce-name">{run.ce_name}</div>
+      {/* Row 3: date range */}
       <div className="tr-card-dates">
         <span title="Pre period">Pre {run.pre_period.split(' → ')[0]}</span>
         {' → '}
         <span title="Post period end">Post {run.post_period.split(' → ')[1]}</span>
       </div>
+      {/* Row 4: score bar */}
       <div className="tr-card-score-row">
         <div className="tr-score-bar-wrap">
-          <div className="tr-score-bar"
-            style={{ width: `${fillPct}%`, background: color }} />
+          <div className="tr-score-bar" style={{ width: `${fillPct}%`, background: color }} />
         </div>
         <span className="tr-score-label" style={{ color }}>{run.eval_score}/{run.eval_max}</span>
       </div>
+      {/* Row 5: root cause snippet */}
       <div className="tr-card-rc">{run.root_cause_summary}</div>
     </div>
   );

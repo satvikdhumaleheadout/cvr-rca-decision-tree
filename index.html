@@ -408,26 +408,30 @@
     .tr-run-card {
       padding: 12px 13px; border-radius: 10px; border: 1px solid var(--border);
       background: var(--surface); margin-bottom: 7px; cursor: pointer;
-      transition: all 0.13s; position: relative;
+      transition: all 0.13s;
     }
     .tr-run-card:hover { border-color: #a5b4fc; box-shadow: 0 2px 8px rgba(79,70,229,0.1); }
     .tr-run-card.active { border-color: var(--accent); background: #eef2ff; box-shadow: 0 2px 8px rgba(79,70,229,0.15); }
-    .tr-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 6px; margin-bottom: 5px; }
-    .tr-card-ce-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; }
-    .tr-card-ce-id { font-size: 10px; color: var(--text-xs); font-weight: 500; background: var(--surface2);
-      border: 1px solid var(--border); border-radius: 5px; padding: 1px 5px; white-space: nowrap; }
+    /* Row 1: CE ID + version badge inline */
+    .tr-card-meta-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+    .tr-card-ce-id { font-size: 10px; color: var(--text-xs); font-weight: 600; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
+    .tr-card-version-badge {
+      font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 8px;
+      background: #e0e7ff; color: #4338ca; white-space: nowrap;
+    }
+    /* Row 2: name */
+    .tr-card-ce-name { font-size: 13px; font-weight: 600; color: var(--text); line-height: 1.3; margin-bottom: 4px; }
+    /* Row 3: dates */
     .tr-card-dates { font-size: 11px; color: var(--text-sm); margin-bottom: 7px; }
+    /* Row 4: score */
     .tr-card-score-row { display: flex; align-items: center; gap: 7px; margin-bottom: 6px; }
     .tr-score-bar-wrap { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
     .tr-score-bar { height: 100%; border-radius: 3px; transition: width 0.4s; }
     .tr-score-label { font-size: 11px; font-weight: 600; white-space: nowrap; }
+    /* Row 5: root cause */
     .tr-card-rc { font-size: 11px; color: var(--text-sm); line-height: 1.45;
       display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .tr-card-version-badge {
-      position: absolute; top: 10px; right: 10px;
-      font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 8px;
-      background: #e0e7ff; color: #4338ca;
-    }
     .tr-empty { padding: 32px 16px; text-align: center; color: var(--text-xs); font-size: 13px; }
 
     /* Main content area */
@@ -2089,7 +2093,9 @@ function scoreColor(score, max) {
 function MarkdownViewer({ url }) {
   const [html, setHtml]     = useState('');
   const [status, setStatus] = useState('loading'); // loading | ok | error
+  const bodyRef = useRef(null);
 
+  // Fetch + parse markdown
   useEffect(() => {
     if (!url) return;
     setStatus('loading');
@@ -2097,26 +2103,24 @@ function MarkdownViewer({ url }) {
     fetch(url)
       .then(r => { if (!r.ok) throw new Error(r.status); return r.text(); })
       .then(text => {
-        // Configure marked with highlight.js
-        if (window.marked && window.hljs) {
-          window.marked.setOptions({
-            highlight: (code, lang) => {
-              if (lang && window.hljs.getLanguage(lang)) {
-                return window.hljs.highlight(code, { language: lang }).value;
-              }
-              return window.hljs.highlightAuto(code).value;
-            },
-            gfm: true, breaks: false,
-          });
-          setHtml(window.marked.parse(text));
+        if (window.marked) {
+          // marked@12: plain parse — no deprecated setOptions highlight callback
+          setHtml(window.marked.parse(text, { gfm: true, breaks: false }));
         } else {
-          // fallback: plain text pre-wrap
-          setHtml(`<pre style="white-space:pre-wrap">${text.replace(/</g,'&lt;')}</pre>`);
+          setHtml(`<pre style="white-space:pre-wrap;font-size:13px">${text.replace(/</g,'&lt;')}</pre>`);
         }
         setStatus('ok');
       })
       .catch(() => setStatus('error'));
   }, [url]);
+
+  // After HTML is injected into the DOM, highlight any <pre><code> blocks
+  useEffect(() => {
+    if (status !== 'ok' || !bodyRef.current || !window.hljs) return;
+    bodyRef.current.querySelectorAll('pre code').forEach(block => {
+      window.hljs.highlightElement(block);
+    });
+  }, [html, status]);
 
   if (status === 'loading') return (
     <div className="tr-loading"><div className="tr-spinner" /><span>Loading…</span></div>
@@ -2126,7 +2130,7 @@ function MarkdownViewer({ url }) {
   );
   return (
     <div className="tr-md-wrap">
-      <div className="md-body" dangerouslySetInnerHTML={{ __html: html }} />
+      <div ref={bodyRef} className="md-body" dangerouslySetInnerHTML={{ __html: html }} />
     </div>
   );
 }
@@ -2137,23 +2141,27 @@ function RunCard({ run, version, active, onClick }) {
   const fillPct = Math.round((run.eval_score / run.eval_max) * 100);
   return (
     <div className={`tr-run-card${active ? ' active' : ''}`} onClick={onClick}>
-      <span className="tr-card-version-badge">{version}</span>
-      <div className="tr-card-top">
-        <span className="tr-card-ce-name">{run.ce_name}</span>
+      {/* Row 1: CE ID + version badge */}
+      <div className="tr-card-meta-row">
         <span className="tr-card-ce-id">CE {run.ce_id}</span>
+        <span className="tr-card-version-badge">{version}</span>
       </div>
+      {/* Row 2: CE name */}
+      <div className="tr-card-ce-name">{run.ce_name}</div>
+      {/* Row 3: date range */}
       <div className="tr-card-dates">
         <span title="Pre period">Pre {run.pre_period.split(' → ')[0]}</span>
         {' → '}
         <span title="Post period end">Post {run.post_period.split(' → ')[1]}</span>
       </div>
+      {/* Row 4: score bar */}
       <div className="tr-card-score-row">
         <div className="tr-score-bar-wrap">
-          <div className="tr-score-bar"
-            style={{ width: `${fillPct}%`, background: color }} />
+          <div className="tr-score-bar" style={{ width: `${fillPct}%`, background: color }} />
         </div>
         <span className="tr-score-label" style={{ color }}>{run.eval_score}/{run.eval_max}</span>
       </div>
+      {/* Row 5: root cause snippet */}
       <div className="tr-card-rc">{run.root_cause_summary}</div>
     </div>
   );
@@ -2530,20 +2538,17 @@ function App() {
           🧪 Test Runs
         </button>
 
-        {/* Stats pill — only visible on tree tab */}
         {activeTab === 'tree' && (
-          <div className="topbar-pill" style={{
-            marginLeft: 4,
-            background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
-          }}>
-            {NODES.length} nodes · {EDGES.length} edges
-          </div>
-        )}
-
-        {activeTab === 'tree' && (
-          <div className="topbar-hint">
-            Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
-          </div>
+          <>
+            <div className="topbar-hint" style={{ marginLeft: 'auto' }}>
+              Click any node to inspect &nbsp;·&nbsp; Drag to pan &nbsp;·&nbsp; Scroll to zoom
+            </div>
+            <div className="topbar-pill" style={{
+              background: '#f0fdf4', color: '#15803d', borderColor: '#bbf7d0'
+            }}>
+              {NODES.length} nodes · {EDGES.length} edges
+            </div>
+          </>
         )}
       </div>
 
