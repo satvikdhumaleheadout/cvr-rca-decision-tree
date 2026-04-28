@@ -112,19 +112,28 @@
     </div>
   </div>
 
-  <div class="callout">
-    <h2>Root Cause</h2>
+  <div class="analysis-block" style="margin-bottom:20px;">
+    <div class="block-title">90-Day CVR Trend with Last-Year Overlay</div>
+    <div class="verdict-line neutral">Seasonal pattern confirmed — structural improvement vs last year is only +0.09pp. The post-period CVR rise almost exactly mirrors last year's same-calendar-position uplift.</div>
+    <div class="chart-container"><div id="trend-90day"></div></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Current year (blue) and last year (grey dashed) are plotted on the same calendar axis so seasonal shape is directly comparable. Current ΔCVR = +0.77pp vs LY ΔCVR = +0.68pp at the same calendar position — structural delta of +0.09pp. This CE is performing in line with LY peak season. Notably, LY S2C in April fell as low as 17–18% (vs current 22–25%), suggesting LY had more severe availability constraints. The post window (shaded) shows current CVR holding around 4.5–5.5% — healthy for peak season.
+    </p>
+  </div>
+
+  <div class="callout" style="border-left-color:#2e7d32;">
+    <h2 style="color:#2e7d32;">CVR Improved — What's Driving It &amp; What's Holding It Back</h2>
     <div class="callout-item">
-      <div class="q">What broke?</div>
-      <div class="a">S2C fell −2pp (26.8% → 24.8%), driven primarily by Keukenhof Entry Tickets (TGID 10118) — the highest-volume experience — where S2C declined from 25.8% to 21.1% on 32,675 post-period select-page visitors (≈ −1,536 checkouts). Overall CVR still rose +0.52pp because LP2S improved +7.5pp (seasonal uplift) and Google Ads traffic doubled, driving a paid-traffic mix effect that outweighs the S2C headwind.</div>
+      <div class="q">What drove the improvement?</div>
+      <div class="a">LP2S rose +7.5pp (32.1% → 39.6%) as Keukenhof's tulip season peaked and Google Ads traffic doubled (+128% YoY). The paid traffic mix shift (72.7% → 81.2% paid share) brought higher-intent visitors, lifting overall CVR from 3.88% to 4.40% (+0.52pp / +13.4%). LP2S contributed +169.5% of ΔCVR — the improvement is real, but it is largely seasonal and mix-driven rather than structural (structural delta vs LY: only +0.09pp).</div>
     </div>
     <div class="callout-item">
-      <div class="q">Why did it break?</div>
-      <div class="a">Peak-season dates for Keukenhof progressively sold out. As Google Ads traffic accelerated through April (+128% vs pre), forward inventory was consumed faster than it could replenish: available days in the 30-day booking window for TGID 10118 dropped from 31 (full availability, Mar 28) to 15 (Apr 26). Users who arrived at the date picker seeking specific peak-April/May visit dates found those slots unavailable. 30d+ advance bookings collapsed 90% (751 pre-period checkouts → 77 post), confirming far-out inventory is exhausted.</div>
+      <div class="q">What's holding it back?</div>
+      <div class="a">S2C fell −2pp (26.8% → 24.8%), a −62.5% headwind on ΔCVR. The primary cause: peak-season dates for Keukenhof Entry Tickets (TGID 10118) progressively sold out as April demand accumulated. Available days in the 30-day booking window fell from 31 to 15; 30d+ advance bookings collapsed 90% (751 → 77 checkouts). Without this S2C drag, CVR gain would have been ~20%+ rather than 13.4%.</div>
     </div>
     <div class="callout-item">
-      <div class="q">When did it break?</div>
-      <div class="a">Gradual onset from Apr 2; availability measurably declining from Apr 11 (count_days_available_30d: 31 → 30 → … → 15 by Apr 26). No single break-point — consistent with progressive date sellout as peak demand accumulated through April. The Keukenhof season runs through mid-May; the supply constraint is worsening as remaining open days are now fewer.</div>
+      <div class="q">When did the headwind emerge?</div>
+      <div class="a">Gradual onset from Apr 2; availability measurably declining from Apr 11 onward. The Keukenhof season runs through mid-May — the supply constraint is worsening as remaining open dates are fewer and demand continues to arrive.</div>
     </div>
   </div>
 
@@ -306,15 +315,6 @@
     </div>
     <p style="font-size:13px;color:#555;margin-top:12px;">
       LP2S improvement is unambiguously seasonal — Keukenhof's tulip season ramps from late February to peak in April. S2C tells a different story: it was improving through the pre period (30%+ in mid-March as opening day approached) then declined from Apr 2 onwards as peak-date inventory was consumed. The S2C decline is not a reversal of an existing trend — it is a new post-period phenomenon caused by availability constraints.
-    </p>
-  </div>
-
-  <div class="analysis-block">
-    <div class="block-title">90-Day CVR Trend with Last-Year Overlay</div>
-    <div class="verdict-line neutral">Seasonal pattern confirmed — structural improvement vs last year is only +0.09pp. The post-period CVR rise almost exactly mirrors last year's same-calendar-position uplift.</div>
-    <div class="chart-container"><div id="trend-90day"></div></div>
-    <p style="font-size:13px;color:#555;margin-top:12px;">
-      Current year (blue) and last year (grey dashed) track closely through the 90-day window. Current ΔCVR = +0.77pp vs LY ΔCVR = +0.68pp at the same calendar position — structural delta of +0.09pp. This CE is performing in line with LY peak season. Notably, LY S2C in April fell as low as 17–18% (vs current 22–25%), suggesting LY had more severe availability constraints. The post window (shaded red) shows current CVR holding around 4.5–5.5% — healthy for peak season.
     </p>
   </div>
 
@@ -573,22 +573,24 @@
   var lyDates = ["2025-01-27","2025-01-28","2025-01-29","2025-01-30","2025-01-31","2025-02-01","2025-02-02","2025-02-03","2025-02-04","2025-02-05","2025-02-06","2025-02-07","2025-02-08","2025-02-09","2025-02-10","2025-02-11","2025-02-12","2025-02-13","2025-02-14","2025-02-15","2025-02-16","2025-02-17","2025-02-18","2025-02-19","2025-02-20","2025-02-21","2025-02-22","2025-02-23","2025-02-24","2025-02-25","2025-02-26","2025-02-27","2025-02-28","2025-03-01","2025-03-02","2025-03-03","2025-03-04","2025-03-05","2025-03-06","2025-03-07","2025-03-08","2025-03-09","2025-03-10","2025-03-11","2025-03-12","2025-03-13","2025-03-14","2025-03-15","2025-03-16","2025-03-17","2025-03-18","2025-03-19","2025-03-20","2025-03-21","2025-03-22","2025-03-23","2025-03-24","2025-03-25","2025-03-26","2025-03-27","2025-03-28","2025-03-29","2025-03-30","2025-03-31","2025-04-01","2025-04-02","2025-04-03","2025-04-04","2025-04-05","2025-04-06","2025-04-07","2025-04-08","2025-04-09","2025-04-10","2025-04-11","2025-04-12","2025-04-13","2025-04-14","2025-04-15","2025-04-16","2025-04-17","2025-04-18","2025-04-19","2025-04-20","2025-04-21","2025-04-22","2025-04-23","2025-04-24","2025-04-25","2025-04-26"];
   var lyCvr = [0.00237,0.010651,0.00618,0.010914,0.008037,0.012291,0.013292,0.01882,0.017788,0.015302,0.016813,0.012195,0.020768,0.02152,0.019608,0.027901,0.02027,0.017335,0.025566,0.022734,0.026923,0.022687,0.026657,0.029551,0.027478,0.025625,0.023496,0.031354,0.030038,0.027239,0.0347,0.037254,0.032939,0.037694,0.03285,0.032224,0.031257,0.029967,0.029509,0.028486,0.02787,0.034742,0.037566,0.031947,0.034648,0.033898,0.031223,0.033898,0.039833,0.041634,0.037095,0.042286,0.042966,0.046601,0.041543,0.038051,0.044027,0.037152,0.046402,0.045932,0.050268,0.046099,0.04759,0.035212,0.05386,0.047183,0.055714,0.048207,0.049259,0.043194,0.044916,0.046558,0.050477,0.043601,0.044825,0.048862,0.051814,0.047047,0.046209,0.035896,0.033765,0.032993,0.028125,0.037949,0.037694,0.038814,0.039801,0.040459,0.03831,0.036403];
 
+  // Both lines use currentDates on x-axis so they overlay at the same calendar position.
+  // lyCvr values represent last year's CVR at the same month/day position.
   Plotly.newPlot('trend-90day', [
     {type:'scatter',mode:'lines',name:'Current Year (2026)',x:currentDates,y:currentCvr,line:{color:'#6c8ebf',width:2}},
-    {type:'scatter',mode:'lines',name:'Last Year (2025)',x:lyDates,y:lyCvr,line:{color:'#9e9e9e',dash:'dash',width:1.5}}
+    {type:'scatter',mode:'lines',name:'Last Year (2025)',x:currentDates,y:lyCvr,line:{color:'#9e9e9e',dash:'dash',width:1.5}}
   ], {
     height:280,
     yaxis:{tickformat:'.1%',title:'CVR'},
-    xaxis:{title:''},
+    xaxis:{tickformat:'%b %Y',dtick:'M1',title:''},
     plot_bgcolor:'#fff', paper_bgcolor:'#fff',
     font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif',color:'#1a1a2e',size:11},
     legend:{orientation:'h',y:-0.2},
     margin:{l:55,r:20,t:30,b:60},
     shapes:[
-      {type:'rect',x0:'2026-03-28',x1:'2026-04-26',y0:0,y1:1,xref:'x',yref:'paper',fillcolor:'rgba(198,40,40,0.05)',line:{width:0}},
-      {type:'line',x0:'2026-03-28',x1:'2026-03-28',y0:0,y1:1,xref:'x',yref:'paper',line:{color:'#c62828',dash:'dot',width:1}}
+      {type:'rect',x0:'2026-03-28',x1:'2026-04-26',y0:0,y1:1,xref:'x',yref:'paper',fillcolor:'rgba(46,125,50,0.05)',line:{width:0}},
+      {type:'line',x0:'2026-03-28',x1:'2026-03-28',y0:0,y1:1,xref:'x',yref:'paper',line:{color:'#2e7d32',dash:'dot',width:1}}
     ],
-    annotations:[{x:'2026-04-10',y:0.063,text:'Post period',font:{color:'#c62828',size:10},showarrow:false}]
+    annotations:[{x:'2026-04-10',y:0.063,text:'Post period',font:{color:'#2e7d32',size:10},showarrow:false}]
   }, {responsive:true});
 })();
 
