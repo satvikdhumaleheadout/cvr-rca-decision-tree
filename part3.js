@@ -644,6 +644,12 @@ function TestRunsExplorer() {
         const m = {};
         results.forEach(({ version, manifest }) => { m[version] = manifest; });
         setManifests(m);
+        // Auto-select the latest run (first run in highest version)
+        const latestVersion = [...results].sort((a, b) => b.version.localeCompare(a.version))[0];
+        if (latestVersion) {
+          const firstRun = (latestVersion.manifest.runs || [])[0];
+          if (firstRun) setSelectedRun({ run: firstRun, version: latestVersion.version });
+        }
         setIndexLoading(false);
       })
       .catch(() => { setIndexError(true); setIndexLoading(false); });

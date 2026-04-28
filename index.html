@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CVR RCA Skill</title>
+  <title>CVR-RCA-Skill</title>
 
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
@@ -631,8 +631,7 @@
 <body>
   <div id="root"></div>
   <!-- PARTS 2 + 3 + 4 go inside one <script type="text/babel"> block below -->
-</body>
-</html>
+<script type="text/babel">
 // ── Canvas ────────────────────────────────────────────────────────────────────
 const CANVAS_W   = 2100;
 const CANVAS_H   = 5400;
@@ -2293,6 +2292,12 @@ function TestRunsExplorer() {
         const m = {};
         results.forEach(({ version, manifest }) => { m[version] = manifest; });
         setManifests(m);
+        // Auto-select the latest run (first run in highest version)
+        const latestVersion = [...results].sort((a, b) => b.version.localeCompare(a.version))[0];
+        if (latestVersion) {
+          const firstRun = (latestVersion.manifest.runs || [])[0];
+          if (firstRun) setSelectedRun({ run: firstRun, version: latestVersion.version });
+        }
         setIndexLoading(false);
       })
       .catch(() => { setIndexError(true); setIndexLoading(false); });
@@ -2896,7 +2901,7 @@ function App() {
 
       {/* ── Top navigation bar ── */}
       <div className="top-nav">
-        <span className="top-nav-logo">CVR RCA Skill</span>
+        <span className="top-nav-logo">CVR-RCA-Skill</span>
         <div className="top-nav-divider" />
         <button
           className={`tab-pill${activeTab === 'tree' ? ' active' : ''}`}
@@ -2941,3 +2946,4 @@ function App() {
 
 // ── Mount ─────────────────────────────────────────────────────────────────────
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>

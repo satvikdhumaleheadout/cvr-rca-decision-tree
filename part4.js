@@ -173,7 +173,7 @@ function App() {
 
       {/* ── Top navigation bar ── */}
       <div className="top-nav">
-        <span className="top-nav-logo">CVR RCA Skill</span>
+        <span className="top-nav-logo">CVR-RCA-Skill</span>
         <div className="top-nav-divider" />
         <button
           className={`tab-pill${activeTab === 'tree' ? ' active' : ''}`}
@@ -218,3 +218,4 @@ function App() {
 
 // ── Mount ─────────────────────────────────────────────────────────────────────
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script></body></html>
