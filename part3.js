@@ -787,7 +787,7 @@ function TestRunsExplorer() {
                 src={activeRun.files.report}
                 className="tr-report-frame"
                 title={`Report — ${activeRun.ce_name}`}
-                sandbox="allow-scripts allow-same-origin"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox allow-top-navigation-by-user-activation"
               />
             )}
             {activeSubTab === 'transcript' && (
