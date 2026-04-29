@@ -1,18 +1,16 @@
 {
   "version": "v1.3",
-  "version_date": "2026-04-28",
-  "version_summary": "Investigation tree model + unified run folder",
   "runs": [
     {
       "id": "ce1549_2026-02-26_2026-04-26",
       "ce_id": "1549",
       "ce_name": "Keukenhof Tickets",
-      "pre_period": "2026-02-26 → 2026-03-27",
-      "post_period": "2026-03-28 → 2026-04-26",
-      "run_date": "",
+      "pre_start": "2026-02-26",
+      "post_end": "2026-04-26",
+      "run_date": "2026-04-26",
       "eval_score": 28,
       "eval_max": 35,
-      "root_cause_summary": "This RCA correctly identified a specific, quantified mechanism — progressive peak-date sellout on TGID 10118 (Keukenhof Entry Tick…",
+      "root_cause": "This RCA correctly identified a specific, quantified mechanism \u2014 progressive peak-date sellout on TGID 10118 (Keukenhof Entry Tickets) \u2014 and confirmed it with three converging signals: availability proxy (count_days_available_30d declining 31\u219215), lead-time distribution collapse (30d+ bookings: 751 pre \u2192 77 post, \u221290%), and experience-level S2C (25.",
       "files": {
         "report": "runs/v1.3/ce1549_2026-02-26_2026-04-26/report.html",
         "transcript": "runs/v1.3/ce1549_2026-02-26_2026-04-26/transcript.md",
@@ -23,16 +21,32 @@
       "id": "ce189_2026-02-26_2026-04-26",
       "ce_id": "189",
       "ce_name": "Vatican Museums",
-      "pre_period": "2026-02-26 → 2026-03-27",
-      "post_period": "2026-03-28 → 2026-04-26",
-      "run_date": "2026-04-27",
+      "pre_start": "2026-02-26",
+      "post_end": "2026-04-26",
+      "run_date": "2026-04-26",
       "eval_score": 26,
       "eval_max": 35,
-      "root_cause_summary": "The RCA correctly identified peak-season pricing increases (+3.5%–12.6%) and availability tightening as the primary S2C driver, gr…",
+      "root_cause": "The RCA correctly identified peak-season pricing increases (+3.",
       "files": {
         "report": "runs/v1.3/ce189_2026-02-26_2026-04-26/report.html",
         "transcript": "runs/v1.3/ce189_2026-02-26_2026-04-26/transcript.md",
         "evaluation": "runs/v1.3/ce189_2026-02-26_2026-04-26/evaluation.md"
+      }
+    },
+    {
+      "id": "ce6495_2026-02-28_2026-04-28",
+      "ce_id": "6495",
+      "ce_name": "Kualoa Ranch",
+      "pre_start": "2026-02-28",
+      "post_end": "2026-04-28",
+      "run_date": "2026-04-28",
+      "eval_score": 25,
+      "eval_max": 35,
+      "root_cause": "The investigation correctly identified the primary driver (S2C, 101% of Shapley) and reached a defensible root cause: progressive near-term inventory depletion through April spring break/Easter season.",
+      "files": {
+        "report": "runs/v1.3/ce6495_2026-02-28_2026-04-28/report.html",
+        "transcript": "runs/v1.3/ce6495_2026-02-28_2026-04-28/transcript.md",
+        "evaluation": "runs/v1.3/ce6495_2026-02-28_2026-04-28/evaluation.md"
       }
     }
   ]
