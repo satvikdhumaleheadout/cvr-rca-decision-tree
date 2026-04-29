@@ -153,6 +153,7 @@
       margin-bottom: 18px;
     }
     .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    .verdict-line.green   { color: #2e7d32; background: #e8f5e9; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th {
       text-align: left;
@@ -175,7 +176,7 @@
     .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
     .shapley-lp2s { background: #6c8ebf; }
     .shapley-s2c  { background: #c62828; }
-    .shapley-c2o  { background: #2e7d32; }
+    .shapley-c2o  { background: #d6a832; }
     .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; flex-wrap: wrap; }
     .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
     .chart-container { margin-top: 16px; }
@@ -200,7 +201,7 @@
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <div class="section-label">Section 1 — Executive Summary</div>
 
-  <!-- 1a. Metric cards -->
+  <!-- 1a. Metric cards — raw measured figures from summary.json -->
   <div class="metric-cards">
     <div class="metric-card">
       <div class="label">CVR</div>
@@ -257,15 +258,15 @@
     <h2>Root Cause</h2>
     <div class="callout-item">
       <div class="q">What broke?</div>
-      <div class="a">S2C collapsed −6.36pp (32.7% → 26.3%), accounting for the entire CVR drop. The drop is broad across all 5 major experiences (UTV Raptor −7.4pp, Movie Sites −6.5pp, Jungle Expedition −6.6pp) and all devices — not concentrated anywhere.</div>
+      <div class="a">The measured CVR decline of −1.00pp (S2C −6.36pp) is substantially inflated by right-censoring — sessions started in the final 2 weeks of April haven't had time to complete checkout before the period closed. Genuinely-converged sessions (Mar 30–Apr 14) show only <strong>−2.79pp S2C decline</strong>, implying a real CVR impact of approximately <strong>−0.32pp</strong>. Inventory is confirmed healthy throughout — zero zero-availability dates and improving remaining capacity across all lead-time windows.</div>
     </div>
     <div class="callout-item">
       <div class="q">Why did it break?</div>
-      <div class="a">Spring break and Easter demand progressively sold out Kualoa Ranch's near-term April inventory. Users arriving in Hawaii and opening the date picker found April dates gone — only May+ dates available. As of April 29, every active Kualoa Ranch experience shows <strong>next available date = May 2</strong>. Users who could not book for their current trip window abandoned at the select page.</div>
+      <div class="a">Two independent causes drive the genuine −2.79pp S2C decline: (1) <strong>Google Ads LP traffic halved</strong> (17,345 → 8,855 users, −49%), contributing fewer high-intent paid search visitors and a modest −3.0pp S2C drop within that channel; (2) <strong>Mobile S2C declined</strong> on iOS (−3.7pp) and Android (−5.0pp) while desktop S2C held flat (+0.2pp), pointing to a mobile-specific UX or funnel issue at the select/date-picker stage.</div>
     </div>
     <div class="callout-item">
       <div class="q">When did it break?</div>
-      <div class="a">Gradual — S2C was 38% on March 30, 22% by April 15, and 13-19% in the final week (April 22-28). No single break date; depletion compounded daily as the season filled. This is entirely structural: last year (LY) showed +5pp CVR improvement at this same calendar position.</div>
+      <div class="a">The apparent late-April S2C collapse (38% → 13%) is the right-censoring effect amplifying over time — not a genuine worsening signal. The genuine mobile and paid-traffic declines were present from the start of the post period (Mar 30) and are steady, not escalating.</div>
     </div>
   </div>
 
@@ -275,76 +276,54 @@
   <div class="action-card">
     <div class="ac-header">
       <div class="priority-badge p1">P1</div>
-      <div class="cause">April inventory is fully sold out — May and summer season supply must be opened immediately to prevent continued S2C collapse.</div>
+      <div class="cause">Google Ads LP traffic halved (17,345 → 8,855 users, −49%) — primary driver of demand reduction entering the peak summer season.</div>
     </div>
     <div class="dri-row">
-      <span class="dri-badge">Ops / BDM</span>
-      <span>+ Supply team</span>
+      <span class="dri-badge">Paid Media / Growth</span>
     </div>
     <ul>
-      <li>Contact Kualoa Ranch SP immediately: confirm May inventory is open and visible for all active experiences (UTV Raptor 37536, Movie Sites 37530, Jungle Expedition 37532, Zipline 37531, Secret Island Beach 37534, Horseback 37535, Ocean Voyage 39901).</li>
-      <li>Review API cut-off period settings — shorten minimum lead time to unlock same-day and next-day bookings. The 0-2d checkout bucket dropped −32% (1,102 → 749), suggesting near-term bookers are being blocked.</li>
-      <li>Confirm the release window for May–August dates: ensure at least 60 days of forward inventory is visible at all times so travelers planning ahead can book without encountering empty calendars.</li>
-      <li>Set up availability threshold alerts for this CE: trigger when any experience falls below 5 available days in the next 14-day window.</li>
+      <li>Pull the Google Ads campaign audit for CE 6495 (kualoa-ranch.tickets-hawaii.com) covering Mar 30–Apr 28. Check for budget reductions, bid strategy changes, campaign pauses, or Quality Score drops that would explain the LP traffic halving.</li>
+      <li>Compare impression share and avg. CPC for the post period vs Feb 28–Mar 29 pre period. If budget was cut or bids lowered, quantify the traffic recovery cost and restore before May peak season (Memorial Day, summer school holidays).</li>
+      <li>Within Google Ads, S2C also declined modestly (31.8% → 28.8%) — check whether keyword mix shifted toward lower-intent terms (broader match expansion, new campaign structure) that may have brought in less qualified traffic alongside the volume drop.</li>
     </ul>
   </div>
 
   <div class="action-card">
     <div class="ac-header">
       <div class="priority-badge p1">P1</div>
-      <div class="cause">Jurassic Adventure Tour (37529) and All-Inclusive Package (37863) are discontinued — two products that together accounted for ~1,000+ select-page visits/month are now unavailable.</div>
+      <div class="cause">Mobile S2C declined −3.7pp (iOS) and −5.0pp (Android) on right-censoring-adjusted basis while desktop S2C held flat — mobile-specific UX issue at the select/date-picker stage.</div>
     </div>
     <div class="dri-row">
-      <span class="dri-badge">BDM / Growth</span>
-      <span>+ Ops</span>
+      <span class="dri-badge">Product / MB Team</span>
     </div>
     <ul>
-      <li>Clarify with SP whether the Jurassic Adventure Tour (TGID 37529) discontinuation is permanent or temporary. This is Kualoa Ranch's headline product (Jurassic Park filming location) — its absence is likely driving a meaningful share of abandonment from users who specifically searched for this experience.</li>
-      <li>Similarly confirm status of All-Inclusive Package (37863), which had 952 select users/month in the pre period. If it can be relisted, it recaptures a volume of traffic that is currently dead-ending at the select page.</li>
-      <li>Also check E-Bike Tour (39903) and Kualoa Grown Tour (39902) — both unavailable. If these can be restored, they improve assortment depth and give users who can't find their first-choice tour an alternative to book.</li>
+      <li>Audit the select page and date-picker experience on kualoa-ranch.tickets-hawaii.com for mobile (iOS Safari and Android Chrome). Check whether any deploy between Feb 28–Mar 30 changed date-picker rendering, calendar scroll behavior, or CTA placement on small viewports.</li>
+      <li>Compare mobile S2C at experience level — if the drop is concentrated in 1–2 experiences, that narrows the investigation to a specific product configuration rather than a platform-wide change.</li>
+      <li>Attempt session recordings for mobile abandoners on the select page (Apr 1–14 sessions are the most reliable cohort — avoid late April due to right-censoring). Look for users who load the date picker and leave without selecting a date or tapping "Book".</li>
     </ul>
   </div>
 
   <div class="action-card">
     <div class="ac-header">
       <div class="priority-badge p2">P2</div>
-      <div class="cause">Summer season (May–August) is imminent — without proactive inventory management, the same depletion cycle will repeat and crush peak-season CVR.</div>
+      <div class="cause">Jurassic Adventure Tour (37529) is discontinued — Kualoa Ranch's headline Jurassic Park experience is absent from the select page.</div>
     </div>
     <div class="dri-row">
-      <span class="dri-badge">Ops / Analytics</span>
+      <span class="dri-badge">BDM / Ops</span>
     </div>
     <ul>
-      <li>Negotiate pre-purchased or guaranteed inventory blocks for peak summer dates (Memorial Day, July 4th) with Kualoa Ranch SP before those dates start filling up.</li>
-      <li>Build a weekly availability health check for this CE: flag any 7-day forward window falling below 50% slot fill, and escalate to BDM before it impacts S2C.</li>
-      <li>Explore whether a multivendor or multi-experience setup can buffer against single-SP inventory depletion — if one tour sells out, an active alternative keeps the user converting.</li>
+      <li>Confirm with Kualoa Ranch SP whether the Jurassic Adventure Tour (TGID 37529) discontinuation is permanent or temporary. This is the Ranch's primary brand identity product — its absence may be driving users who arrived specifically for the Jurassic experience to leave without booking an alternative.</li>
+      <li>Also confirm status of All-Inclusive Package (37863), E-Bike Tour (39903), and Kualoa Grown Tour (39902) — all currently is_available = FALSE. If any can be relisted, it improves assortment breadth and gives first-choice abandoners an alternative path to booking.</li>
     </ul>
   </div>
 
   <!-- ═══════════════════════════════════════════════════════════════ -->
   <div class="section-label">Section 3 — Supporting Analysis</div>
 
-  <!-- Shapley decomposition -->
-  <div class="analysis-block">
-    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
-    <div class="verdict-line">S2C carries 101% of ΔCVR (−1.02pp). LP2S and C2O partially offset each other and are not actionable drivers.</div>
-    <div class="shapley-bars">
-      <div class="shapley-bar shapley-lp2s" style="flex:13">LP2S 13%</div>
-      <div class="shapley-bar shapley-s2c"  style="flex:87">S2C 101%</div>
-    </div>
-    <div class="shapley-legend">
-      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S −0.13pp (13% of ΔCVR)</span>
-      <span><span class="legend-dot" style="background:#c62828"></span>S2C −1.02pp (101% of ΔCVR)</span>
-      <span><span class="legend-dot" style="background:#2e7d32"></span>C2O +0.15pp (−15% offset — improved)</span>
-    </div>
-    <p style="font-size:13px;color:#555;margin-top:12px;">
-      Total ΔCVR = −1.00pp. S2C is the only lever that matters — it explains more than 100% of the drop because C2O moved slightly positive. LP2S was nearly flat (−1.03pp, 36.7% → 35.7%), confirming the landing page is working and the traffic mix is not the story. The investigation is entirely an S2C investigation.
-    </p>
-  </div>
-
-  <!-- Mix analysis -->
+  <!-- Mix cascade -->
   <div class="analysis-block">
     <div class="block-title">MB / HO mix decomposition</div>
-    <div class="verdict-line neutral">Mix ruled out — both MB and HO show conversion-dominant effects. Traffic share shift is not the explanation.</div>
+    <div class="verdict-line neutral">Mix ruled out — both MB and HO show conversion-dominant effects. Traffic share shift is not the explanation. Full-CE funnel analysis follows.</div>
     <table>
       <thead>
         <tr>
@@ -360,7 +339,7 @@
       </thead>
       <tbody>
         <tr class="highlight-row">
-          <td><strong>MB</strong> (primary)</td>
+          <td><strong>MB</strong> (93% of traffic)</td>
           <td class="num">22,855</td>
           <td class="num">19,198</td>
           <td class="num">5.39%</td>
@@ -382,26 +361,272 @@
       </tbody>
     </table>
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      MB dominates at 93% of traffic. Both segments show conversion_effect dominating mix_effect — the drop is not explained by traffic shifting between channels. This confirms the investigation should focus on what's happening at the funnel steps, not the traffic mix.
+      Both MB and HO show conversion_effect dominating mix_effect. MB drives 93% of the absolute impact
+      (~398 fewer checkouts). mix_dominance.is_dominant = false — the drop is a funnel conversion
+      problem, not a traffic routing problem. All subsequent funnel analysis covers the full CE.
+    </p>
+  </div>
+
+  <!-- Shapley -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">S2C carries 101% of ΔCVR. LP2S and C2O partially offset each other and are not actionable drivers.</div>
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex:13">LP2S 13%</div>
+      <div class="shapley-bar shapley-s2c"  style="flex:87">S2C 101%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S −0.13pp (13% of ΔCVR)</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −1.02pp (101% of ΔCVR)</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O +0.15pp (−15% offset — improved)</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total measured ΔCVR = −1.00pp. S2C explains more than 100% because C2O moved slightly positive.
+      LP2S was nearly flat (−1.03pp, 36.7% → 35.7%), confirming the landing page worked and the drop
+      is entirely at the select/checkout step. The right-censoring adjustment (Section below) shows that
+      most of this S2C drop is a measurement artifact — the genuine impact is ~−0.32pp CVR.
+    </p>
+  </div>
+
+  <!-- Right-censoring analysis — key finding -->
+  <div class="analysis-block">
+    <div class="block-title">Right-censoring adjustment — separating measurement artifact from genuine decline</div>
+    <div class="verdict-line">~68% of the measured −1.00pp CVR drop is a right-censoring artifact. Genuinely-converged sessions show only −2.79pp S2C and ~−0.32pp CVR actual decline.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Cohort</th>
+          <th class="num">S2C</th>
+          <th class="num">Δ S2C vs pre</th>
+          <th class="num">Implied CVR Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pre — measured (Feb 28–Mar 29, all sessions)</td>
+          <td class="num">32.66%</td>
+          <td class="num">—</td>
+          <td class="num">—</td>
+        </tr>
+        <tr>
+          <td>Post — measured (Mar 30–Apr 28, all sessions)</td>
+          <td class="num">26.30%</td>
+          <td class="num neg">−6.36pp</td>
+          <td class="num neg">−1.00pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Post — converged only (Mar 30–Apr 14, ≥14 days to convert)</strong></td>
+          <td class="num"><strong>29.87%</strong></td>
+          <td class="num neg"><strong>−2.79pp</strong></td>
+          <td class="num neg"><strong>~−0.32pp</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      In a 30-day measurement window ending Apr 28, a session started on Apr 22 has only 6 days for
+      checkout to register. Users researching a group trip, comparing options, or checking dates with
+      family will simply not appear as conversions — they may still book days later, outside the
+      measurement window. This right-censoring effect grows as the period-end approaches, producing the
+      progressive daily collapse seen in the S2C trend chart. Restricting to sessions in the first half
+      of the post period (Mar 30–Apr 14) gives each session ≥14 days to complete checkout, removing
+      the artifact. The genuine structural S2C decline is −2.79pp, not −6.36pp.
     </p>
   </div>
 
   <!-- Daily S2C trend -->
   <div class="analysis-block">
     <div class="block-title">Daily S2C trend — pre vs post</div>
-    <div class="verdict-line">S2C degrades continuously through the post period — from 38% on March 30 to 13% on April 25. Classic progressive inventory depletion, not a sudden break.</div>
+    <div class="verdict-line">Post-period S2C degrades continuously from 38% to 13% — but the late-April collapse is the right-censoring effect, not genuine deterioration. The genuine structural decline is visible in early post (Mar 30–Apr 14): S2C runs ~5–8pp below pre-period average.</div>
     <div class="chart-container">
       <div id="s2c-trend-chart" style="height:280px;"></div>
     </div>
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      The pre period shows stable S2C averaging 32.7%. The post period starts at 38% (March 30-31, Easter weekend high-intent traffic) then falls steadily. By mid-April S2C is in the 20-26% range; by April 22-28, it reaches 13-19%. This is the signature of rolling near-term sell-out: each week that passes removes another week of bookable April dates from the calendar visible to users. Last year showed a +5pp CVR improvement at this same calendar window — this pattern is entirely structural.
+      The pre period shows stable S2C averaging 32.7%. Post-period S2C starts at 38% (Mar 30–31,
+      Easter weekend high-intent traffic) then drifts lower through April. The steepening decline
+      after Apr 14 is the right-censoring effect amplifying — not a worsening supply signal or
+      escalating funnel problem. The genuine structural signal lives in the early post cohort (Apr 1–14):
+      those sessions ran at ~29.9% S2C (right-censoring-adjusted), confirming a real but modest decline.
     </p>
   </div>
 
-  <!-- Experience-level S2C breakdown -->
+  <!-- Inventory availability — supply confirmed healthy -->
   <div class="analysis-block">
-    <div class="block-title">Experience-level S2C — availability proxy</div>
-    <div class="verdict-line">Drop is broad across all major experiences (−5.5 to −7.4pp), ruling out a single-experience supply or configuration issue. Availability proxy (count_days_avail_30d) is stable — May inventory masks April depletion.</div>
+    <div class="block-title">Inventory availability by lead-time bucket — CE 6495 (all experiences)</div>
+    <div class="verdict-line green">Inventory is healthy — zero zero-availability dates across all lead-time windows. Average remaining capacity increased in every bucket during the post period. Near-term depletion is ruled out.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Lead-time bucket</th>
+          <th class="num">Pre: avg remaining</th>
+          <th class="num">Post: avg remaining</th>
+          <th class="num">Pre: zero-inv dates</th>
+          <th class="num">Post: zero-inv dates</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0–6 days</td>
+          <td class="num">75</td>
+          <td class="num pos">116</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+        </tr>
+        <tr>
+          <td>7–13 days</td>
+          <td class="num">88</td>
+          <td class="num pos">105</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+        </tr>
+        <tr>
+          <td>14–29 days</td>
+          <td class="num">97</td>
+          <td class="num pos">122</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+        </tr>
+        <tr>
+          <td>30–59 days</td>
+          <td class="num">109</td>
+          <td class="num pos">138</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+        </tr>
+        <tr>
+          <td>60+ days</td>
+          <td class="num">124</td>
+          <td class="num pos">157</td>
+          <td class="num">0</td>
+          <td class="num">0</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Query joined <code>dim_experiences → dim_tours (USING experience_id) → inventory_availability
+      (USING tour_id)</code> for combined_entity_id = 6495. Not a single zero-inventory date across any
+      window in either period. The near-term (0–6d) window actually improved most sharply (75 → 116 avg
+      remaining). The <code>next_available_date = May 2</code> signal in the earlier investigation was a
+      live snapshot pulled on Apr 29 — it reflects only the next 3 calendar days (Apr 29–May 1), which
+      may simply be non-operating days. It does not indicate April was progressively sold out.
+    </p>
+  </div>
+
+  <!-- Device breakdown — right-censoring adjusted -->
+  <div class="analysis-block">
+    <div class="block-title">S2C by device — right-censoring-adjusted (converged sessions, Mar 30–Apr 14)</div>
+    <div class="verdict-line">MB Desktop S2C held flat. The genuine S2C decline is mobile-specific: iOS −3.7pp, Android −5.0pp. Inconsistent with supply depletion (which would affect all devices equally).</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C (conv.)</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MB Desktop</td>
+          <td class="num">38.0%</td>
+          <td class="num">38.2%</td>
+          <td class="num delta-flat" style="background:transparent;font-size:13px;">+0.2pp — flat</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>MB iOS Mweb</strong></td>
+          <td class="num">29.3%</td>
+          <td class="num">25.6%</td>
+          <td class="num neg">−3.7pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>MB Android Mweb</strong></td>
+          <td class="num">28.9%</td>
+          <td class="num">23.9%</td>
+          <td class="num neg">−5.0pp</td>
+        </tr>
+        <tr>
+          <td>HO Desktop</td>
+          <td class="num">68.3%</td>
+          <td class="num">59.8%</td>
+          <td class="num neg">−8.5pp (small vol.)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Desktop S2C held completely stable across both distribution channels. The genuine decline is
+      concentrated in iOS and Android mobile sessions. A supply-side depletion or pricing change would
+      affect all devices symmetrically — the device asymmetry points to a mobile UX or rendering issue
+      specific to the select page or date-picker on the kualoa-ranch.tickets-hawaii.com microsite.
+      HO Desktop shows a larger rate drop but represents only a small fraction of select-page volume.
+    </p>
+  </div>
+
+  <!-- Channel breakdown — right-censoring adjusted -->
+  <div class="analysis-block">
+    <div class="block-title">LP traffic and S2C by UTM channel — right-censoring-adjusted (converged sessions)</div>
+    <div class="verdict-line">Google Ads LP traffic halved (17,345 → 8,855 users, −49%). This is the primary demand driver for this CE — losing ~8,500 high-intent paid visitors is a significant volume reduction that drives most of the measured CVR impact.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre LP Users</th>
+          <th class="num">Post LP Users</th>
+          <th class="num">Δ LP</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C (conv.)</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">17,345</td>
+          <td class="num">8,855</td>
+          <td class="num neg">−49%</td>
+          <td class="num">31.8%</td>
+          <td class="num">28.8%</td>
+          <td class="num neg">−3.0pp</td>
+        </tr>
+        <tr>
+          <td>Things To Do (organic)</td>
+          <td class="num">1,057</td>
+          <td class="num">685</td>
+          <td class="num neg">−35%</td>
+          <td class="num">30.4%</td>
+          <td class="num">24.1%</td>
+          <td class="num neg">−6.3pp</td>
+        </tr>
+        <tr>
+          <td>Facebook Ads</td>
+          <td class="num" colspan="2" style="text-align:center;color:#999;">negligible volume</td>
+          <td class="num"></td>
+          <td class="num" style="color:#999;">LP2S: 3.3%</td>
+          <td class="num" style="color:#999;">LP2S: 1.1%</td>
+          <td class="num neg">near-zero</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num" colspan="2" style="text-align:center;color:#999;">small volume</td>
+          <td class="num"></td>
+          <td class="num">31.0%</td>
+          <td class="num">34.4%</td>
+          <td class="num pos">+3.4pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Google Ads is the dominant traffic source for this CE. Losing ~8,500 LP visitors explains
+      the majority of the measured checkout volume decline. Within Google Ads visitors, S2C also dropped
+      modestly (−3.0pp), suggesting either a shift toward lower-intent keyword match types or a mobile
+      UX issue affecting this segment (Google Ads visitors are predominantly mobile). Things To Do
+      organic also weakened on both volume (−35%) and conversion quality (−6.3pp), though the absolute
+      checkout impact is smaller. Microsoft Ads held or improved — no issue there.
+    </p>
+  </div>
+
+  <!-- Experience-level S2C -->
+  <div class="analysis-block">
+    <div class="block-title">Experience-level S2C breakdown</div>
+    <div class="verdict-line neutral">Drop is broad and roughly uniform across all experiences (−5.5 to −7.4pp measured). No single experience is driving disproportionate impact — consistent with the right-censoring effect (which inflates all experience-level drops equally) plus the mobile UX signal.</div>
     <table>
       <thead>
         <tr>
@@ -410,174 +635,90 @@
           <th class="num">Post Select</th>
           <th class="num">Pre S2C</th>
           <th class="num">Post S2C</th>
-          <th class="num">Δ S2C</th>
-          <th class="num">Pre Days Avail</th>
-          <th class="num">Post Days Avail</th>
+          <th class="num">Δ S2C (measured)</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="highlight-row">
-          <td><strong>UTV Raptor Tour</strong> (37536)</td>
+        <tr>
+          <td>UTV Raptor Tour (37536)</td>
           <td class="num">4,679</td>
           <td class="num">3,881</td>
           <td class="num">26.9%</td>
           <td class="num">19.6%</td>
           <td class="num neg">−7.4pp</td>
-          <td class="num">30.9</td>
-          <td class="num">30.6</td>
         </tr>
-        <tr class="highlight-row">
-          <td><strong>Movie Sites &amp; Ranch Tour</strong> (37530)</td>
+        <tr>
+          <td>Movie Sites &amp; Ranch Tour (37530)</td>
           <td class="num">2,290</td>
           <td class="num">1,996</td>
           <td class="num">33.0%</td>
           <td class="num">26.6%</td>
           <td class="num neg">−6.5pp</td>
-          <td class="num">31.1</td>
-          <td class="num">31.0</td>
         </tr>
-        <tr class="highlight-row">
-          <td><strong>Jungle Expedition Tour</strong> (37532)</td>
+        <tr>
+          <td>Jungle Expedition Tour (37532)</td>
           <td class="num">1,058</td>
           <td class="num">938</td>
           <td class="num">27.8%</td>
           <td class="num">21.2%</td>
           <td class="num neg">−6.6pp</td>
-          <td class="num">30.0</td>
-          <td class="num">31.0</td>
         </tr>
         <tr>
-          <td><strong>All-Inclusive Package</strong> (37863) ⚠️ discontinued</td>
-          <td class="num">952</td>
-          <td class="num">542</td>
-          <td class="num">11.8%</td>
-          <td class="num">10.0%</td>
-          <td class="num neg">−1.8pp</td>
-          <td class="num">—</td>
-          <td class="num">—</td>
-        </tr>
-        <tr>
-          <td><strong>Horseback Walking Tour</strong> (37535)</td>
+          <td>Horseback Walking Tour (37535)</td>
           <td class="num">725</td>
           <td class="num">666</td>
           <td class="num">16.0%</td>
           <td class="num">13.1%</td>
           <td class="num neg">−2.9pp</td>
-          <td class="num">20.3</td>
-          <td class="num">26.2</td>
         </tr>
         <tr>
-          <td><strong>Jurassic Valley Zipline</strong> (37531)</td>
+          <td>Jurassic Valley Zipline (37531)</td>
           <td class="num">836</td>
           <td class="num">716</td>
           <td class="num">19.5%</td>
           <td class="num">20.9%</td>
           <td class="num pos">+1.5pp</td>
-          <td class="num">21.2</td>
-          <td class="num">29.9</td>
         </tr>
         <tr>
-          <td><strong>Ocean Voyage Tour</strong> (39901)</td>
+          <td>Ocean Voyage Tour (39901)</td>
           <td class="num">434</td>
           <td class="num">372</td>
           <td class="num">20.0%</td>
           <td class="num">13.7%</td>
           <td class="num neg">−6.3pp</td>
-          <td class="num">27.3</td>
-          <td class="num">25.2</td>
         </tr>
         <tr>
-          <td><strong>Secret Island Beach</strong> (37534)</td>
+          <td>Secret Island Beach (37534)</td>
           <td class="num">404</td>
           <td class="num">348</td>
           <td class="num">17.3%</td>
           <td class="num">11.8%</td>
           <td class="num neg">−5.5pp</td>
-          <td class="num">28.6</td>
-          <td class="num">28.5</td>
         </tr>
       </tbody>
     </table>
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      The count_days_available_30d stays at 30-31 for most experiences because May inventory fills the 30-day forward window — the metric does not distinguish between "April is sold out" and "dates are available." The availability depletion is specific to the near-term dates that current Hawaii visitors need. Jurassic Valley Zipline (37531) is the only exception — its availability improved (+8.7 days) and its S2C held flat, which directly supports the supply explanation. The All-Inclusive Package (37863) traffic dropped −43% (952 → 542 select users), consistent with this product being phased out during the post period.
+      All major experiences declined roughly proportionally — no single product shows a disproportionate
+      drop that would point to a product-specific configuration change or supply issue. This uniformity
+      is consistent with both a CE-wide right-censoring effect and a CE-wide mobile UX issue.
+      Jurassic Valley Zipline (+1.5pp) is the only exception, though it also saw a volume decline.
+      These are all measured (non-adjusted) figures — the actual structural decline per experience is
+      approximately 40–45% of what is shown here, once right-censoring is removed.
     </p>
   </div>
 
-  <!-- Lead-time distribution -->
+  <!-- Ruled-out block -->
   <div class="analysis-block">
-    <div class="block-title">Lead-time distribution — users who reached checkout (demand-side)</div>
-    <div class="verdict-line">Checkouts declined across all lead-time windows — near-term (0-2d) down −32%, far-out (30d+) down −46%. Both patterns are consistent with near-term availability being gone and far-out dates not meeting current-trip needs.</div>
-    <table>
-      <thead>
-        <tr>
-          <th>Lead-time Bucket</th>
-          <th class="num">Pre Checkouts</th>
-          <th class="num">Post Checkouts</th>
-          <th class="num">Change</th>
-          <th class="num">% Retained</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr class="highlight-row">
-          <td><strong>0-2 days</strong></td>
-          <td class="num">1,102</td>
-          <td class="num">749</td>
-          <td class="num neg">−353</td>
-          <td class="num neg">68%</td>
-        </tr>
-        <tr>
-          <td>3-6 days</td>
-          <td class="num">379</td>
-          <td class="num">312</td>
-          <td class="num neg">−67</td>
-          <td class="num">82%</td>
-        </tr>
-        <tr>
-          <td>7-13 days</td>
-          <td class="num">465</td>
-          <td class="num">311</td>
-          <td class="num neg">−154</td>
-          <td class="num neg">67%</td>
-        </tr>
-        <tr>
-          <td>14-29 days</td>
-          <td class="num">595</td>
-          <td class="num">380</td>
-          <td class="num neg">−215</td>
-          <td class="num neg">64%</td>
-        </tr>
-        <tr>
-          <td>30+ days</td>
-          <td class="num">580</td>
-          <td class="num">315</td>
-          <td class="num neg">−265</td>
-          <td class="num neg">54%</td>
-        </tr>
-      </tbody>
-    </table>
-    <p style="font-size:13px;color:#555;margin-top:12px;">
-      The 0-2d bucket shows the largest absolute loss (−353 checkouts). These are same-day and next-day bookers — overwhelmingly current Hawaii visitors trying to book for tomorrow. The 30d+ bucket has the worst retention (54%), which may reflect that pre-period users booking for April-May (advance bookings) had those dates available, while post-period users looking at May+ saw the dates but found them less immediately motivating. The supply team should confirm whether near-term (0-7d) slot availability was restricted or simply sold through during April.
-    </p>
-  </div>
-
-  <!-- ⚠️ Inventory lead-time data gap note -->
-  <div class="analysis-block" style="border-left: 3px solid #f57c00;">
-    <div class="block-title">⚠️ Supply-side inventory data — unavailable</div>
-    <p style="font-size:13px;color:#555;">
-      The <code>inventory_availability</code> table was queried but could not be joined to CE experiences (the table uses <code>tour_id</code> as its key and <code>dim_experiences</code> does not expose a <code>tour_id</code> column). The near-term depletion conclusion is therefore "consistent with" the demand-side signals (lead-time shift + next_available_date = May 2) rather than directly confirmed by supply-side slot counts. The supply team should check the 0-7 day inventory window for April dates in their internal systems to verify.
-    </p>
-  </div>
-
-  <!-- Ruled-out dimensions -->
-  <div class="analysis-block">
-    <div class="block-title">Dimensions checked — ruled out as independent drivers</div>
+    <div class="block-title">Hypotheses checked — ruled out as independent drivers</div>
     <p style="font-size:13px;color:#555;margin-bottom:12px;">
-      These dimensions were queried and do not add independent signal beyond what the near-term availability depletion already explains.
+      These were checked and do not add independent signal beyond what the right-censoring artifact,
+      mobile S2C decline, and Google Ads traffic reduction already explain.
     </p>
     <ul style="font-size:14px;color:#333;padding-left:18px;">
-      <li style="margin-bottom:8px;"><strong>Device:</strong> Desktop S2C −5.0pp, iOS Mweb −7.1pp, Android Mweb −6.5pp. All devices dropped proportionally. No device shows an outsized or isolated drop — this is not a mobile UX regression.</li>
-      <li style="margin-bottom:8px;"><strong>MB vs HO (S2C level):</strong> MB −6.0pp on 6,633 select users; HO −13.8pp on 496 select users. HO's rate drop is larger but represents only ~68 fewer checkouts (7% of total impact). Both segments declined from the same supply mechanism.</li>
-      <li style="margin-bottom:0;"><strong>Mix dominance:</strong> mix_dominance.is_dominant = false. MB/HO mix share = 14.7%, channel mix share = 24.1% — neither exceeds the threshold for mix-dominant classification. The drop is a conversion problem, not a routing problem.</li>
+      <li style="margin-bottom:8px;"><strong>Near-term inventory depletion:</strong> Definitively ruled out. Supply-side query (dim_experiences → dim_tours → inventory_availability) found zero zero-inventory dates across all lead-time windows in both pre and post periods. Average remaining capacity increased in every bucket. The next_available_date = May 2 snapshot reflects live state on Apr 29 (likely non-operating days), not historical depletion.</li>
+      <li style="margin-bottom:8px;"><strong>MB vs HO segment split:</strong> Both segments declined from the same CE-wide mechanisms. MB drives ~85% of absolute checkout impact (398 fewer checkouts); HO added ~68 fewer. Not an independent segment-specific story.</li>
+      <li style="margin-bottom:8px;"><strong>Mix dominance:</strong> mix_dominance.is_dominant = false. MB/HO mix share 14.7%, channel mix share 24.1% — neither exceeds the dominance threshold. The drop is a conversion problem, not a routing problem.</li>
+      <li style="margin-bottom:0;"><strong>Single-experience concentration:</strong> All 5+ major experiences declined −5.5 to −7.4pp uniformly (measured). No experience is disproportionately driving the drop.</li>
     </ul>
   </div>
 
@@ -619,6 +760,8 @@ const currentCvr = [
 
 const POST_START = '2026-03-30';
 const POST_END   = '2026-04-28';
+// Right-censoring zone starts roughly Apr 15 (sessions have <14 days to convert)
+const CENSOR_START = '2026-04-15';
 
 Plotly.newPlot('trend-90day', [
   {
@@ -630,20 +773,26 @@ Plotly.newPlot('trend-90day', [
 ], {
   height: 280,
   yaxis: { tickformat: '.1%', title: 'CVR', range: [0, 0.10] },
-  xaxis: { tickformat: '%b %Y', dtick: 'M1', title: '' },
+  xaxis: { tickformat: '%d %b', dtick: 7 * 86400000, title: '' },
   plot_bgcolor: '#fff', paper_bgcolor: '#fff',
   font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color: '#1a1a2e', size: 11 },
   legend: { orientation: 'h', y: -0.25 },
   margin: { l: 55, r: 20, t: 30, b: 60 },
   shapes: [
-    { type: 'rect', x0: POST_START, x1: POST_END, y0: 0, y1: 1,
+    { type: 'rect', x0: POST_START, x1: CENSOR_START, y0: 0, y1: 1,
       xref: 'x', yref: 'paper', fillcolor: 'rgba(198,40,40,0.06)', line: { width: 0 } },
+    { type: 'rect', x0: CENSOR_START, x1: POST_END, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper', fillcolor: 'rgba(198,40,40,0.12)', line: { width: 0 } },
     { type: 'line', x0: POST_START, x1: POST_START, y0: 0, y1: 1,
-      xref: 'x', yref: 'paper', line: { color: '#c62828', dash: 'dot', width: 1.5 } }
+      xref: 'x', yref: 'paper', line: { color: '#c62828', dash: 'dot', width: 1.5 } },
+    { type: 'line', x0: CENSOR_START, x1: CENSOR_START, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper', line: { color: '#e65100', dash: 'dot', width: 1 } }
   ],
   annotations: [
-    { x: '2026-04-13', y: 0.092, text: 'Post period',
-      font: { color: '#c62828', size: 10 }, showarrow: false }
+    { x: '2026-04-06', y: 0.092, text: 'Post period',
+      font: { color: '#c62828', size: 10 }, showarrow: false },
+    { x: '2026-04-22', y: 0.092, text: 'Right-censoring zone',
+      font: { color: '#e65100', size: 9 }, showarrow: false }
   ]
 }, { responsive: true });
 
@@ -676,6 +825,9 @@ const postS2C = [
 
 const preMean  = preS2C.reduce((a,b) => a+b,0) / preS2C.length;
 const postMean = postS2C.reduce((a,b) => a+b,0) / postS2C.length;
+// Converged mean (first 16 post values: Mar 30–Apr 14)
+const convergedPostS2C = postS2C.slice(0, 16);
+const convergedMean = convergedPostS2C.reduce((a,b) => a+b,0) / convergedPostS2C.length;
 
 Plotly.newPlot('s2c-trend-chart', [
   {
@@ -704,15 +856,23 @@ Plotly.newPlot('s2c-trend-chart', [
     { type: 'line', x0: preDates[0], x1: preDates[preDates.length-1],
       y0: preMean, y1: preMean, line: { color: '#6c8ebf', dash: 'dot', width: 1.5 } },
     { type: 'line', x0: postDates[0], x1: postDates[postDates.length-1],
-      y0: postMean, y1: postMean, line: { color: '#c62828', dash: 'dot', width: 1.5 } }
+      y0: postMean, y1: postMean, line: { color: '#c62828', dash: 'dot', width: 1.5 } },
+    // Right-censoring zone shading
+    { type: 'rect', x0: '2026-04-15', x1: '2026-04-28', y0: 0, y1: 1,
+      xref: 'x', yref: 'paper', fillcolor: 'rgba(230,81,0,0.07)', line: { width: 0 } },
+    { type: 'line', x0: '2026-04-15', x1: '2026-04-15', y0: 0, y1: 1,
+      xref: 'x', yref: 'paper', line: { color: '#e65100', dash: 'dot', width: 1 } }
   ],
   annotations: [
     { x: preDates[10], y: preMean,
       text: 'Pre avg ' + (preMean*100).toFixed(1) + '%',
       font: { color: '#6c8ebf', size: 11 }, showarrow: false, yshift: 14 },
-    { x: postDates[20], y: postMean,
+    { x: postDates[7], y: postMean,
       text: 'Post avg ' + (postMean*100).toFixed(1) + '%',
-      font: { color: '#c62828', size: 11 }, showarrow: false, yshift: -16 }
+      font: { color: '#c62828', size: 11 }, showarrow: false, yshift: -16 },
+    { x: '2026-04-21', y: 0.44,
+      text: 'Right-censoring<br>zone',
+      font: { color: '#e65100', size: 9 }, showarrow: false }
   ]
 }, { responsive: true });
 

@@ -84,19 +84,94 @@ Proceeding with "consistent with" language for the user experience at the date p
 
 ---
 
-## Root cause confirmed
-S2C at Kualoa Ranch (CE 6495) fell −6.36pp (32.66% → 26.30%) across all funnel steps and all devices, 
-driven by progressive near-term inventory depletion through April. Spring break and Easter demand 
-(March–April) filled near-term April dates. As April progressed, users arriving for their Hawaii trips 
-tried to book for the coming 1-7 days but found those dates sold out — the date picker showed only 
-far-future May dates. By April 22-28 (final week), S2C had collapsed to 13-19%. Today (April 29), 
-every active experience shows next_available_date = May 2, confirming complete April depletion.
+## Root cause (original — SUPERSEDED)
+~~S2C at Kualoa Ranch (CE 6495) fell −6.36pp driven by near-term inventory depletion through April.~~
+**SUPERSEDED by L2 analysis below. Inventory depletion definitively ruled out.**
 
-The broad, equal drop across 5+ experiences and all devices confirms a supply-side mechanism 
-(not a product or UX regression). The 0-2d checkout bucket dropped -32% (1,102 → 749), matching 
-the near-term depletion pattern. Additionally, 4-5 experiences (Jurassic Adventure Tour, All-Inclusive 
-Package, E-Bike Tour, Kualoa Grown Tour) are now discontinued, compounding the assortment loss.
+---
 
-The structural delta is −6.58pp (LY showed +5pp improvement at this same calendar position vs current 
-−1.58pp actual) — this is entirely structural. The upcoming peak summer season (May-August) is at risk 
-if supply settings are not adjusted immediately.
+## L2 — Supply-side inventory verification (post context.md fix)
+
+*context.md was updated to document the two-hop join: `dim_experiences → dim_tours (USING experience_id) → inventory_availability (USING tour_id)`. The original L1a could not confirm supply-side inventory due to a schema gap (dim_experiences has no tour_id column). L2 re-runs the inventory analysis with the correct join.*
+
+### L2a: Inventory availability by lead-time bucket → RULES OUT depletion
+
+Query: `dim_experiences (combined_entity_id = '6495')` INNER JOIN `dim_tours USING (experience_id)` INNER JOIN `inventory_availability USING (tour_id)`, grouped by DATE_DIFF(experience_date, extracted_date, DAY) bucket for extracted_date in pre/post windows.
+
+Result:
+| Lead-time bucket | Pre zero-inv dates | Post zero-inv dates | Pre avg remaining | Post avg remaining |
+|---|---|---|---|---|
+| 0–6 days   | 0 | 0 | 75  | 116 |
+| 7–13 days  | 0 | 0 | 88  | 105 |
+| 14–29 days | 0 | 0 | 97  | 122 |
+| 30–59 days | 0 | 0 | 109 | 138 |
+| 60+ days   | 0 | 0 | 124 | 157 |
+
+ZERO zero-inventory dates across ALL windows in both periods. Avg remaining INCREASED in every bucket post-period. The 0–6d window improved most sharply (75 → 116).
+
+→ **DEFINITIVELY RULED OUT: Near-term inventory depletion is NOT the cause.**
+
+Note: next_available_date = May 2 (dim_experiences live snapshot, Apr 29) reflects only Apr 29–May 1 — may be non-operating days. Does not indicate April was progressively depleted.
+
+Revised hypothesis: The progressive daily S2C decline (38% → 13%) is a **right-censoring artifact**.
+
+---
+
+### L2b: Right-censoring analysis → CONFIRMED
+
+Hypothesis: Sessions in the final ~2 weeks of the post period (Apr 15–28) have too little remaining time to complete checkout before measurement closes, artificially deflating measured S2C.
+
+Method: Restrict to "fully-converged" sessions (≥14 days remaining in measurement window):
+- Post converged: sessions Apr 1–14 (have ≥14 days to convert by Apr 28)
+- Pre reference: Feb 28–Mar 29 all sessions (no censoring — all had 29+ days)
+
+| Cohort | S2C | Delta vs pre | CVR delta |
+|---|---|---|---|
+| Pre measured (Feb 28–Mar 29) | 32.66% | — | — |
+| Post measured (Mar 30–Apr 28) | 26.30% | **−6.36pp** | **−1.00pp** |
+| Post converged (Mar 30–Apr 14) | 29.87% | **−2.79pp** | **~−0.32pp** |
+
+→ **CONFIRMED: ~68% of the measured CVR decline is a right-censoring artifact.**
+Genuine structural decline: −2.79pp S2C / ~−0.32pp CVR.
+
+---
+
+### L2c: Right-censoring-adjusted device breakdown → Mobile-specific decline
+
+Query: S2C by device × distribution segment, converged sessions (Apr 1–14) vs pre period.
+
+| Segment | Pre S2C | Post (conv.) S2C | Delta |
+|---|---|---|---|
+| MB Desktop      | 38.0% | 38.2% | **+0.2pp — FLAT** |
+| MB iOS Mweb     | 29.3% | 25.6% | **−3.7pp** |
+| MB Android Mweb | 28.9% | 23.9% | **−5.0pp** |
+| HO Desktop      | 68.3% | 59.8% | −8.5pp (small vol.) |
+
+MB Desktop S2C flat. Genuine decline is **mobile-specific** (iOS and Android both ~4–5pp). Inconsistent with supply depletion (which would affect all devices equally).
+
+---
+
+### L2d: Right-censoring-adjusted channel breakdown → Google Ads LP halved
+
+Query: LP users and S2C by UTM channel, converged sessions (Apr 1–14) vs pre.
+
+| Channel | Pre LP Users | Post LP Users | Delta LP | Pre S2C | Post S2C | Delta S2C |
+|---|---|---|---|---|---|---|
+| Google Ads             | 17,345 | 8,855 | **−49%** | 31.8% | 28.8% | −3.0pp |
+| Things To Do (organic) | 1,057  | 685   | −35%     | 30.4% | 24.1% | −6.3pp |
+| Facebook Ads           | —      | —     | —        | LP2S: 3.3% | LP2S: 1.1% | collapsed |
+| Microsoft Ads          | (small)| (small)| —       | 31.0% | 34.4% | +3.4pp |
+
+Google Ads LP traffic halved (−49%, ~8,500 fewer high-intent paid search visitors). S2C within Google Ads also declined modestly (−3.0pp). Things To Do organic weakened on both volume and conversion quality.
+
+---
+
+## Root cause (revised)
+
+Measured −1.00pp CVR / −6.36pp S2C is ~68% right-censoring artifact. Genuine structural decline: **~−0.32pp CVR / −2.79pp S2C**, driven by:
+
+1. **Google Ads LP traffic halved** (17,345 → 8,855, −49%): Primary demand driver lost half its volume. Mechanism (budget cut? bid strategy change?) requires Paid Media investigation.
+2. **Mobile S2C decline** (iOS −3.7pp, Android −5.0pp converged; desktop flat +0.2pp): Suggests mobile-specific UX or funnel issue on select/date-picker.
+3. **Things To Do organic** (S2C −6.3pp, volume −35%): Secondary channel also weakened.
+
+Inventory confirmed healthy. "Supply depletion" hypothesis definitively ruled out.
