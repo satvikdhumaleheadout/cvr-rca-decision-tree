@@ -776,7 +776,7 @@ const NODES = [
     inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts'],
     outputs: ['mechanism (pricing/UX/supply/competition)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "LP2S" in significant_steps.',
-    description: 'Sudden onset: pricing increase, LP format deploy, campaign routing error, ranking change. Gradual drift: supply thinning, SIS cap, competitive pressure, content decay, assortment drift. Typical DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
+    description: 'Three-tier triage (see hypothesis.md). Tier 1: run dimension cuts in parallel — device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If a dimension concentrates, drill to intersection then to page_url (the target output). Tier 2: if no concentration, run pricing analysis — final_price_usd pre/post for top experiences. Tier 3: if pricing is also flat, session recordings on the LP are the primary tool. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
   },
   {
     id: 's2c-driver', type: 'analysis', icon: '🔬',
@@ -786,7 +786,7 @@ const NODES = [
     inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "S2C" in significant_steps.',
-    description: 'Sudden: availability config tightened (API cut-off), select-page UX regression (mobile-concentrated), price shock at variant level, specific experience collapse, TGID misconfiguration. Gradual: inventory thinning, variant complexity, vendor throttling, seasonal availability pattern. DRI: Supply/Inventory, Product, Ops, BDM.',
+    description: 'Two-tier triage (see hypothesis.md). Tier 1: language × S2C and device × S2C first (before experience-level) — a single language/device concentrating points to a localised or UX issue. Then experience × S2C + count_days_available_30d. If experience concentrates and availability dropped, run the inventory_availability lead-time bucket query to identify which specific window went empty. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
   },
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
@@ -796,7 +796,7 @@ const NODES = [
     inputs: ['shapley.C2O contribution', 'c2o_sub.delta_c2a', 'c2o_sub.delta_a2o', 'trend shape'],
     outputs: ['c2a or a2o sub-metric dominant', 'DRI hypothesis', 'feeds C2A vs A2O decision'],
     condition: 'ONLY IF "C2O" in significant_steps.',
-    description: 'C2O is further decomposed into C2A (checkout → attempt) and A2O (attempt → order). C2A drop = users abandon before payment — checkout UX friction, hidden fees, form issues. A2O drop = payment submitted but failed — gateway error, fraud rules, currency issue. Each has a different DRI and action set.',
+    description: 'Always decompose C2O into C2A × A2O before forming hypotheses. C2A drop (abandon before payment): 4 hypotheses — (1) pax availability at checkout (no pack style for selected pax combo, DRI: Ops/BDM), (2) price display friction (fees visible at checkout vs listing), (3) checkout UX change (form, CTA, coupon breakage), (4) session recordings once device/language locus found. A2O drop (payment submitted but failed): 3 hypotheses — (1) gateway failure, (2) fraud rule tightening, (3) live inventory sync failure. DRI: Payments / Engineering for A2O.',
   },
   {
     id: 'c2a-a2o', type: 'decision', icon: '💳',
@@ -821,23 +821,35 @@ const NODES = [
     description: 'Q3 has three sub-steps. 3a: 90-day trend shape — sharp break (something changed that day), gradual erosion (structural issue compounding), or recovery in progress (prior incident). 3b: Compare current_delta_cvr to ly_delta_cvr; compute structural_delta_cvr = current minus LY — calibrates how much is seasonal vs new. 3c: Check weekday composition — a post period with more weekends can produce an apparent drop with no real change. pre_period_healthy = FALSE → pre was already degraded, Shapley understates true change.',
   },
 
+  // ══ L1: MIX CASCADE ══
+  {
+    id: 'mix-cascade', type: 'analysis', icon: '🔢',
+    label: 'L1 — Mix Cascade', sublabel: 'MB/HO → Paid/Organic → Channel (mandatory)',
+    x: 795, y: 2690, phase: 'Investigation',
+    badge: null,
+    inputs: ['summary.json (mb_share, ho_share)', 'ce_id', 'pre/post dates', 'is_microbrand_page fix from L0'],
+    outputs: ['fixed_segment declaration', 'filter strings for all L2+ queries'],
+    condition: 'Always fires on the funnel path, before any L2 hypotheses.\nMandatory even if mix was not dominant at L0.',
+    description: 'Three-level cascade that fixes the primary segment before any funnel analysis. Level 1 (MB vs HO): read from summary.json — no query needed. Level 2 (Paid vs Organic within fixed brand): custom BQ query, group by channel type. Level 3 (Channel within Paid): only if Paid was fixed at Level 2 — which specific paid channel dominates? Fix a level when one segment has >15% of post users AND its absolute checkout impact exceeds all others combined. After cascade, declare the fixed segment in the transcript: "Fixed segment: MB · Paid · Google Ads — AND is_microbrand_page = TRUE AND channel_name = \'Google Ads\'". Every L2+ query carries these filters.',
+  },
+
   // ══ RECONVERGE: HYPOTHESIS ══
   {
     id: 'hypothesis', type: 'analysis', icon: '💡',
-    label: 'Hypothesis Formation', sublabel: '2–4 falsifiable hypotheses',
-    x: 795, y: 2690, phase: 'Hypothesis',
+    label: 'Hypothesis Formation', sublabel: 'Self-extending branches from hypothesis.md',
+    x: 795, y: 2990, phase: 'Hypothesis',
     badge: null,
-    inputs: ['Q2 primary driver', 'Q3 pattern (sudden/gradual)', 'mix root cause (if mix path)', 'c2a/a2o DRI', 'hypothesis.md patterns'],
-    outputs: ['hypothesis_1…4 (mechanism + segment + date pattern)', 'query plan to test each'],
-    condition: 'Always fires after Q1/Q2/Q3 answered.\nBoth mix and funnel paths converge here.',
-    description: 'Claude forms 2–4 specific, falsifiable hypotheses. Each names a mechanism (not an observation), the segment it would affect, and the date pattern expected if true. Consults hypothesis.md for historical MMP patterns as orientation — not as a constraint. Custom queries in the next step are chosen to confirm or rule out each hypothesis.',
+    inputs: ['Q2 primary driver', 'Q3 pattern (sudden/gradual)', 'fixed segment (from mix cascade)', 'mix root cause (if mix path)', 'c2a/a2o DRI', 'hypothesis.md first-pass branch sets'],
+    outputs: ['L2 branch set (mechanism + segment + expected pattern)', 'query plan — one batch per level'],
+    condition: 'Always fires after mix cascade + L0 signals.\nBoth mix and funnel paths converge here.',
+    description: 'Open the first L2 branch set using hypothesis.md "first-pass branch sets" for the primary funnel step — these are the default starting set, not an exhaustive list. Run all branches in the first batch in parallel, then read results together. Each result is one of: Confirms (open a child branch testing the mechanism more specifically), Rules out (close and state why in one line), Concentrates (anchor next branches on that segment — ask why it concentrated), or Surprises (an unexpected result opens a new branch even if not in the default set). Branches grow level-by-level from what the data shows. Investigation ends at a leaf — a specific mechanism × segment/experience/URL × date — not when the default list is exhausted. All queries carry the fixed segment filters from the mix cascade.',
   },
 
   // ══ CUSTOM QUERIES ══
   {
     id: 'custom-select', type: 'decision', icon: '🔎',
     label: 'Custom Query Plan', sublabel: 'Write from scratch · context.md schemas',
-    x: 795, y: 2990, phase: 'Investigation',
+    x: 795, y: 3290, phase: 'Investigation',
     badge: null,
     inputs: ['hypothesis_1…4', 'primary driver type', 'onset pattern'],
     outputs: ['query plan: which of Q2/Q4/Q5/Q6/custom to run'],
@@ -847,7 +859,7 @@ const NODES = [
   {
     id: 'custom-results', type: 'ref', icon: '🗄️',
     label: 'Custom Query Results', sublabel: 'BQ Reference — hypothesis-driven',
-    x: 795, y: 3290, phase: 'Investigation',
+    x: 795, y: 3590, phase: 'Investigation',
     badge: null,
     inputs: ['selected queries from Q2/Q4/Q5/Q6/custom'],
     outputs: ['dimension cut tables', 'experience-level rates', 'price deltas', 'URL-level anomalies'],
@@ -859,7 +871,7 @@ const NODES = [
   {
     id: 'locus', type: 'decision', icon: '📍',
     label: 'Locus Confirmed?', sublabel: 'Drop concentrated enough to pull recordings',
-    x: 795, y: 3590, phase: 'Investigation',
+    x: 795, y: 3890, phase: 'Investigation',
     badge: null,
     inputs: ['custom query results', 'dimension cuts', 'URL anomalies'],
     outputs: ['locus: URL | device | experience | language | CE-wide', 'recording_trigger: bool'],
@@ -871,7 +883,7 @@ const NODES = [
   {
     id: 'recordings', type: 'tool', icon: '🎬',
     label: 'Mixpanel Session Recordings', sublabel: 'Get-User-Replays-Data tool call',
-    x: 310, y: 3880, phase: 'Evidence',
+    x: 310, y: 4180, phase: 'Evidence',
     badge: null,
     inputs: ['locus (URL / device / experience / language)', 'post_start', 'post_end', 'distinct_id or replay_ids'],
     outputs: ['Recording | Steps observed | Inference (structured table)'],
@@ -883,7 +895,7 @@ const NODES = [
   {
     id: 'transcript', type: 'output', icon: '📝',
     label: 'Investigation Transcript', sublabel: 'ce<id>_<post_start>.md',
-    x: 795, y: 4160, phase: 'Output',
+    x: 795, y: 4460, phase: 'Output',
     badge: null,
     inputs: ['all decision points + rationale', 'queries run', 'hypotheses tested', 'ruled-out findings'],
     outputs: ['~/Documents/RCA skill/transcripts/ce<id>_<date>.md'],
@@ -893,17 +905,17 @@ const NODES = [
   {
     id: 'html-report', type: 'output', icon: '🌐',
     label: 'HTML Report', sublabel: 'Section 1: Summary → Section 2: Actions → Section 3: Analysis',
-    x: 795, y: 4450, phase: 'Output',
+    x: 795, y: 4750, phase: 'Output',
     badge: null,
     inputs: ['summary.json', 'investigation findings', 'session recording table', 'actions.md templates', 'report_structure.md spec'],
-    outputs: ['/tmp/cvr_rca_<ce_id>/report.html'],
+    outputs: ['<run_dir>/report.html'],
     condition: 'Always fires after transcript is written.',
-    description: 'Self-contained HTML. Section 1: 5 metric cards + root cause callout (What/Why/When — no hedging). Section 2: ≤3 action cards ranked P1–P3, each with specific DRI task. Section 3: evidence supporting Sections 1–2 only — Shapley bar, mix table, trend chart, and only the dimension cuts that showed signal. Ruled-out dimensions collected in a single block at the end.',
+    description: 'Self-contained HTML. Section 1: (1a) 5 metric cards — CVR/LP2S/S2C/C2O/Traffic with pp + % deltas; (1b) 90-day CVR trend chart with LY overlay — always in Section 1, post window shaded green (improvement) or red (decline); (1c) root cause callout — red border for drops, green border for improvements, answers What/Why/When with no hedging. Positive CVR variant has heading "CVR Improved — What\'s Driving It & What\'s Holding It Back". Fixed segment banner after mix cascade output, before Shapley block. Section 2: ≤3 action cards P1–P3, specific DRI + task. Section 3: evidence only — Shapley bar, mix table, dimension cuts that showed signal; all tables must include Pre Users + Post Users columns alongside rates.',
   },
   {
     id: 'evaluation', type: 'eval', icon: '⭐',
     label: 'Evaluation', sublabel: '7-theme rubric · score 1–5 per theme',
-    x: 795, y: 4740, phase: 'Evaluation',
+    x: 795, y: 5040, phase: 'Evaluation',
     badge: null,
     inputs: ['html-report', 'investigation transcript', 'summary.json', 'evaluator.md rubric'],
     outputs: ['~/Documents/RCA skill/evals/ce<id>_<date>.md', 'score per theme (1–5)', 'top 2–3 improvement items'],
@@ -922,40 +934,40 @@ const NODES = [
   },
   {
     id: 'file-context', type: 'file', icon: '📄',
-    label: 'context.md', sublabel: 'Domain knowledge hub — v1.1 expanded',
+    label: 'context.md', sublabel: 'Business vocab, schemas, query rules — v1.4',
     x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
-    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Dimensions guide', 'Investigation Patterns', 'Session Recordings', 'table schemas'],
+    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'inventory_availability schema', 'Dimensions guide', 'table schemas'],
   },
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
-    label: 'hypothesis.md', sublabel: '10 patterns · 21 historical MMPs',
-    x: 1670, y: 2690, phase: 'Reference File',
+    label: 'hypothesis.md', sublabel: 'Central branch reference — two-level (v1.4)',
+    x: 1670, y: 2990, phase: 'Reference File',
     usedBy: ['hypothesis'],
     fileKey: 'hypothesis',
-    chips: ['LP2S sudden/gradual', 'S2C sudden/gradual', 'C2A drop', 'A2O drop', 'Mix shift', 'Device/Language/Experience'],
+    chips: ['L0 routing map', 'LP2S 3-tier triage', 'S2C 2-tier triage', 'C2O 4+3 hypotheses', 'URL concentration', '10 historical patterns'],
   },
   {
     id: 'file-actions', type: 'file', icon: '📄',
     label: 'actions.md', sublabel: '10 root causes → action templates',
-    x: 1670, y: 4450, phase: 'Reference File',
+    x: 1670, y: 4750, phase: 'Reference File',
     usedBy: ['html-report'],
     fileKey: 'actions',
     chips: ['P1/P2/P3 actions', 'DRI per root cause', '10 RCs', 'historical refs'],
   },
   {
     id: 'file-report-struct', type: 'file', icon: '📄',
-    label: 'report_structure.md', sublabel: '3-section spec + HTML/CSS patterns',
-    x: 1670, y: 4700, phase: 'Reference File',
+    label: 'report_structure.md', sublabel: '3-section spec + HTML/CSS patterns — v1.4',
+    x: 1670, y: 5000, phase: 'Reference File',
     usedBy: ['html-report'],
     fileKey: 'reportStruct',
-    chips: ['Section 1/2/3 rules', 'metric card HTML', 'Plotly spec', 'anti-patterns'],
+    chips: ['90d chart in S1 (always)', 'positive CVR green variant', 'fixed segment banner', 'raw user counts mandatory', 'weekly x-axis ticks'],
   },
   {
     id: 'file-evaluator', type: 'file', icon: '📄',
     label: 'evaluator.md', sublabel: '7-theme rubric + scoring guide',
-    x: 1670, y: 4950, phase: 'Reference File',
+    x: 1670, y: 5250, phase: 'Reference File',
     usedBy: ['evaluation'],
     fileKey: 'evaluator',
     chips: ['7 themes', 'score 1–5', 'high vs low criteria', 'self-honesty check'],
@@ -963,7 +975,7 @@ const NODES = [
   {
     id: 'file-worked-example', type: 'file', icon: '📄',
     label: 'worked_example.md', sublabel: 'Two end-to-end investigation walkthroughs',
-    x: 1670, y: 2890, phase: 'Reference File',
+    x: 1670, y: 3190, phase: 'Reference File',
     usedBy: ['hypothesis'],
     fileKey: 'workedExample',
     chips: ['Mix-dominant walkthrough', 'Conversion + locus walkthrough', 'French × iOS cross-cut', 'session recordings'],
@@ -997,15 +1009,18 @@ const EDGES = [
   // Trend pattern (Q3)
   { id:'e16', from:'step-decision', to:'trend-pattern',  type:'conditional', label:'reads Q3 + Q7 series'      },
 
-  // Reconverge → hypothesis
+  // Funnel drivers → mix cascade (mandatory L1 before hypothesis)
   { id:'e17', from:'mix-root',      to:'hypothesis',     type:'conditional', label:'mix mechanism'             },
-  { id:'e18', from:'lp2s-driver',   to:'hypothesis',     type:'conditional', label:'LP2S mechanism'            },
-  { id:'e19', from:'s2c-driver',    to:'hypothesis',     type:'conditional', label:'S2C mechanism'             },
-  { id:'e20', from:'c2a-a2o',       to:'hypothesis',     type:'conditional', label:'C2O DRI assignment'        },
-  { id:'e21', from:'trend-pattern', to:'hypothesis',     type:'always',      label:'onset pattern'             },
+  { id:'e18', from:'lp2s-driver',   to:'mix-cascade',    type:'conditional', label:'LP2S framing'              },
+  { id:'e19', from:'s2c-driver',    to:'mix-cascade',    type:'conditional', label:'S2C framing'               },
+  { id:'e20', from:'c2a-a2o',       to:'mix-cascade',    type:'conditional', label:'C2O framing'               },
+  { id:'e21', from:'trend-pattern', to:'mix-cascade',    type:'always',      label:'onset pattern'             },
+
+  // Mix cascade → hypothesis
+  { id:'e21b', from:'mix-cascade',  to:'hypothesis',     type:'always',      label:'fixed segment declared'    },
 
   // Custom queries
-  { id:'e22', from:'hypothesis',    to:'custom-select',  type:'always',      label:'2–4 hypotheses'            },
+  { id:'e22', from:'hypothesis',    to:'custom-select',  type:'always',      label:'L2 branch set'             },
   { id:'e23', from:'custom-select', to:'custom-results', type:'conditional', label:'selected queries'          },
   { id:'e24', from:'custom-results',to:'locus',          type:'always',      label:'query results'             },
   { id:'e25', from:'custom-select', to:'locus',          type:'conditional', label:'if no queries needed'      },
@@ -1020,7 +1035,7 @@ const EDGES = [
   // Consults (file → node, dotted)
   { id:'c1',  from:'file-skill',       to:'user-input',    type:'consults', label:'master protocol'           },
   { id:'c2',  from:'file-context',     to:'mix-decision',  type:'consults', label:'domain definitions + DRI'  },
-  { id:'c3',  from:'file-hypothesis',  to:'hypothesis',    type:'consults', label:'10 historical patterns'    },
+  { id:'c3',  from:'file-hypothesis',  to:'hypothesis',    type:'consults', label:'L0 map + first-pass branches' },
   { id:'c4',  from:'file-actions',     to:'html-report',   type:'consults', label:'action templates'          },
   { id:'c5',  from:'file-report-struct',to:'html-report',  type:'consults', label:'HTML/CSS spec'             },
   { id:'c6',  from:'file-evaluator',   to:'evaluation',    type:'consults', label:'7-theme rubric'            },
@@ -1038,251 +1053,379 @@ const SECTION_LABELS = [
   { text: '⑦ Mix / Step Branches', x: 30, y: 1762},
   { text: '⑧ Driver Analysis',     x: 30, y: 2062},
   { text: '⑨ Q2+Q3 Sub-decisions', x: 30, y: 2357},
-  { text: '⑩ Hypothesis',          x: 30, y: 2662},
-  { text: '⑪ Custom Queries',      x: 30, y: 3562},
-  { text: '⑫ Query Results',       x: 30, y: 3262},
-  { text: '⑬ Locus + Recordings',  x: 30, y: 3562},
-  { text: '⑭ Transcript',          x: 30, y: 4132},
-  { text: '⑮ HTML Report',         x: 30, y: 4422},
-  { text: '⑯ Evaluation',          x: 30, y: 4712},
+  { text: '⑩ L1 Mix Cascade',       x: 30, y: 2662},
+  { text: '⑪ Hypothesis',          x: 30, y: 2962},
+  { text: '⑫ Custom Queries',      x: 30, y: 3262},
+  { text: '⑬ Query Results',       x: 30, y: 3562},
+  { text: '⑭ Locus + Recordings',  x: 30, y: 3862},
+  { text: '⑮ Transcript',          x: 30, y: 4432},
+  { text: '⑯ HTML Report',         x: 30, y: 4722},
+  { text: '⑰ Evaluation',          x: 30, y: 5012},
 ];
 
 // ── File contents (curated markdown rendered in the side panel) ───────────────
 const FILE_CONTENTS = {
 
-skill: `# SKILL.md — Master Decision Protocol (v1.1)
+skill: `# SKILL.md — Master Decision Protocol (v1.4)
 
 ## Purpose
-Pure process orchestrator. Domain knowledge, query rules, investigation patterns, and worked examples live in \`context.md\` and \`worked_example.md\`. This file tells you what steps to follow and when to pivot.
+Pure process orchestrator. \`context.md\` owns business vocab, schemas, and query rules. \`hypothesis.md\` is the central branch reference — L0 routing map + first-pass branch sets + historical patterns.
 
 ---
 
 ## Before You Begin (always)
 
 \`\`\`bash
-cat context.md           # domain vocab, schemas, query rules, investigation patterns
-cat hypothesis.md        # historical priors from 21 MMPs
+cat context.md           # domain vocab, schemas, query rules — read before writing any query
+cat hypothesis.md        # two-level branch reference — read before forming any branch
 cat actions.md           # root cause → action mappings
 cat report_structure.md  # output spec (3-section layout)
 \`\`\`
 
 ---
 
-## Execution Order
+## L0 — Read all three orientation signals simultaneously
+1. **mix_dominance** — is mix dominant? TRUE → routing story (Q6 + mix root cause)
+2. **shapley** — which funnel step is primary? (LP2S / S2C / C2O)
+3. **trend_context** — sudden break / gradual erosion / seasonal?
 
-| Step | Action |
-|------|--------|
-| 1 | Run baseline pipeline → summary.json |
-| 2 | Open investigation transcript |
-| 3 | Answer 3 mandatory questions |
-| 4 | Consult hypothesis.md; form 2–4 falsifiable hypotheses |
-| 5 | Write + run custom queries (from scratch, context.md schemas) |
-| 6 | Pull session recordings if locus confirmed (REQUIRED) |
-| 7 | Write investigation transcript |
-| 8 | Write HTML report (report_structure.md) |
-| 9 | Evaluate against 7-theme rubric (evaluator.md) |
+See \`hypothesis.md\` → "L0 signal → first branches to open" for the default L1 branch set.
 
 ---
 
-## Q1: Routing or conversion?
-- Read \`mix_dominance.is_dominant\`
-- TRUE → traffic/routing story. Investigate where traffic shifted. DRI: Marketing.
-- FALSE → funnel problem → Q2 and Q3
+## L1 — Mix cascade (always first, on funnel path)
+Before forming any funnel hypothesis, fix the primary segment:
+- Level 1: MB vs HO (from summary.json — no query)
+- Level 2: Paid vs Organic (custom BQ query)
+- Level 3: Channel within Paid (if Paid was fixed)
 
-## Q2: Which step is primary?
-- Read \`shapley\`. Steps with < ~10% of delta: skip deep-dive.
-- Multiple steps can be significant simultaneously.
+Declare **fixed segment** in transcript. All L2+ queries carry these filters.
+
+---
+
+## L2+ — Branch and descend (all queries filtered to fixed segment)
+Open first branches from \`hypothesis.md\` first-pass sets. Run in parallel, read results together. Each result is: **Confirms** (child branch), **Rules out** (close + state why), **Concentrates** (anchor + ask why), or **Surprises** (new branch — even if not in default set). Investigation ends at the **leaf** — not when the list is exhausted.
+
+---
 
 ## Q3: Sudden, gradual, or seasonal? (3 sub-steps)
 - **3a:** 90-day trend shape — sharp break / gradual erosion / recovery in progress
 - **3b:** Compare \`current_delta_cvr\` to \`ly_delta_cvr\`. Compute \`structural_delta_cvr\`.
 - **3c:** Check weekday composition — more weekends in post = apparent drop, no real change.
-- Check \`pre_period_healthy\`: FALSE means Shapley understates true change.
-
----
-
-## Data Pull Errors — Log and Continue
-When any query fails or returns empty:
-1. Log in transcript (error, impact, workaround)
-2. Add ⚠️ data-gap note in report where missing data would appear
-3. Continue using available data
-4. Use "consistent with" not "confirmed by" if missing data was material
 
 ---
 
 ## Session Recordings — Required Once Locus Confirmed
-Any concentrated dimension cut is sufficient (URL, experience, device, language, page type). If skipped, report must explicitly state why. Skipping without explanation is not acceptable once a locus is confirmed.
+Any concentrated dimension cut is sufficient. Skipping without explicit justification in the report is not acceptable.
 
 ---
 
-## Changelog
-
+## Changelog (selected)
 | # | Date | Change |
 |---|------|--------|
-| c001–c002 | 2026-04-24 | Initial framework: 3 questions, Shapley, mix decomp, evaluator |
-| c003 | 2026-04-24 | Majority-contributor principle; rate × volume rule; recordings required |
-| c004 | 2026-04-24 | Recordings trigger fixed to disjunctive; data pull errors section added |
-| c005 | 2026-04-24 | P1/P2/P3 action card priority badges |
-| c006 | 2026-04-27 | Removed Q2/Q4/Q5/Q6 template pointers; all querying now write-from-scratch |
-| c007 | 2026-04-27 | Stripped to pure process; domain content → context.md + worked_example.md |
-| c008 | 2026-04-27 | Removed stale internal references and redundant restatements |
+| c012 | 2026-04-27 | Investigation tree model (L0 → L1 → leaf) replaces sequential Q1/Q2/Q3 gate |
+| c017 | 2026-04-29 | Mix cascade as mandatory L1; fixed segment declared for all L2+ queries |
+| c018 | 2026-04-29 | Self-extending hypothesis loop; four result types incl. Surprises |
+| c019 | 2026-04-29 | Removed "2–4 hypotheses" artifact; branches grow from data not from a list |
+| c020 | 2026-04-29 | hypothesis.md upgraded to two-level central branch reference |
 `,
 
-context: `# context.md — Domain Knowledge Hub (v1.1)
+context: `# context.md — Domain Knowledge Hub (v1.1, updated c009)
 
-Read before touching any data, writing callouts, or forming hypotheses. This file owns all domain knowledge — query rules, interpretation guides, dimension guidance, and investigation patterns.
+Read before touching any data, writing callouts, or forming hypotheses. This file owns all business vocabulary, table schemas, analytical concepts, and query rules. Investigation patterns and hypothesis logic live in \`hypothesis.md\`.
 
 ---
 
 ## Combined Entity (CE)
-Headout's core unit of business reporting. A curated grouping of experiences within a specific geography × experience type (e.g., "Skip-the-Line Colosseum in Rome" = CE 167).
-
-CVR is measured per CE because demand, supply, and pricing dynamics are CE-specific.
+Headout's core unit of business reporting. A curated grouping of experiences within a specific geography × experience type (e.g., "Skip-the-Line Colosseum in Rome" = CE 167). \`combined_entity_id\` is STRING — always filter with \`= '<ce_id>'\`, no CAST.
 
 ---
 
 ## MB vs HO — The Two Distribution Channels
 
-| Code | Full name | Traffic source | Base CVR |
-|------|-----------|---------------|----------|
-| **MB** | Microbrand | SEO, affiliates, partner referrals (ticketslondon.com, etc.) | Lower — discovery-oriented |
-| **HO** | Headout | Paid search (Google/Bing), direct, email | Higher — intent-driven |
+| Code | Full name | What it is | Base CVR |
+|------|-----------|------------|----------|
+| **MB** | Microbrand | White-label city microsites (ticketslondon.com etc). SEO, affiliates, partner referrals. | Lower — discovery-oriented |
+| **HO** | Headout | headout.com. High-intent paid search (Google/Bing), direct, email. | Higher — intent-driven |
 
-> A shift in traffic share toward MB will depress overall CVR even if per-session rates in both brands are unchanged. Always distinguish MB rate drop vs HO rate drop vs traffic mix shift.
+A shift in traffic share toward MB depresses overall CVR even if per-segment rates hold. Always distinguish MB rate drop vs HO rate drop vs traffic mix shift.
 
 ---
 
 ## Funnel Steps — CVR = LP2S × S2C × C2O
 
-| Step | From | To | Drop usually means |
-|------|------|----|--------------------|
-| **LP2S** | Landing page | Select / Date-picker | Price too high, UX change, low availability shown, ad mismatch |
-| **S2C** | Select page | Checkout Started | No bookable dates, price shock at variant, UX friction, variant confusion |
-| **C2O** | Checkout Started | Order confirmed | Decompose into C2A and A2O (see below) |
+| Step | From → To | Drop usually means |
+|------|----------|--------------------|
+| **LP2S** | Landing page → Select/Date-picker | Price too high, UX change, low availability shown, ad mismatch |
+| **S2C** | Select page → Checkout Started | No bookable dates, price shock at variant, UX friction, variant confusion |
+| **C2O** | Checkout Started → Order confirmed | Decompose into C2A and A2O (see below) |
 
-### C2O Sub-decomposition
 - **C2A drop** = users abandon before submitting payment → UX/pricing friction. DRI: Product/UX
-- **A2O drop** = payment submitted but order failed → gateway, fraud, FX, live inventory failure. DRI: Payments / Engineering
+- **A2O drop** = payment submitted but order failed → gateway, fraud, FX, live inventory failure. DRI: Payments/Engineering
+
+---
+
+## Mix Cascade — Fixing the Primary Segment (NEW in c006)
+
+Run as the first L1 step in every funnel investigation. Three levels:
+
+**Level 1 — MB vs HO:** Read from \`summary.json\` (mb_share, ho_share) — no query needed. Fix \`is_microbrand_page = TRUE/FALSE\`.
+
+**Level 2 — Paid vs Organic:** Custom BQ query grouping \`channel_name\` into Paid (Google Ads, Microsoft Ads, Facebook Ads, Affiliates) vs Organic. Fix the dominant type.
+
+**Level 3 — Channel within Paid:** Only if Paid was fixed. Break out individual channel names. Fix the largest absolute checkout-impact channel.
+
+**Decision rule:** Fix a level when one segment has >15% of post users AND its absolute checkout impact (|Δcvr| × post users) exceeds all others combined. If distributed, log "no dominant segment" and carry all values.
+
+**Declare fixed segment before writing any further hypotheses:**
+\`\`\`
+Fixed segment: MB · Paid · Google Ads
+Filters: AND is_microbrand_page = TRUE AND channel_name = 'Google Ads'
+\`\`\`
+Every L2+ query must carry these filters.
 
 ---
 
 ## DRI Quick Reference
 
-| Finding | Primary DRI | Other possible DRIs |
-|---------|-------------|---------------------|
-| LP2S drop, mobile, sudden | Product (mobile web) | Engineering (performance) |
+| Finding | Most common DRI | Other possible DRIs |
+|---------|-----------------|---------------------|
+| LP2S drop, mobile, sudden | Product (front-end) | Engineering (performance) |
 | LP2S drop, gradual | Supply / Inventory | Performance Marketing; BDM; Content |
-| LP2S drop, specific language | Performance Marketing | BDM; Localisation |
-| S2C drop | Supply / Inventory | Product; Ops/BDM |
+| LP2S drop, specific language | Localisation / Marketing | BDM; Performance Marketing |
+| S2C drop | Supply / Inventory or Product (UX) | Ops/BDM |
 | C2O: C2A drop | Product / UX | Ops (custom fields, pax setup) |
-| C2O: A2O drop | Payments | Ops / Engineering |
-| MB/HO mix shift | Marketing | Performance Marketing |
+| C2O: A2O drop | Payments team | Engineering/Ops (live inventory sync) |
+| MB/HO mix shift | Marketing (traffic allocation) | Performance Marketing |
 | Channel mix shift | Performance Marketing | — |
 
 ---
 
 ## Key Analytical Concepts
 
-### Shapley Decomposition
-CVR = LP2S × S2C × C2O (multiplicative). Shapley averages marginal contributions across all 6 orderings. Values always sum exactly to ΔCVR — no residual. This is why you can say "LP2S explains 68% of the drop" with precision.
+**Shapley:** LP2S × S2C × C2O contributions averaged across all 6 orderings. Always sum exactly to ΔCVR — no residual.
 
-### Mix vs Conversion Effect
-For each segment (MB/HO, Paid/Organic):
-- \`mix_effect = Δshare × pre_rate\` → traffic routing problem
-- \`conversion_effect = pre_share × Δrate\` → funnel/product problem
-- \`interaction = Δshare × Δrate\` → usually small cross-term
+**Mix vs Conversion Effect:** \`mix_effect = Δshare × pre_rate\` (routing); \`conversion_effect = pre_share × Δrate\` (funnel); \`interaction = Δshare × Δrate\` (cross-term).
 
-### Traffic Non-Additivity
-Users in dimension cuts (language, page_type, device) are NOT additive. The same user appears in multiple cuts. Each dimension has its own \`COUNT(DISTINCT user_id)\` subquery. Never sum across cuts.
+**Traffic Non-Additivity:** Users across dimension cuts (language, page_type, device) are NOT additive. Each dimension needs its own \`COUNT(DISTINCT user_id)\` subquery. Never sum across cuts.
+
+**C2O = C2A × A2O.** Already computed in Stage 1 using \`users_order_attempted\` — no extra BQ query needed.
 
 ---
 
-## Primary Table
-\`analytics_reporting.mixpanel_user_page_funnel_progression\`
+## Primary Table — \`mixpanel_user_page_funnel_progression\`
+
+**Standard filter pattern (all queries):**
+\`\`\`sql
+WHERE combined_entity_id = '<ce_id>'
+  AND event_date BETWEEN '<start>' AND '<end>'
+  AND (advertising_channel_type IS NULL
+       OR advertising_channel_type != 'PERFORMANCE_MAX')
+\`\`\`
 
 **Critical rules:**
-- \`combined_entity_id\` is STRING — filter with \`= '<ce_id>'\`, no CAST
-- \`event_date\` is the partition key — always filter on it
-- \`is_microbrand_page\` = TRUE → MB; FALSE → HO
-- \`has_order_completed\` uses Order Confirmation Page as proxy (reliable for CVR)
-- **Do not use** \`flow_type\` (doesn't exist), \`session_date\` (doesn't exist)
+- \`combined_entity_id\` is STRING — no CAST
+- \`event_date\` is partition key — always filter on it
+- \`is_microbrand_page = TRUE\` → MB; \`FALSE\` → HO
+- \`has_order_completed\` uses Order Confirmation Page as proxy (reliable)
+- **Do not use** \`flow_type\` (doesn't exist), \`session_date\` (doesn't exist), \`experience_name\` (not in this table)
+- \`advertising_channel_type\` = 'PERFORMANCE_MAX' inflates counts — always exclude
+- \`experience_id\` is NULL until the user reaches the select page
 
-**New in v1.1:** Query Principles (majority-contributor + rate×volume), Q3 Trend Interpretation (3 sub-steps), Dimensions to Query and When, Common Investigation Patterns per funnel step, Session Recordings guidance.
+---
+
+## inventory_availability Table (NEW in c004)
+
+\`analytics_reporting.inventory_availability\` — daily inventory snapshots. **30-day rolling window** (both \`experience_date\` and \`extracted_date\` within 30 days). For older periods use \`analytics_intermediate.inventory_changes\`.
+
+**Key columns:** \`tour_id\`, \`experience_date\`, \`extracted_date\`, \`total_remaining\`, \`count_time_slots\`
+
+**Bridge path:** \`dim_experiences\` has no \`tour_id\`; \`inventory_availability\` has no \`experience_id\`. Use \`dim_tours\` as two-hop bridge: \`dim_experiences → dim_tours → inventory_availability\`.
+
+Lead-time bucket query: bucket \`DATE_DIFF(experience_date, extracted_date, DAY)\` into 0-2d / 3-6d / 7-13d / 14-29d / 30d+. Compare \`count_dates_zero_inventory\` and \`avg_remaining\` per bucket across pre vs post.
+
+---
+
+## Query Principles
+
+**Majority-contributor:** Before citing any entity as a driver, ask: does it represent a meaningful share of CE traffic? Long-tail entities (high-variance rate on tiny volume) are noise, not evidence.
+
+**Rate × volume:** Always compute absolute checkout/order loss (rate change × volume) before declaring a primary driver. A large rate drop on a small segment and a small rate drop on a large segment can point in opposite directions.
+
+---
+
+## Q3 Trend Interpretation (3 sub-steps)
+
+- **3a — 90-day shape:** Sharp break → something changed that day (find it). Gradual erosion → compounding structural trend. Recovery in progress → understand prior incident.
+- **3b — LY overlay:** Compare \`current_delta_cvr\` to \`ly_delta_cvr\`. Use \`structural_delta_cvr\` (current minus LY) as the true investigation magnitude.
+- **3c — Weekday composition:** More weekends in post = apparent drop with no real change for many CE types. Count the mix before attributing magnitude to product/supply causes.
+
+---
+
+## Changelog (selected)
+| # | Date | Change |
+|---|------|--------|
+| c002 | 2026-04-27 | Query Principles, Q3 Trend, Dimensions to Query, Session Recordings guidance added (moved from SKILL.md) |
+| c004 | 2026-04-28 | inventory_availability + inventory_changes schemas; lead-time bucket query |
+| c006 | 2026-04-29 | Mix Cascade section added (3-level cascade, decision rule, fixed-segment declaration) |
+| c009 | 2026-04-29 | Investigation patterns moved to hypothesis.md — context.md now owns domain vocab + schemas + query rules only |
 `,
 
-hypothesis: `# hypothesis.md — Historical Patterns Reference
+hypothesis: `# hypothesis.md — Central Branch Reference (v1.4, two-level)
 
-> These patterns are **starting points, not a menu.** Form your own hypotheses from what the data shows. If summary.json points to a mechanism not listed here, follow it — the data is always the authority.
+## How to use this file
 
-Drawn from 21 historical Headout RCAs across MMPs. Ranked by frequency within each driver type.
+Two levels of guidance:
+
+**Level 1 — L0 routing map + first-pass branch sets** (sections immediately below): tells you *which branches to open* at L1 and L2. Read before forming any hypothesis.
+
+**Level 2 — Historical patterns** (Pattern 1–10 below that): provides *specific mechanism hypotheses* once a first-pass branch confirms a direction. Use to decide *why* something may have happened in a confirmed dimension.
+
+These patterns are **starting points, not a menu.** Follow what the data actually shows — if \`summary.json\` points to a mechanism not listed, follow it.
 
 ---
 
-## URL concentration — valid for any primary driver
+## L0 signal → first branches to open
 
-Before reading step-specific patterns, check URL breakdown for the affected metric. A drop concentrated in 2–3 high-traffic URLs points to something specific about those pages. A uniform drop across all URLs points to a CE-wide mechanism.
+| L0 signal | Value / pattern | L1 branches to open |
+|-----------|----------------|---------------------|
+| \`mix_dominance.is_dominant = true\` | Routing story | (a) Which MB/HO segment or channel drove the shift? (b) Which URLs or channels gained/lost volume? |
+| Shapley: LP2S dominates | LP2S is funnel story | (a) Device × LP2S — mobile? (b) Page type × LP2S — Collection vs Experience? (c) Price change for top experiences? (d) URL-level traffic loss? |
+| Shapley: S2C dominates | S2C is funnel story | (a) Language × S2C? (b) Device × S2C — mobile select-page? (c) Experience-level S2C + availability proxy? (d) Lead time distribution shift? (e) MB vs HO S2C split? |
+| Shapley: C2O dominates | C2O is funnel story | (a) C2A vs A2O sub-decomposition? (b) Channel × C2O? (c) Device × C2O — mobile checkout? |
+| Trend: sharp break on date X | Event on date X | (a) Which dimension shows largest rate change anchored to that date? (b) Paid campaign change? Deploy? Supply config? |
+| Trend: gradual erosion | Compounding trend | (a) Supply trend (availability proxy over time)? (b) Pricing trend? (c) Traffic quality trend? |
+| Trend: seasonal (\`structural_delta_cvr\` small) | Calibrate depth | Still investigate — use \`structural_delta_cvr\` as magnitude, not \`current_delta_cvr\` |
+
+Multiple L0 signals combine. If S2C dominates AND sharp break: "experience-level S2C anchored to break date" + "availability proxy change on that date". If mix dominant AND gradual: "which channel or URL has been losing traffic over past N weeks".
 
 ---
 
-## Pattern 1: LP2S — Sudden Onset
-Sharp drop began on a specific date. Work backwards from that date.
+## First-pass branch sets by primary driver
 
-1. **Pricing increase** — SP rate change, discount removed, fees now included in display price
-2. **LP/MB format deploy** — new listing page template added an extra decision step (Vienna concerts: LP2S halved overnight when venue-selection step added before date selection)
-3. **Campaign routing error** — paid campaigns pointing to wrong/outdated LP (NY Helicopter: language campaigns routing to old SF LP)
-4. **Product ranking change** — new top-ranked product with lower inherent CVR or worse availability
-5. **Competitor flash promotion** — sudden price advantage on GYG/Viator
+The investigation ends at a **leaf** (specific mechanism + segment + URL/date), NOT when this list is exhausted. Common reasons the list runs out before a leaf: cross-cut not tested, finer grain not drilled, cause is in a different table.
 
-## Pattern 2: LP2S — Gradual Decline
-Slow erosion over weeks → structural change.
+### Mix — first-pass
+Query \`COUNT(DISTINCT user_id)\` by \`page_url\` pre vs post for the affected segment. Which URLs gained/lost volume? A paid campaign serving specific collection pages that stopped → those pages show a traffic drop. Marketing owns it.
 
-1. **Supply thinning** — \`days_to_first_available_date\` increasing; users see far-out dates only
-2. **SIS cap** — Share of Impression Share ceiling; marginal paid clicks are lower-intent
-3. **Competitive pressure** — GYG/Viator strengthened listing quality gradually
-4. **Content degradation** — images replaced, descriptions stale, review count stagnating
-5. **Assortment drift** — lower-CVR products added to CE, diluting listing quality
+### LP2S — three-tier (work in order)
 
-## Pattern 3: S2C — Sudden Onset
-Sharp S2C drop almost always points to supply config change or select-page deploy.
+**Tier 1 — Dimension cuts in parallel:**
+- \`device_type\` × LP2S — mobile drop → UI/performance change
+- \`language\` × LP2S — single language drop → geo-specific pricing/UX
+- \`page_type\` × LP2S — Collection drop (not Experience) → browse-level friction
+- \`experience_id\` × LP2S — few experiences → listing quality/price/availability
 
-1. **Availability config tightened** — API cut-off period shortened, release window changed (Blue Mountains: next-day/same-week blocked)
-2. **Select page UX regression** — date-picker broken/degraded, likely mobile-concentrated (check iOS Mweb first)
-3. **Price shock at variant level** — select page shows higher price than LP anchor (NY Helicopter: helipad fees)
-4. **Specific experience availability collapse** — one key experience lost inventory entirely
-5. **TGID misconfiguration** — wrong variants linked, wrong date-picker loading
+If a dimension concentrates: run intersection (e.g., French × mobile), drill to \`page_url\`. **The page URL is the target output.**
 
-## Pattern 4: S2C — Gradual Decline
-1. **Inventory thinning** — SP progressively reducing available slots or shortening booking window
-2. **Variant complexity / decision paralysis** — more SKUs without clear differentiation (Vienna concerts: multiple venue × composer × price combinations)
-3. **Vendor throttling** — SP quietly reduces slots to avoid over-booking; \`count_days_available_30d\` and \`days_to_first_available_date\` both worsen for affected experiences
-4. **Seasonal availability pattern** — compare to prior-year data to distinguish seasonal from structural
+**Tier 2 — If no dimension concentrates:** Price analysis — \`final_price_usd\` from \`product_rankings_features\` pre vs post. CE-wide price uplift depresses LP2S broadly.
 
-## Pattern 5: C2O — C2A Drop (abandonment before payment)
-1. **Hidden fees revealed at checkout** — price materially higher than select page (helipad fees, booking fees, taxes)
-2. **Checkout UX friction** — new required field, autofill broke, payment option removed
-3. **Booking fee / mandatory add-on surprise** — fee not surfaced earlier
-4. **Coupon breakage** — active promo code stopped working
-5. **Trust signals missing** — review score, cancellation policy, security badge removed
+**Tier 3 — If pricing flat:** Session recordings — look for UX pattern affecting all users (slow load, broken carousel, changed CTA). Note "no quantitative locus found".
 
-## Pattern 6: C2O — A2O Drop (payment submitted but failed)
-1. **Payment gateway degradation** — timeout, error rate increase, outage for specific payment method
-2. **Fraud rule tightening** — updated filters increasing decline rate for certain card types/geographies
-3. **Currency/FX display error** — wrong conversion rate at payment step
-4. **New payment method regression** — new option introduced flow breakage in existing methods
+### S2C — two-tier (work in order)
 
-## Pattern 7: MB/HO Mix Shift
-1. **Paid campaign paused / budget reallocated** — HO paid traffic drops; MB organic share rises (NY Helicopter: 75% drop in English campaign clicks drove CVR collapse via mix)
-2. **LP routing error** — language/geo campaigns send traffic to MB page instead of headout.com
-3. **Seasonal organic MB spike** — without corresponding paid HO increase
-4. **Budget reallocated to another CE** — paid spend shifted away
+**Tier 1 — Dimension cuts in parallel:**
+- \`language\` × S2C — single language → localised select-page issue
+- \`device_type\` × S2C — mobile → select-page UX/rendering issue
+- \`experience_id\` × S2C — specific experiences → supply/pricing. Confirm with \`count_days_available_30d\`; run \`inventory_availability\` lead-time bucket query to identify which window went empty.
 
-## Pattern 8–10: Concentrated Drops
+If language/device concentrates: drill to intersection, then to \`page_url\`.
 
-**Device:** Mobile UI deploy regression (iOS Safari most sensitive), page performance degradation, mobile-specific feature breakage
+If experience concentrates: demand-side (\`lead_time_days\` distribution) + supply-side (\`inventory_availability\` bucket) — both shifting in same window = supply-caused.
 
-**Language:** Geo-specific campaign change, localisation issue (missing translations, RTL layout), geo-specific pricing/availability change
+**Tier 2 — If no concentration:** Did checkout flow or variant selection UI change? Did availability drop uniformly (platform-wide config change)?
 
-**Experience-level (S2C):** Experience-specific availability collapse — check \`count_days_available_30d\` for that experience_id; vendor-specific operational issue; experience-specific pricing change; TGID misconfiguration
+### C2O — decompose first, always
+
+Check \`c2o_sub\` from \`summary.json\` before any queries. C2A and A2O point to completely different causes.
+
+**If C2A dropped (pre-payment abandonment) — 4 hypotheses in parallel:**
+1. Pax availability at checkout — certain pax configurations unavailable → DRI: Ops/BDM
+2. Price display friction — total checkout price differs from listing price
+3. Checkout UX change — form field, CTA, coupon, or trust signal change (mobile most sensitive)
+4. Session recordings on checkout page
+
+**If A2O dropped (payment submitted but failed) — 3 hypotheses in parallel:**
+1. Payment gateway failure — elevated decline rate for specific gateway/card network
+2. Fraud rule tightening — new fraud model blocking more legitimate transactions
+3. Live inventory failure — slot sold out between checkout start and payment confirmation
+
+---
+
+## URL concentration — cross-cutting check
+
+Before step-specific patterns: check URL breakdown in \`summary.json\` for the affected metric.
+
+- Drop concentrated in 2–3 high-traffic URLs → something specific about those pages (template change, specific experience, audience)
+- Drop spread uniformly across all high-traffic URLs → CE-wide mechanism (availability, pricing, platform change)
+
+Volume filter applies: long-tail URLs (small CE traffic share) produce high-variance estimates — directional only.
+
+---
+
+## Historical patterns — mechanism detail
+
+### Pattern 1: LP2S — Sudden Onset
+1. Pricing increase on listing page (SP rate change, discount removed, fees now in display price)
+2. LP/MB format deploy added extra decision step (Vienna concerts: LP2S halved overnight)
+3. Campaign routing error — paid to wrong LP (NY Helicopter: language campaigns → old SF LP)
+4. Product ranking change — new top product with lower inherent CVR
+5. Competitor flash promotion — sudden price advantage on GYG/Viator
+
+### Pattern 2: LP2S — Gradual Decline
+1. Supply thinning — \`days_to_first_available_date\` increasing
+2. SIS cap — marginal paid clicks lower-intent
+3. Competitive pressure — GYG/Viator strengthened listing quality
+4. Content degradation — images, descriptions, review count stagnating
+5. Assortment drift — lower-CVR products added to CE
+
+### Pattern 3: S2C — Sudden Onset
+1. Availability config tightened — API cut-off shortened, release window changed
+2. Select page UX regression — date-picker broken, mobile-concentrated
+3. Price shock at variant level — LP shows base price, select shows full price
+4. Specific experience availability collapse — vendor closed inventory
+5. TGID misconfiguration — wrong variants linked
+
+### Pattern 4: S2C — Gradual Decline
+1. Inventory thinning — SP progressively reducing slots or shortening booking window
+2. Variant complexity / decision paralysis (Vienna concerts: venue × composer × price combinations)
+3. Vendor throttling — SP quietly reduces slots; \`count_days_available_30d\` and \`days_to_first_available_date\` both worsen
+4. Seasonal availability pattern — compare to prior-year
+
+### Pattern 5: C2O — C2A Drop
+1. Hidden fees revealed at checkout (helipad fees, booking fees, taxes)
+2. Checkout UX friction (new required field, autofill broke, payment option removed)
+3. Booking fee / mandatory add-on surprise
+4. Coupon breakage — active promo code stopped working
+5. Trust signals missing
+
+### Pattern 6: C2O — A2O Drop
+1. Payment gateway degradation — timeout, error rate spike
+2. Fraud rule tightening — increased decline rate for certain card types/geographies
+3. Currency/FX display error at payment step
+4. New payment method regression
+
+### Pattern 7: MB/HO Mix Shift
+1. Paid campaign paused / budget reallocated — HO traffic drops, MB organic share rises (NY Helicopter: 75% drop in English campaign clicks → CVR collapse via mix)
+2. LP routing error — campaigns send traffic to MB page instead of headout.com
+3. Seasonal organic MB spike without corresponding paid HO increase
+4. Budget reallocated to another CE
+
+### Patterns 8–10: Concentrated Drops
+**Device:** Mobile UI deploy regression (iOS Safari most sensitive), performance degradation, mobile feature breakage
+
+**Language:** Geo-specific campaign change, localisation issue (translations, RTL layout), geo-specific pricing/availability change
+
+**Experience-level (S2C):** Availability collapse (check \`count_days_available_30d\`), vendor-specific operational issue, experience-specific pricing change, TGID misconfiguration
+
+---
+
+## Changelog
+| # | Date | Change |
+|---|------|--------|
+| c002 | 2026-04-24 | "How to use this file" preamble — historical priors, not a constraint |
+| c003 | 2026-04-24 | URL concentration section added as cross-cutting first check |
+| c004 | 2026-04-29 | Restructured as two-level reference: Level 1 (L0 routing map + first-pass branch sets) moved from context.md; Level 2 (historical patterns) retained |
 `,
 
 actions: `# actions.md — Root Cause → Action Templates
@@ -2294,12 +2437,10 @@ function TestRunsExplorer() {
         const m = {};
         results.forEach(({ version, manifest }) => { m[version] = manifest; });
         setManifests(m);
-        // Auto-select the latest run (first run in highest version)
-        const latestVersion = [...results].sort((a, b) => b.version.localeCompare(a.version))[0];
-        if (latestVersion) {
-          const firstRun = (latestVersion.manifest.runs || [])[0];
-          if (firstRun) setSelectedRun({ run: firstRun, version: latestVersion.version });
-        }
+        // Auto-select the most recent run (latest run_date across all versions)
+        const allRuns = results.flatMap(r => (r.manifest.runs || []).map(run => ({ run, version: r.version })));
+        const latestRun = allRuns.sort((a, b) => (b.run.run_date || '').localeCompare(a.run.run_date || ''))[0];
+        if (latestRun) setSelectedRun({ run: latestRun.run, version: latestRun.version });
         setIndexLoading(false);
       })
       .catch(() => { setIndexError(true); setIndexLoading(false); });
@@ -2414,7 +2555,7 @@ function TestRunsExplorer() {
                 </div>
               </div>
               <div className="tr-run-header-score" style={{ color }}>
-                {activeRun.eval_score}/{activeRun.eval_max} pts
+                {activeRun.eval_score != null ? `${activeRun.eval_score}/${activeRun.eval_max} pts` : 'Not evaluated'}
               </div>
             </div>
 

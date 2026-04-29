@@ -646,12 +646,10 @@ function TestRunsExplorer() {
         const m = {};
         results.forEach(({ version, manifest }) => { m[version] = manifest; });
         setManifests(m);
-        // Auto-select the latest run (first run in highest version)
-        const latestVersion = [...results].sort((a, b) => b.version.localeCompare(a.version))[0];
-        if (latestVersion) {
-          const firstRun = (latestVersion.manifest.runs || [])[0];
-          if (firstRun) setSelectedRun({ run: firstRun, version: latestVersion.version });
-        }
+        // Auto-select the most recent run (latest run_date across all versions)
+        const allRuns = results.flatMap(r => (r.manifest.runs || []).map(run => ({ run, version: r.version })));
+        const latestRun = allRuns.sort((a, b) => (b.run.run_date || '').localeCompare(a.run.run_date || ''))[0];
+        if (latestRun) setSelectedRun({ run: latestRun.run, version: latestRun.version });
         setIndexLoading(false);
       })
       .catch(() => { setIndexError(true); setIndexLoading(false); });
@@ -766,7 +764,7 @@ function TestRunsExplorer() {
                 </div>
               </div>
               <div className="tr-run-header-score" style={{ color }}>
-                {activeRun.eval_score}/{activeRun.eval_max} pts
+                {activeRun.eval_score != null ? `${activeRun.eval_score}/${activeRun.eval_max} pts` : 'Not evaluated'}
               </div>
             </div>
 
