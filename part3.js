@@ -585,8 +585,8 @@ function MarkdownViewer({ url }) {
 
 // ── Run sidebar card ──────────────────────────────────────────────────────────
 function RunCard({ run, version, active, onClick }) {
-  const color = scoreColor(run.eval_score, run.eval_max);
-  const fillPct = Math.round((run.eval_score / run.eval_max) * 100);
+  const color = scoreColor(run.eval_score ?? 0, run.eval_max);
+  const fillPct = run.eval_score != null ? Math.round((run.eval_score / run.eval_max) * 100) : 0;
   return (
     <div className={`tr-run-card${active ? ' active' : ''}`} onClick={onClick}>
       {/* Row 1: CE ID + version badge */}
@@ -598,16 +598,18 @@ function RunCard({ run, version, active, onClick }) {
       <div className="tr-card-ce-name">{run.ce_name}</div>
       {/* Row 3: date range */}
       <div className="tr-card-dates">
-        <span title="Pre period">Pre {run.pre_period.split(' → ')[0]}</span>
+        <span title="Pre start">{run.pre_start}</span>
         {' → '}
-        <span title="Post period end">Post {run.post_period.split(' → ')[1]}</span>
+        <span title="Post end">{run.post_end}</span>
       </div>
       {/* Row 4: score bar */}
       <div className="tr-card-score-row">
         <div className="tr-score-bar-wrap">
           <div className="tr-score-bar" style={{ width: `${fillPct}%`, background: color }} />
         </div>
-        <span className="tr-score-label" style={{ color }}>{run.eval_score}/{run.eval_max}</span>
+        <span className="tr-score-label" style={{ color }}>
+          {run.eval_score != null ? `${run.eval_score}/${run.eval_max}` : '—'}
+        </span>
       </div>
       {/* Row 5: root cause snippet */}
       <div className="tr-card-rc">{run.root_cause_summary}</div>
@@ -759,7 +761,7 @@ function TestRunsExplorer() {
               <div>
                 <div className="tr-run-header-name">{activeRun.ce_name} — CE {activeRun.ce_id}</div>
                 <div className="tr-run-header-meta">
-                  Pre {activeRun.pre_period} &nbsp;·&nbsp; Post {activeRun.post_period}
+                  {activeRun.pre_start} → {activeRun.post_end}
                   {activeRun.run_date && ` · Evaluated ${activeRun.run_date}`}
                 </div>
               </div>
