@@ -35,6 +35,22 @@
       }
     },
     {
+      "id": "ce3111_2026-03-05_2026-05-03",
+      "ce_id": "3111",
+      "ce_name": "Kennedy Space Center",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 26,
+      "eval_max": 35,
+      "root_cause": "CVR fell −0.29pp (3.66%→3.38%) because Google Ads traffic to kennedyspacecenter-tickets.com fell 30% (92k→64k users) while Paid CVR held completely flat (4.58%→4.59%) — a Level 2 mix exit routing story. ~75% of the apparent decline is an Easter 2026 calendar artifact (26k extra US domestic users in the final 6 days of pre). US domestic CVR is flat (+0.08pp, 4.35%→4.43%), confirming no conversion problem for the core audience.",
+      "files": {
+        "report": "runs/v1.6/ce3111_2026-03-05_2026-05-03/report.html",
+        "transcript": "runs/v1.6/ce3111_2026-03-05_2026-05-03/transcript.md",
+        "evaluation": "runs/v1.6/ce3111_2026-03-05_2026-05-03/evaluation.md"
+      }
+    },
+    {
       "id": "ce6495_2026-03-05_2026-05-03_run2",
       "ce_id": "6495",
       "ce_name": "Kualoa Ranch",

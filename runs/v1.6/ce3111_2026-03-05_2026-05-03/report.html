@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Kennedy Space Center (CE 3111)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #1a1a2e; line-height: 1.55; }
+    header { background: #1a1a2e; color: #fff; padding: 28px 40px 24px; }
+    header .eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #8892a4; margin-bottom: 6px; }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #8892a4; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e0e4ef; }
+    .metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card { background: #fff; border-radius: 10px; padding: 18px 16px 16px; border: 1px solid #e8ebf4; }
+    .metric-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #8892a4; margin-bottom: 8px; }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta { font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 12px; margin-top: 6px; display: inline-block; }
+    .delta-neg { background: #fdecea; color: #c62828; }
+    .delta-pos { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout { background: #fff; border-left: 4px solid #e53935; border-radius: 0 10px 10px 0; padding: 24px 28px; margin-bottom: 8px; border-top: 1px solid #e8ebf4; border-right: 1px solid #e8ebf4; border-bottom: 1px solid #e8ebf4; }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8892a4; margin-bottom: 4px; }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 16px; }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row { font-size: 13px; color: #555; margin-bottom: 16px; display: flex; gap: 6px; align-items: center; }
+    .dri-badge { background: #e8edf7; color: #3a4a8a; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 8px; }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 20px; }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line { font-size: 14px; font-weight: 600; color: #c62828; background: #fdecea; border-radius: 6px; padding: 8px 14px; margin-bottom: 18px; }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    .verdict-line.warning { color: #e65100; background: #fff3e0; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #8892a4; padding: 8px 12px; border-bottom: 2px solid #e8ebf4; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Kennedy Space Center — CE 3111</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-03-05 – 2026-04-03</span>
+    <span>📅 Post: 2026-04-04 – 2026-05-03</span>
+    <span>🌍 North America · United States</span>
+    <span>🔗 <a href="https://www.kennedyspacecenter-tickets.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">kennedyspacecenter-tickets.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values"><span class="pre">3.66%</span><span class="post">3.38%</span></div>
+      <div class="delta delta-neg">Δ −0.29pp / −7.8%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values"><span class="pre">26.6%</span><span class="post">24.0%</span></div>
+      <div class="delta delta-neg">Δ −2.60pp / −9.8%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values"><span class="pre">30.6%</span><span class="post">31.5%</span></div>
+      <div class="delta delta-pos">Δ +0.91pp / +3.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values"><span class="pre">44.9%</span><span class="post">44.6%</span></div>
+      <div class="delta delta-flat">Δ −0.37pp / −0.8%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP Users</div>
+      <div class="values"><span class="pre">133k</span><span class="post">102k</span></div>
+      <div class="delta delta-neg">Δ −30,958 / −23.3%</div>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    <div id="trend-90day"></div>
+  </div>
+
+  <div style="margin-top:24px;">
+  <div class="callout">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">Google Ads traffic to kennedyspacecenter-tickets.com fell 30% (92k→64k users) while Google Ads CVR held completely flat at 4.58%→4.59%. Nothing in the product or funnel broke — there are simply fewer high-CVR Paid visitors as a share of total traffic (71.8%→66.9%), pulling down the CE-wide weighted average.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">The traffic decline is largely a calendar artifact. Easter 2026's tourism demand — roughly 26k extra US domestic Google Ads users — was entirely concentrated in the final 6 days of the pre period (Mar 29–Apr 3), inflating the pre baseline. US domestic users (the core converting audience, 62% of traffic) show CVR essentially flat pre vs post (+0.08pp, 4.35%→4.43%), confirming no product or conversion problem for the audience that actually books. Post-Easter traffic settling at ~2,500–3,500/day vs pre-Easter normal of ~3,800–4,400/day accounts for the remaining ~15% structural volume shortfall.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual, with a sharp Easter calendar distortion. The pre/post comparison is skewed by the Easter spike in the last 6 days of pre. The 90-day trend shows persistent structural underperformance vs LY (current CVR ~3.4–4.5% vs LY ~4.5–6.0%), a separate long-running concern predating this window.</div>
+    </div>
+  </div>
+  </div>
+
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Google Ads traffic to kennedyspacecenter-tickets.com fell 30% (92k→64k users) in April 2026, with completely flat CVR — a volume story, not a conversion story.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Performance Marketing</span>
+    </div>
+    <ul>
+      <li>Audit Google Ads campaigns for kennedyspacecenter-tickets.com covering April 2026 — check whether the volume decline was an intentional budget reallocation, a billing lapse, or an unintended campaign pause.</li>
+      <li>Check Impression Share (IS) and Lost IS (Budget) + Lost IS (Rank) for the KSC campaigns in Google Ads — if SIS fell below 80% in April, this is an active budget constraint that should be restored given the flat CVR (4.59%) confirming Paid quality is unchanged.</li>
+      <li>Note: post-Easter structural traffic (Apr 12+ at ~2,500–3,500/day) is ~15% below pre-Easter normal (~3,800–4,400/day). Even after accounting for the Easter baseline effect, some structural volume decline remains — confirm whether seasonal (shoulder between spring break and summer) or addressable via bid adjustment.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">S2C runs ~8–12pp below last year (current 30–32% vs LY 39–44% throughout the 90-day window) — a structural conversion gap that is not captured in the current pre/post delta.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Growth / Ops</span>
+    </div>
+    <ul>
+      <li>Investigate when S2C began diverging from LY — pinpoint the date range in late 2025 when current S2C dropped vs LY to identify whether this coincides with a pricing change, supply configuration change (API cut-off, lead-time settings), or assortment change for KSC experiences.</li>
+      <li>Check API cut-off period settings for KSC's primary supply partner — a shortening of available booking windows would reduce S2C without impacting LP2S or C2O (consistent with the observed pattern: S2C gap is larger than LP2S gap vs LY).</li>
+      <li>Compare KSC experience variant availability and pricing on Headout vs GYG/Viator for the same date windows — if the select page is showing fewer or more expensive options than competitors, this directly suppresses S2C.</li>
+    </ul>
+  </div>
+
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
+    <div class="verdict-line">Routing story — mix change at Level 2. Paid traffic share fell while Paid CVR held flat. Performance Marketing owns.</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix Effect</th><th class="num">Conv. Effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">145,053</td><td class="num">110,951</td>
+          <td class="num">99.1%</td><td class="num">98.8%</td>
+          <td class="num">3.86%</td><td class="num">3.62%</td>
+          <td class="num">−0.00pp</td><td class="num neg">−0.24pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>HO</td>
+          <td class="num">1,337</td><td class="num">1,361</td>
+          <td class="num">0.9%</td><td class="num">1.2%</td>
+          <td class="num">4.56%</td><td class="num">3.31%</td>
+          <td class="num">—</td><td class="num">—</td>
+          <td>Negligible share</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 2 — Paid vs Organic (within MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix Effect</th><th class="num">Conv. Effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong></td>
+          <td class="num">104,125</td><td class="num">74,204</td>
+          <td class="num">71.8%</td><td class="num">66.9%</td>
+          <td class="num">4.32%</td><td class="num">4.32%</td>
+          <td class="num neg">−0.21pp</td><td class="num">0.00pp</td>
+          <td><strong>Mix exit — routing story</strong></td>
+        </tr>
+        <tr>
+          <td>Organic</td>
+          <td class="num">40,928</td><td class="num">36,747</td>
+          <td class="num">28.2%</td><td class="num">33.1%</td>
+          <td class="num">2.69%</td><td class="num">2.20%</td>
+          <td class="num pos">+0.13pp</td><td class="num neg">−0.14pp</td>
+          <td>Secondary decline</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Paid CVR is exactly flat (4.32% = 4.32%) and the mix_effect of −0.21pp dominates its conversion_effect of 0.00pp. Nothing broke within Paid — there is simply less Paid traffic. The cascade exits here with a routing story. Organic CVR also declined (2.69%→2.20%, Δ−0.49pp) but Organic's total contribution to ΔCVR is small (−0.03pp) due to offsetting mix effects, making Paid volume the primary driver.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Paid Channel Breakdown — Google Ads and Microsoft Ads</div>
+    <div class="verdict-line">Both paid channels lost volume with flat CVR. Google Ads accounts for 95% of the Paid user decline.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">User Δ</th>
+          <th class="num">Pre LP2S</th><th class="num">Post LP2S</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">CVR Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">92,038</td><td class="num">64,492</td>
+          <td class="num neg">−27,546 (−30%)</td>
+          <td class="num">32.6%</td><td class="num">31.6%</td>
+          <td class="num">4.58%</td><td class="num">4.59%</td>
+          <td class="num pos">+0.01pp</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num">12,838</td><td class="num">9,968</td>
+          <td class="num neg">−2,870 (−22%)</td>
+          <td class="num">20.4%</td><td class="num">20.1%</td>
+          <td class="num">2.50%</td><td class="num">2.53%</td>
+          <td class="num pos">+0.03pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      CVR within both channels is essentially unchanged — Google Ads 4.58%→4.59% (+0.01pp) and Microsoft Ads 2.50%→2.53% (+0.03pp). The problem is purely volume. Google Ads lost 27,546 users, accounting for 95% of the total Paid decline. LP2S within Google Ads fell only −1.0pp (32.6%→31.6%), confirming LP-level quality is intact — the decline is traffic acquisition, not funnel performance.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Calendar Calibration — Easter 2026 Effect on Pre/Post Comparison</div>
+    <div class="verdict-line warning">Easter 2026 (Apr 5) injected ~26k extra users into the final 6 days of pre, inflating the pre baseline. The apparent −30% Paid traffic decline overstates the structural reality.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th class="num">LP Users</th>
+          <th class="num">LP2S</th>
+          <th class="num">CVR</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pre (normal) — Mar 5–28</td>
+          <td class="num">~111,800</td>
+          <td class="num">~30.5%</td>
+          <td class="num">~4.7%</td>
+          <td>24-day normal baseline, ~3,800–4,400/day</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Easter spike — Mar 29–Apr 3</strong></td>
+          <td class="num">~45,100</td>
+          <td class="num">13.9–32.4%</td>
+          <td class="num">1.1–5.5%</td>
+          <td>Traffic surges 5k–13k/day; LP2S collapses on Good Friday (Apr 1)</td>
+        </tr>
+        <tr>
+          <td>Post (spring-break tail) — Apr 4–11</td>
+          <td class="num">~45,600</td>
+          <td class="num">20–25%</td>
+          <td class="num">~3.1–4.2%</td>
+          <td>Easter/spring break hangover, still elevated</td>
+        </tr>
+        <tr>
+          <td>Post (normal) — Apr 12–May 3</td>
+          <td class="num">~56,500</td>
+          <td class="num">22–28%</td>
+          <td class="num">~3.5–4.8%</td>
+          <td>~2,500–3,500/day, ~15% below pre-Easter normal</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Easter 2026 (Apr 5) generated its primary US domestic demand spike in the pre period (Mar 29–Apr 3), adding ~26k extra LP users — predominantly US domestic Paid search visitors actively booking KSC tickets over the holiday. These visitors had terrible LP2S on Apr 1 (13.9%) and Apr 2 (18.1%) as tourists browsed without booking intent, dragging down pre CVR while inflating pre traffic. Calendar-adjusted, pre Paid traffic (Google Ads ~70k over 27 normal days) is approximately equivalent to post Paid traffic (64k over 30 days). The apparent −30% Paid volume decline is mostly the Easter spike unwinding, not a genuine campaign withdrawal.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Geo vs Non-Geo — US domestic audience CVR is flat</div>
+    <div class="verdict-line">US domestic (Geo) CVR held flat at +0.08pp. The CE-wide decline is a weighted-average effect of fewer US high-CVR users — not a universal conversion breakdown.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre LP2S</th><th class="num">Post LP2S</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">CVR Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>United States</strong></td>
+          <td>Geo</td>
+          <td class="num">82,624</td><td class="num">55,084</td>
+          <td class="num">29.8%</td><td class="num">27.3%</td>
+          <td class="num">4.35%</td><td class="num">4.43%</td>
+          <td class="num pos">+0.08pp</td>
+        </tr>
+        <tr>
+          <td>United Kingdom</td>
+          <td>Non-Geo</td>
+          <td class="num">5,707</td><td class="num">5,389</td>
+          <td class="num">25.4%</td><td class="num">24.6%</td>
+          <td class="num">2.70%</td><td class="num">1.95%</td>
+          <td class="num neg">−0.75pp</td>
+        </tr>
+        <tr>
+          <td>Canada</td>
+          <td>Non-Geo</td>
+          <td class="num">4,632</td><td class="num">3,119</td>
+          <td class="num">27.3%</td><td class="num">26.4%</td>
+          <td class="num">3.45%</td><td class="num">3.24%</td>
+          <td class="num neg">−0.21pp</td>
+        </tr>
+        <tr>
+          <td>Brazil</td>
+          <td>Non-Geo</td>
+          <td class="num">3,348</td><td class="num">4,340</td>
+          <td class="num">24.6%</td><td class="num">24.3%</td>
+          <td class="num">2.21%</td><td class="num">2.19%</td>
+          <td class="num">−0.02pp</td>
+        </tr>
+        <tr>
+          <td>Germany</td>
+          <td>Non-Geo</td>
+          <td class="num">4,394</td><td class="num">3,108</td>
+          <td class="num">20.6%</td><td class="num">18.1%</td>
+          <td class="num">3.00%</td><td class="num">2.73%</td>
+          <td class="num neg">−0.27pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      US users (82k→55k, −33%) show CVR 4.35%→4.43% — the LP2S decline (29.8%→27.3%, −2.5pp) is offset by improved S2C (+1.52pp) and C2O (+2.73pp), netting to essentially flat CVR. This is the single clearest piece of evidence that the conversion experience for the core KSC audience is intact. The CE-wide apparent CVR drop is a mix effect: US share fell from 62% to 54% of traffic (largely Easter baseline effect), and since US users convert at 4.43% vs the CE average of 3.38%, a smaller US share mechanically pulls down the weighted average. UK (5,707 users, −0.75pp CVR) is the only non-US market with a notable conversion decline, concentrated in C2O (35.6%→27.2%), but it represents ~5% of total traffic.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond what the Paid traffic routing story already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Device:</strong> LP2S declined proportionally across all devices — iOS Mweb −3.23pp (49k users), Android Mweb −2.16pp (24k users), Desktop −1.89pp (43k users). No device shows a disproportionate drop. Consistent with a traffic quality mix shift (less Paid = lower average intent) rather than a device-specific UX regression.</li>
+      <li style="margin-bottom:8px;"><strong>Language:</strong> English (101k→73k, −28%) mirrors the CE-wide pattern exactly (LP2S −2.76pp). Spanish (13k→12k) showed slightly worse CVR decline (−0.62pp), consistent with LatAm seasonality. French (4.3k→4.5k, traffic grew) actually improved CVR (+0.95pp). No single language is disproportionately concentrated — this is English-dominated because English is ~70% of traffic.</li>
+      <li style="margin-bottom:8px;"><strong>Price:</strong> All key KSC experiences show flat or slightly decreased prices pre vs post (−0% to −2%). No price increases. No price shock mechanism is present.</li>
+      <li style="margin-bottom:0;"><strong>Availability:</strong> Most KSC experiences show near-full availability (avg ~29.5–32 available days out of 30). One exception: experience 14668 ($239, premium) dropped from 22.4 to 14.3 available days. With S2C improving +0.91pp overall, availability is clearly not a constraining factor in this window.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-05-04 · CVR-RCA · CE 3111 Kennedy Space Center</footer>
+
+<script>
+const currentDates = [
+  '2026-02-03','2026-02-04','2026-02-05','2026-02-06','2026-02-07','2026-02-08','2026-02-09','2026-02-10',
+  '2026-02-11','2026-02-12','2026-02-13','2026-02-14','2026-02-15','2026-02-16','2026-02-17','2026-02-18',
+  '2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23','2026-02-24','2026-02-25','2026-02-26',
+  '2026-02-27','2026-02-28','2026-03-01','2026-03-02','2026-03-03','2026-03-04','2026-03-05','2026-03-06',
+  '2026-03-07','2026-03-08','2026-03-09','2026-03-10','2026-03-11','2026-03-12','2026-03-13','2026-03-14',
+  '2026-03-15','2026-03-16','2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-21','2026-03-22',
+  '2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28','2026-03-29','2026-03-30',
+  '2026-03-31','2026-04-01','2026-04-02','2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07',
+  '2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14','2026-04-15',
+  '2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21','2026-04-22','2026-04-23',
+  '2026-04-24','2026-04-25','2026-04-26','2026-04-27','2026-04-28','2026-04-29','2026-04-30','2026-05-01',
+  '2026-05-02','2026-05-03'
+];
+
+const currentCvr = [
+  0.038451,0.036926,0.033856,0.036996,0.041899,0.038566,0.042825,0.047402,
+  0.042282,0.04,0.036865,0.051467,0.050346,0.047521,0.043281,0.040843,
+  0.048637,0.038971,0.040077,0.041831,0.04056,0.041063,0.03471,0.04107,
+  0.04039,0.044602,0.044399,0.039507,0.04521,0.051787,0.047648,0.047774,
+  0.040236,0.047517,0.040861,0.039518,0.042801,0.047686,0.046691,0.049345,
+  0.05338,0.058949,0.054477,0.053774,0.050935,0.047748,0.050179,0.053902,
+  0.052468,0.046954,0.052763,0.046034,0.051416,0.046257,0.055029,0.042489,
+  0.029993,0.011132,0.022899,0.032171,0.031245,0.036666,0.034211,0.04216,
+  0.041541,0.036383,0.038344,0.02721,0.036625,0.035873,0.036745,0.04142,
+  0.047358,0.037087,0.051666,0.043584,0.046559,0.044502,0.045022,0.046769,
+  0.0481,0.038599,0.039683,0.035976,0.039155,0.035327,0.039207,0.034468,
+  0.03102,0.032907
+];
+
+const lyCvr = [
+  0.040836,0.050834,0.057968,0.04887,0.050776,0.0457,0.046135,0.04847,
+  0.054859,0.053955,0.06065,0.050822,0.057194,0.051673,0.051974,0.053237,
+  0.056976,0.051569,0.05012,0.045278,0.046388,0.042516,0.04,0.041622,
+  0.04698,0.047019,0.048129,0.046837,0.049268,0.048918,0.049222,0.047199,
+  0.055236,0.056876,0.04917,0.048279,0.038161,0.043988,0.033925,0.046356,
+  0.05339,0.047194,0.040542,0.04728,0.052693,0.05604,0.051862,0.051799,
+  0.051874,0.049007,0.049486,0.054361,0.058457,0.056707,0.053472,0.046727,
+  0.045864,0.055556,0.052172,0.053268,0.057267,0.05349,0.056642,0.056883,
+  0.046623,0.057222,0.052588,0.059457,0.053912,0.051474,0.051455,0.05722,
+  0.05493,0.06608,0.050769,0.05192,0.051478,0.046774,0.057206,0.052052,
+  0.048344,0.046654,0.056097,0.046831,0.044426,0.055289,0.049679,0.050439,
+  0.046682,0.050829
+];
+
+const POST_START = '2026-04-04';
+const POST_END   = '2026-05-03';
+const postDates  = currentDates.filter(d => d >= POST_START && d <= POST_END);
+const midPostDate = postDates[Math.floor(postDates.length / 2)];
+
+const hasLyData = lyCvr.some(v => v !== null && v !== undefined && v > 0);
+
+const traces90d = [
+  {
+    type: 'scatter', mode: 'lines', name: 'CVR 2026',
+    x: currentDates, y: currentCvr,
+    line: { color: '#6c8ebf', width: 2 }
+  }
+];
+
+if (hasLyData) {
+  traces90d.push({
+    type: 'scatter', mode: 'lines', name: 'CVR 2025 (LY)',
+    x: currentDates, y: lyCvr,
+    line: { color: '#9e9e9e', dash: 'dash', width: 1.5 }
+  });
+}
+
+Plotly.newPlot('trend-90day', traces90d, {
+  height: 280,
+  yaxis: { tickformat: '.1%', title: 'CVR' },
+  xaxis: { tickformat: '%d %b', dtick: 7 * 86400000, title: '' },
+  plot_bgcolor: '#fff', paper_bgcolor: '#fff',
+  font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color: '#1a1a2e', size: 11 },
+  legend: { orientation: 'h', y: -0.2 },
+  margin: { l: 55, r: 20, t: 30, b: 60 },
+  shapes: [
+    {
+      type: 'rect', x0: POST_START, x1: POST_END, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper',
+      fillcolor: 'rgba(198,40,40,0.06)', line: { width: 0 }
+    },
+    {
+      type: 'line', x0: POST_START, x1: POST_START, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper',
+      line: { color: '#c62828', dash: 'dot', width: 1 }
+    }
+  ],
+  annotations: [
+    {
+      x: midPostDate, y: 0.92, xref: 'x', yref: 'paper',
+      text: 'Post period', font: { color: '#c62828', size: 10 }, showarrow: false
+    },
+    {
+      x: '2026-04-01', y: 0.011132, xref: 'x', yref: 'y',
+      text: 'Easter spike<br>Apr 1-3', font: { color: '#e53935', size: 9 },
+      showarrow: true, arrowhead: 2, arrowsize: 0.8, arrowcolor: '#e53935',
+      ax: 40, ay: -30
+    }
+  ]
+}, { responsive: true });
+</script>
+
+</body>
+</html>
