@@ -260,13 +260,13 @@ const NODES = [
   // ══ OUTPUTS ══
   {
     id: 'transcript', type: 'output', icon: '📝',
-    label: 'Investigation Transcript', sublabel: 'ce<id>_<post_start>.md',
+    label: 'Investigation Transcript', sublabel: 'Tree map + detail sections',
     x: 795, y: 4460, phase: 'Output',
     badge: null,
-    inputs: ['all decision points + rationale', 'queries run', 'hypotheses tested', 'ruled-out findings'],
-    outputs: ['~/Documents/RCA skill/transcripts/ce<id>_<date>.md'],
+    inputs: ['all branch decisions + rationale', 'queries run + results', 'hypotheses confirmed/ruled out', 'findings.md synthesis'],
+    outputs: ['<run_dir>/transcript.md'],
     condition: 'Always fires after locus decision (both paths).',
-    description: 'Structured markdown file with one entry per decision point: Hypothesis (what was tested), Data (fields/values examined), Decision (which path taken), Ruled out (what was dismissed and why). Required entries: Q1, Q2, Q3, all custom queries run, verdict synthesis. This is the investigation audit trail.',
+    description: 'Structured markdown file with two layers: (1) Tree map at top — full branch structure at a glance, updated as each branch resolves with CONFIRMED / RULED OUT / LEAF status. (2) Detail sections below — L0 orientation, L1 cascade results, L2+ parallel query batches with results, Root cause confirmed paragraph. Every number in findings.md must trace to a named query result in the detail sections. Written to <run_dir>/transcript.md alongside summary.json and report.html.',
   },
   {
     id: 'html-report', type: 'output', icon: '🌐',
@@ -280,13 +280,13 @@ const NODES = [
   },
   {
     id: 'evaluation', type: 'eval', icon: '⭐',
-    label: 'Evaluation', sublabel: '7-theme rubric · score 1–5 per theme',
+    label: 'Evaluation', sublabel: '7-theme rubric · score 1–5 · failure mode tags',
     x: 795, y: 5040, phase: 'Evaluation',
     badge: null,
-    inputs: ['html-report', 'investigation transcript', 'summary.json', 'evaluator.md rubric'],
-    outputs: ['~/Documents/RCA skill/evals/ce<id>_<date>.md', 'score per theme (1–5)', 'top 2–3 improvement items'],
+    inputs: ['4 skill reference files (read first)', 'html-report', 'investigation transcript', 'summary.json', 'evaluator.md rubric'],
+    outputs: ['<run_dir>/evaluation.md', 'score per theme (1–5)', 'Gap + Why per gap', 'Failure Mode Summary table'],
     condition: 'Always fires last — terminal node.',
-    description: 'Claude re-reads its own report as if seeing this CE for the first time, then grades each of 7 themes: Narrative Coherence, Hypothesis Specificity, Investigation Effort, Branch Decision Quality, Evidence Strength, Output Appropriateness, DRI & Actionability. Scores reflect honest self-critique — an evaluation where every theme is 4+ with no improvements is almost certainly not honest.',
+    description: 'Read skill files FIRST (SKILL.md, hypothesis.md, context.md, report_structure.md), then re-read report + transcript + summary.json. Grade 7 themes 1–5. Every gap (score ≤ 4) requires a Gap description and a Why line with one of four failure mode tags: [MISSING_INSTRUCTION] / [AMBIGUOUS_INSTRUCTION] / [EXEC_ERROR] / [DATA_LIMIT] — each tag must be grounded with a citation proving the file was checked. Output includes an Overall verdict, Theme scores with Gap/Why blocks, Top 2–3 improvements, and a Section 4 Failure Mode Summary table mapping every gap to a named file + fix. Written to <run_dir>/evaluation.md.',
   },
 
   // ══ REFERENCE FILE NODES ══
@@ -296,7 +296,7 @@ const NODES = [
     x: 1670, y: 70, phase: 'Reference File',
     usedBy: ['user-input'],
     fileKey: 'skill',
-    chips: ['lean process orchestrator', '3-sub-step Q3', 'data pull errors', 'recordings required', 'write-from-scratch queries'],
+    chips: ['lean process orchestrator', 'Step 2b — findings.md synthesis', 'Source column on every evidence claim', '3-sub-step Q3', 'data pull errors — log and continue', 'recordings required once locus confirmed'],
   },
   {
     id: 'file-context', type: 'file', icon: '📄',
@@ -332,11 +332,11 @@ const NODES = [
   },
   {
     id: 'file-evaluator', type: 'file', icon: '📄',
-    label: 'evaluator.md', sublabel: '7-theme rubric + scoring guide',
+    label: 'evaluator.md', sublabel: '7-theme rubric · failure mode tags · v1.5',
     x: 1670, y: 5250, phase: 'Reference File',
     usedBy: ['evaluation'],
     fileKey: 'evaluator',
-    chips: ['7 themes', 'score 1–5', 'high vs low criteria', 'self-honesty check'],
+    chips: ['7 themes', 'score 1–5', 'read skill files first', 'Gap + Why per gap', 'failure mode tags (4)', 'Section 4 Failure Mode Summary', 'self-honesty check'],
   },
   {
     id: 'file-worked-example', type: 'file', icon: '📄',
@@ -432,7 +432,7 @@ const SECTION_LABELS = [
 // ── File contents (curated markdown rendered in the side panel) ───────────────
 const FILE_CONTENTS = {
 
-skill: `# SKILL.md — Master Decision Protocol (v1.4)
+skill: `# SKILL.md — Master Decision Protocol (v1.4, c011)
 
 ## Purpose
 Pure process orchestrator. \`context.md\` owns business vocab, schemas, and query rules. \`hypothesis.md\` is the central branch reference — L0 routing map + first-pass branch sets + historical patterns.
@@ -440,7 +440,6 @@ Pure process orchestrator. \`context.md\` owns business vocab, schemas, and quer
 ---
 
 ## Before You Begin (always)
-
 \`\`\`bash
 cat context.md           # domain vocab, schemas, query rules — read before writing any query
 cat hypothesis.md        # two-level branch reference — read before forming any branch
@@ -450,50 +449,82 @@ cat report_structure.md  # output spec (3-section layout)
 
 ---
 
-## L0 — Read all three orientation signals simultaneously
-1. **mix_dominance** — is mix dominant? TRUE → routing story (Q6 + mix root cause)
-2. **shapley** — which funnel step is primary? (LP2S / S2C / C2O)
-3. **trend_context** — sudden break / gradual erosion / seasonal?
-
-See \`hypothesis.md\` → "L0 signal → first branches to open" for the default L1 branch set.
+## Step 1 — Baseline queries
+Run \`run_analysis.sh\`. Produces \`summary.json\` in \`<run_dir>\` under \`~/Documents/RCA skill/Test Runs/\`. Folder: \`ce<ce_id>_<pre_start>_<post_end>/\`. Auto-increments on re-run (_run2, _run3…).
 
 ---
 
-## L1 — Mix cascade (always first, on funnel path)
-Before forming any funnel hypothesis, fix the primary segment:
-- Level 1: MB vs HO (from summary.json — no query)
-- Level 2: Paid vs Organic (custom BQ query)
-- Level 3: Channel within Paid (if Paid was fixed)
+## Step 2 — Investigate (L0 → L1 cascade → L2+ branches)
 
-Declare **fixed segment** in transcript. All L2+ queries carry these filters.
+Open \`<run_dir>/transcript.md\` before reading data. Two layers: **tree map** at top (branch structure at a glance) + **detail sections** below. Update tree map each time a branch resolves.
+
+**L0 — Orient from summary.json (all three signals simultaneously)**
+1. **mix_dominance** — orientation hint only; the L1 cascade determines routing vs conversion
+2. **shapley** — which funnel step carries the majority of ΔCVR (directs L2+ after cascade)
+3. **trend_context** — shape (sharp/gradual/recovery) + seasonal calibration (structural_delta_cvr) + weekday composition
+
+**L1 — Mix cascade (routing vs conversion determination)**
+Three levels, each with a mix exit and a conversion path:
+- Level 1: MB vs HO (summary.json — no query). Mix exit → routing story. Conversion → fix brand, run L2.
+- Level 2: Paid vs Organic within fixed brand (BQ query). Mix exit → campaign/budget story. Conversion → fix type, run L3.
+- Level 3: Channel within Paid (BQ query). Mix exit → channel shift story. Conversion → fixed segment.
+
+Declare in transcript before any funnel branches: \`Fixed segment: [MB/HO] · [Paid/Organic] · [channel]\` + filter strings. Every L2+ query carries these filters.
+
+**L2+ — Branch and descend (all queries filtered to fixed segment)**
+Open first branches from \`hypothesis.md\` first-pass sets for the primary Shapley step. Run level in parallel, read together. Each result: **Confirms** (child branch), **Rules out** (state why), **Concentrates** (anchor + ask why), **Surprises** (open new branch). Investigation ends at the **leaf** — not when the default list is exhausted.
+
+**Session recordings** — required once any concentrated dimension (URL, device, experience, language) is confirmed. Skipping without explicit justification is not acceptable.
 
 ---
 
-## L2+ — Branch and descend (all queries filtered to fixed segment)
-Open first branches from \`hypothesis.md\` first-pass sets. Run in parallel, read results together. Each result is: **Confirms** (child branch), **Rules out** (close + state why), **Concentrates** (anchor + ask why), or **Surprises** (new branch — even if not in default set). Investigation ends at the **leaf** — not when the list is exhausted.
+## Step 2b — Synthesise findings (before writing HTML)
+
+Write \`<run_dir>/findings.md\`:
+
+\`\`\`markdown
+## Root cause
+[One sentence: what broke, in which segment, by how much]
+
+## Mechanism
+[The causal chain — what actually happened]
+
+## Timing
+[Sudden / gradual / seasonal — and the key evidence]
+
+## Evidence inventory
+| Claim | Supporting data | Source | Confidence |
+|-------|----------------|--------|------------|
+| [claim] | [specific numbers] | [summary.json field / BQ query result / report table row] | Confirmed / Consistent with / Unverified |
+
+## Open items
+[Each Consistent with / Unverified row that a query could close]
+\`\`\`
+
+**Every count or metric must have a named Source.** If you cannot name the source, derive it explicitly with arithmetic or remove it — a number with no source must not enter the report. Re-read critically: resolve open items with a query or arithmetic, or explicitly accept "Consistent with" and reflect that in report language.
 
 ---
 
-## Q3: Sudden, gradual, or seasonal? (3 sub-steps)
-- **3a:** 90-day trend shape — sharp break / gradual erosion / recovery in progress
-- **3b:** Compare \`current_delta_cvr\` to \`ly_delta_cvr\`. Compute \`structural_delta_cvr\`.
-- **3c:** Check weekday composition — more weekends in post = apparent drop, no real change.
+## Step 3 — Write the report
+Follow \`report_structure.md\` exactly. Write from \`findings.md\` as source of truth. Output: \`<run_dir>/report.html\`
 
 ---
 
-## Session Recordings — Required Once Locus Confirmed
-Any concentrated dimension cut is sufficient. Skipping without explicit justification in the report is not acceptable.
+## Step 4 — Evaluate
+Read \`evaluator.md\` rubric first. Re-read report, transcript, summary.json. Score 7 themes 1–5. Write to \`<run_dir>/evaluation.md\`.
 
 ---
 
 ## Changelog (selected)
 | # | Date | Change |
 |---|------|--------|
-| c012 | 2026-04-27 | Investigation tree model (L0 → L1 → leaf) replaces sequential Q1/Q2/Q3 gate |
-| c017 | 2026-04-29 | Mix cascade as mandatory L1; fixed segment declared for all L2+ queries |
+| c009 | 2026-04-27 | Default window changed to last 30 days vs prior 30 days |
+| c010 | 2026-04-27 | Step 2b added — structured findings.md before HTML; open items resolved before proceeding |
+| c011 | 2026-04-27 | Evidence inventory gains Source column — every claim must name its data origin |
+| c012 | 2026-04-27 | Investigation tree model (L0 → L1 → leaf) replaces sequential gates |
+| c017 | 2026-04-29 | Mix cascade as mandatory L1; fixed segment for all L2+ queries |
 | c018 | 2026-04-29 | Self-extending hypothesis loop; four result types incl. Surprises |
-| c019 | 2026-04-29 | Removed "2–4 hypotheses" artifact; branches grow from data not from a list |
-| c020 | 2026-04-29 | hypothesis.md upgraded to two-level central branch reference |
+| c021 | 2026-04-29 | Mix cascade repositioned as routing vs conversion determination; L0 signal 1 is orientation only |
 `,
 
 context: `# context.md — Domain Knowledge Hub (v1.1, updated c009)
@@ -1050,18 +1081,25 @@ No card saying "monitor the situation" or "investigate further."
 | Shapley visualization in a mix-dominant finding | The steps didn't break — showing it implies they did |
 `,
 
-evaluator: `# evaluator.md — Quality Evaluator
+evaluator: `# evaluator.md — Quality Evaluator (v1.5, e001)
 
 Step back after completing the RCA and grade your own work honestly. This is not a formality.
 
-> Be harder on yourself than a colleague would be. If something was vague when it should have been specific, say so.
+> Be harder on yourself than a colleague would be.
 
 ---
 
-## What to review before scoring
-1. The HTML report — read as if seeing this CE for the first time
-2. Your investigation reasoning — what you looked at, why, what you decided at each fork
-3. The summary.json — check that report claims are grounded in actual numbers
+## What to review (in this order)
+1. **The four skill reference files first** — so you know what instructions existed before reading the output:
+   - \`SKILL.md\` — investigation process (L0 → L1 cascade → L2+ branches)
+   - \`hypothesis.md\` — branch sets, L0 routing table, historical patterns
+   - \`context.md\` — table schemas, mix cascade mechanics, dimension definitions
+   - \`report_structure.md\` — HTML output spec, chart requirements, section order
+2. **The HTML report** — read as if seeing this CE for the first time
+3. **The investigation transcript** — what you looked at, why, what you decided at each fork
+4. **The summary.json** — check that report claims are grounded in actual numbers
+
+Reading the skill files first is what makes the Failure Mode Classification (Section 4) possible. You cannot say "the instruction was missing" unless you have actually looked.
 
 ---
 
@@ -1074,82 +1112,89 @@ Step back after completing the RCA and grade your own work honestly. This is not
 | 2 | Weak — significant gaps or errors |
 | 1 | Poor — fundamental failure of this dimension |
 
----
-
-## Theme 1: Narrative Coherence
-*Does the report tell a story, or does it show tables?*
-
-**Score high if:** Hero section states root cause in one specific sentence. Sections follow logically. Report explicitly rules things out before drilling deeper. Report is appropriately short.
-
-**Score low if:** Hero says "CVR declined due to multiple factors." Tables appear with no context. All possible analyses appear regardless of findings.
+For each theme: **Score + Justification** (2–3 sentences citing specific content). If score ≤ 4, also write a **Gap** (what was missing/wrong) and a **Why** (failure mode tag + citation).
 
 ---
 
-## Theme 2: Hypothesis Specificity & Quality
-*Did Claude form real hypotheses, or just describe what it saw?*
+## Failure Mode Classification
 
-**Score high if:** Hypotheses are falsifiable and name a specific mechanism, segment, and date. Root cause names something specific — a campaign, a URL, an experience, a date.
+Every gap gets a **Why** line with exactly one of these tags:
 
-**Score low if:** Report presents observations as hypotheses ("LP2S dropped, possibly due to UX or pricing"). Multiple root causes listed without ranking.
+| Tag | Meaning |
+|-----|---------|
+| \`[MISSING_INSTRUCTION]\` | Skill files contain no instruction for this behaviour. Claude had no way to know it was expected. |
+| \`[AMBIGUOUS_INSTRUCTION]\` | Instruction exists but is vague, incomplete, or conflicting enough that Claude reasonably interpreted it differently. |
+| \`[EXEC_ERROR]\` | Instruction was clear and present. Claude attempted to follow it but reasoned incorrectly. |
+| \`[DATA_LIMIT]\` | Data needed was unavailable. Skipping or noting the absence was the right call — not a skill flaw. |
 
----
+**Grounding requirement — never assign a tag without a citation:**
 
-## Theme 3: Investigation Effort & Adaptivity
-*Did Claude go deep enough, and know when to stop?*
-
-**Score high if:** Custom query written when standard queries left hypothesis unconfirmed. Investigation drilled to page-URL level when cut pointed there. Session recordings pulled once locus confirmed. Investigation stopped when evidence was conclusive.
-
-**Score low if:** Standard queries treated as sufficient even when hypothesis unconfirmed. URL concentrated signal found but no follow-up query run. Session recordings not used despite specific URL identified.
-
----
-
-## Theme 4: Branch Decision Quality
-*At each fork, did Claude pick the right path?*
-
-**Score high if:** Mix-vs-conversion decision was explicit and cited actual mix_dominance data. Primary segment choice explained. Dimension chosen was highest-signal. When a branch not taken, reason stated.
-
-**Score low if:** Mix not checked before concluding funnel problem. Dimension cuts shown in fixed order regardless of which was most likely to be informative.
+- \`[MISSING_INSTRUCTION]\` → "Searched SKILL.md, hypothesis.md, context.md, report_structure.md — no instruction found for [behaviour]."
+- \`[AMBIGUOUS_INSTRUCTION]\` → quote the instruction that exists, state what constraint it was missing
+- \`[EXEC_ERROR]\` → name file + section giving the instruction, confirm an attempt in the transcript, state what went wrong
+- \`[DATA_LIMIT]\` → name the instruction that required the data, explain why data was unavailable
 
 ---
 
-## Theme 5: Evidence Strength
-*Are callouts backed by real evidence?*
+## Themes 1–7
 
-**Score high if:** Every claim tied to a specific data point (number, date, URL, recording). Session recordings produced a specific observation. Confidence qualifiers appropriate for sample size.
+**Theme 1: Narrative Coherence** — Does the report tell a story, or show tables?
+Score high: specific root cause in one sentence, logical flow, rules things out explicitly, appropriately short.
+Score low: "CVR declined due to multiple factors", tables with no context, all analyses regardless of findings.
 
-**Score low if:** Claims made without citing a number ("LP2S dropped significantly" without stating actual delta). Session recordings referenced but produced no specific finding.
+**Theme 2: Hypothesis Specificity & Quality** — Real hypotheses, or observations?
+Score high: falsifiable hypotheses naming mechanism + segment + date, distinguishes what happened from what could have.
+Score low: "LP2S dropped, possibly due to UX or pricing", multiple root causes without ranking.
 
----
+**Theme 3: Investigation Effort & Adaptivity** — Deep enough, and stopped when done?
+Score high: custom query when standard queries insufficient, URL-level drill when concentration found, recordings once locus confirmed, stopped when conclusive.
+Score low: standard queries sufficient despite unconfirmed hypothesis, no follow-up on concentrated URL signal.
 
-## Theme 6: Output Appropriateness
-*Is the HTML report shaped by the story, not a template?*
+**Theme 4: Branch Decision Quality** — Right path at every fork?
+Score high: mix-vs-conversion decision explicit with data cite, primary segment choice explained, highest-signal dimension chosen, untaken branches state why.
+Score low: mix not checked before funnel conclusion, dimension cuts in fixed order regardless of signal.
 
-**Score high if:** Visual choice is appropriate to the insight. Tables appear only where they add information. Report length proportional to richness of finding. At least one component chosen deliberately over the default.
+**Theme 5: Evidence Strength** — Callouts backed by real evidence?
+Score high: every claim tied to a specific data point, recordings produced a specific observation, confidence qualifiers appropriate for sample size.
+Score low: claims without numbers, session recordings with no specific finding, inferences presented as facts.
 
-**Score low if:** Every analysis run appears in the report. Same set of components appears regardless of scenario. Charts used for single-date events where a callout would communicate better.
+**Theme 6: Output Appropriateness** — Report shaped by the story, not a template?
+Score high: visual choices match insight type, tables only where informative, length proportional to finding richness.
+Score low: all analyses appear in report, same components regardless of scenario, charts for single-date events.
 
----
-
-## Theme 7: DRI & Actionability
-*Does the report leave the reader knowing what to do?*
-
-**Score high if:** DRI names a specific team and a clear reason with named experience/URL/date. Action items are scoped and testable. GM could forward the action card directly to DRI without additional interpretation.
-
-**Score low if:** DRI is "Product team" without specifying what to look at. Action items say "investigate further" or "monitor the situation."
+**Theme 7: DRI & Actionability** — Reader knows what to do?
+Score high: DRI names specific team + reason + experience/URL/date, action items scoped and testable, GM could forward directly.
+Score low: "Product team" with no specifics, "investigate further", same action card for any CE.
 
 ---
 
 ## Output Format
-1. **Overall verdict** (3–4 sentences) — what did the RCA get right? What was the main failure mode?
-2. **Theme scores** — each theme with score, justification citing specific content, improvement if score ≤ 3
-3. **Top 2–3 things** that would have made this RCA materially better
+
+**1. Overall verdict** (3–4 sentences) — what did the RCA get right? What was the main failure mode?
+
+**2. Theme scores** — score + justification + Gap/Why per gap:
+\`\`\`
+**Gap:** [what was missing or wrong — specific, not vague]
+**Why:** [TAG] — [citation proving you checked] — [one sentence on what the fix would be]
+\`\`\`
+
+**3. Top 2–3 improvements** — concrete and actionable for the next run
+
+**4. Failure Mode Summary** — aggregate every gap:
+| Gap (short label) | Theme | Tag | Fix target |
+|-------------------|-------|-----|------------|
+| [gap name] | T[N] | [TAG] | [file + what to change] |
 
 ---
 
 ## Self-Honesty Check
-- Did I give scores that reflect what I would give a colleague's work?
-- Did I cite specific things from the report, not vague justifications?
-- Did I identify at least one real weakness, even if overall quality was high?
+- Scores reflect what I would give a colleague's work, not inflated self-scores?
+- Every justification cites specific content from the report, not vague impressions?
+- At least one real weakness identified, even if overall quality is high?
+- Every \`[MISSING_INSTRUCTION]\` tag: did I actually check all four skill files?
+- Every \`[AMBIGUOUS_INSTRUCTION]\` tag: did I quote the actual instruction?
+- Every \`[EXEC_ERROR]\` tag: did I confirm an attempt in the transcript?
+- Every row in the Section 4 table maps to a concrete edit in a named file?
 
 > An evaluation where every theme scores 4 or 5 with no improvements is almost certainly not honest.
 `,

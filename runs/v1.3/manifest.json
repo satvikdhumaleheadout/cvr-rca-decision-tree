@@ -10,7 +10,7 @@
       "run_date": "2026-04-26",
       "eval_score": 28,
       "eval_max": 35,
-      "root_cause": "This RCA correctly identified a specific, quantified mechanism — progressive peak-date sellout on TGID 10118 (Keukenhof Entry Tickets) — and confirmed it with three converging signals: availability proxy (count_days_available_30d declining 31→15), lead-time distribution collapse (30d+ bookings: 751 pre → 77 post, −90%), and experience-level S2C (25.",
+      "root_cause": "Progressive peak-date sellout on TGID 10118 (Keukenhof Entry Tickets) confirmed by three converging signals: availability proxy (count_days_available_30d declining 31→15), lead-time distribution collapse (30d+ bookings: 751 pre → 77 post, −90%), and experience-level S2C drop concentrated on TGID 10118.",
       "files": {
         "report": "runs/v1.3/ce1549_2026-02-26_2026-04-26/report.html",
         "transcript": "runs/v1.3/ce1549_2026-02-26_2026-04-26/transcript.md",
@@ -26,7 +26,7 @@
       "run_date": "2026-04-26",
       "eval_score": 26,
       "eval_max": 35,
-      "root_cause": "The RCA correctly identified peak-season pricing increases (+3.",
+      "root_cause": "Peak-season pricing increases (+3–8%) on key Vatican experiences drove LP2S decline, compounded by spring break traffic surge exceeding fixed timed-entry supply, reducing available booking dates and depressing S2C.",
       "files": {
         "report": "runs/v1.3/ce189_2026-02-26_2026-04-26/report.html",
         "transcript": "runs/v1.3/ce189_2026-02-26_2026-04-26/transcript.md",
@@ -42,7 +42,7 @@
       "run_date": "2026-04-28",
       "eval_score": 25,
       "eval_max": 35,
-      "root_cause": "The investigation correctly identified the primary driver (S2C, 101% of Shapley) and reached a defensible root cause: progressive near-term inventory depletion through April spring break/Easter season.",
+      "root_cause": "Progressive near-term inventory depletion through April spring break/Easter season drove S2C from 32.7% to 26.3%. S2C was 99.2% of Shapley; availability proxy and lead-time bucket query confirmed supply as mechanism.",
       "files": {
         "report": "runs/v1.3/ce6495_2026-02-28_2026-04-28/report.html",
         "transcript": "runs/v1.3/ce6495_2026-02-28_2026-04-28/transcript.md",
@@ -58,11 +58,43 @@
       "run_date": "2026-04-29",
       "eval_score": null,
       "eval_max": 35,
-      "root_cause": "Post-spring-break demand-quality collapse drove S2C down from 32.7% → 26.3% across all Kualoa Ranch experiences; a parallel delisting of the All-Inclusive Package (37863) from ~Apr 15 eliminated a second revenue stream for the final 14 days of the post period.",
+      "root_cause": "Post-spring-break demand-quality collapse drove S2C from 32.7% to 26.3% across all Kualoa Ranch experiences. Secondary: All-Inclusive Package (37863) delisted from ~Apr 15, eliminating a second revenue stream for the final 14 days of the post period.",
       "files": {
         "report": "runs/v1.3/ce6495_2026-02-28_2026-04-28_run2/report.html",
         "transcript": "runs/v1.3/ce6495_2026-02-28_2026-04-28_run2/transcript.md",
         "evaluation": null
+      }
+    },
+    {
+      "id": "ce189_2026-03-05_2026-05-03",
+      "ce_id": "189",
+      "ce_name": "Vatican Museums",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 25,
+      "eval_max": 35,
+      "root_cause": "Vatican Museums CVR fell −0.63pp (4.47%→3.84%) because peak spring demand (+13% traffic) exceeded the Vatican's fixed timed-entry slot supply — shrinking available booking dates by 5.1 per 30-day window — while a secondary checkout failure on iOS (C2A) and Android (A2O) added a compounding −40% Shapley contribution.",
+      "files": {
+        "report": "runs/v1.3/ce189_2026-03-05_2026-05-03/report.html",
+        "transcript": "runs/v1.3/ce189_2026-03-05_2026-05-03/transcript.md",
+        "evaluation": "runs/v1.3/ce189_2026-03-05_2026-05-03/evaluation.md"
+      }
+    },
+    {
+      "id": "ce6495_2026-03-05_2026-05-03",
+      "ce_id": "6495",
+      "ce_name": "Kualoa Ranch",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 24,
+      "eval_max": 35,
+      "root_cause": "S2C fell from 31.8% to 25.2% (−6.65pp, 70% of ΔCVR) because the post period captured the wind-down of Hawaii's spring break season: high-intent spring break visitors were replaced by lower-intent off-peak tourists. No supply, pricing, or UX change — purely a demand quality decline.",
+      "files": {
+        "report": "runs/v1.3/ce6495_2026-03-05_2026-05-03/report.html",
+        "transcript": "runs/v1.3/ce6495_2026-03-05_2026-05-03/transcript.md",
+        "evaluation": "runs/v1.3/ce6495_2026-03-05_2026-05-03/evaluation.md"
       }
     }
   ]

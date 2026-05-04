@@ -1,0 +1,1022 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Vatican Museums (CE 189)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      line-height: 1.55;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 40px 24px;
+    }
+    header .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 6px;
+    }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e4ef;
+    }
+    .metric-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 16px 16px;
+      border: 1px solid #e8ebf4;
+    }
+    .metric-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 8px;
+    }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre  { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+    .delta-neg  { background: #fdecea; color: #c62828; }
+    .delta-pos  { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout {
+      background: #fff;
+      border-left: 4px solid #e53935;
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin-bottom: 8px;
+      border-top: 1px solid #e8ebf4;
+      border-right: 1px solid #e8ebf4;
+      border-bottom: 1px solid #e8ebf4;
+    }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8892a4;
+      margin-bottom: 4px;
+    }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dri-badge {
+      background: #e8edf7;
+      color: #3a4a8a;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 2px 9px;
+      border-radius: 8px;
+    }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c62828;
+      background: #fdecea;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 18px;
+    }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #8892a4;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e8ebf4;
+    }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c  { background: #c62828; }
+    .shapley-c2o  { background: #d6a832; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .ruled-out { font-size: 13px; color: #777; font-style: italic; padding: 6px 0 0; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Vatican Museums — CE 189</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-03-05–2026-04-03</span>
+    <span>📅 Post: 2026-04-04–2026-05-03</span>
+    <span>🌍 Italy</span>
+    <span>🔗 <a href="https://www.thevaticantickets.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">thevaticantickets.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- SECTION 1 -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values">
+        <span class="pre">4.47%</span>
+        <span class="post">3.84%</span>
+      </div>
+      <div class="delta delta-neg">Δ −0.63pp / −14.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values">
+        <span class="pre">40.8%</span>
+        <span class="post">41.0%</span>
+      </div>
+      <div class="delta delta-pos">Δ +0.25pp / +0.6%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values">
+        <span class="pre">28.5%</span>
+        <span class="post">25.8%</span>
+      </div>
+      <div class="delta delta-neg">Δ −2.63pp / −9.2%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values">
+        <span class="pre">38.5%</span>
+        <span class="post">36.3%</span>
+      </div>
+      <div class="delta delta-neg">Δ −2.27pp / −5.9%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Traffic (LP Users)</div>
+      <div class="values">
+        <span class="pre">161,554</span>
+        <span class="post">182,372</span>
+      </div>
+      <div class="delta delta-pos">Δ +20,818 / +12.9%</div>
+    </div>
+  </div>
+
+  <!-- 90-day CVR trend chart -->
+  <div class="analysis-block" style="margin-bottom:20px;">
+    <div class="block-title">90-Day CVR Trend — Vatican Museums CE 189</div>
+    <div id="trend-90day" class="chart-container"></div>
+  </div>
+
+  <div class="callout">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">S2C fell from 28.5% to 25.8% (−2.63pp) across all three main Vatican experiences — while traffic grew +12.9%. S2C is the primary driver at 64% of ΔCVR Shapley. A secondary C2O failure (40% Shapley) is addressed in the action cards below.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">Peak spring demand flooded Vatican Museums as Easter 2026 (Apr 5) and school holiday traffic drove a +13% LP surge, but the Vatican's timed-entry slot supply did not grow — Experience 6732 (the dominant product) lost 5.1 available booking dates per month (29.7→24.6), and near-term slots were fully depleted for Apr 6–24. Users who found their preferred dates sold out abandoned the select page rather than booking ahead. The secondary C2O failure splits across devices: Android A2O −4.6pp is consistent with live inventory race conditions (slots filling between select-page view and payment confirmation), while iOS C2A −3.3pp is consistent with the confirmed price increase on Experience 7998 ($79.88→$85.76, +7.4%) surfacing at variant selection in checkout.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual and seasonal — S2C drifted down from late March through April as spring bookings progressively filled timed-entry slots. Easter Apr 4–5 created a 2-day transient spike in the CVR signal (CVR 2.6%–2.8% vs 4.5% baseline), but the underlying capacity pressure began before Easter and continued throughout the post period. The LY comparison is distorted: Easter 2025 (Apr 20) hit mid-LY-window, explaining the apparent positive structural delta (+0.008pp).</div>
+    </div>
+  </div>
+
+  <!-- SECTION 2 -->
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Vatican Museums' timed-entry slot supply is exhausted in near-term windows — S2C fell CE-wide as +13% traffic met a fixed capacity ceiling.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Supply / BDM</span>
+      <span>+ Ops</span>
+    </div>
+    <ul>
+      <li>Review API cut-off period and release window settings with the Vatican Museums SP — Experience 6732 had 0 remaining slots for Apr 6–24 dates as of last snapshot. Confirm whether this is a configuration restriction (min lead time) or genuine sold-out status.</li>
+      <li>Negotiate same-day and next-day release windows with Vatican Museums SP — the same-day S2C bucket dropped −6.0pp (49.2%→43.2%), the sharpest of any lead-time window. Unlocking last-minute supply is the highest-leverage lever.</li>
+      <li>Audit whether Experience 9379 (Papal Apartments) availability is linked to 6732 or independently constrained — its S2C dropped −6.7pp (the largest rate drop), suggesting a separate capacity ceiling for this tier.</li>
+      <li>Consider negotiating pre-purchased inventory blocks for peak April–May dates if SP allows — Vatican Museums' fixed-capacity constraint means supply must be secured ahead of the season, not reactively.</li>
+      <li>Set up an inventory alert for when count_days_available_30d for exp 6732 drops below 20 days — this threshold appears to materially depress S2C.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">C2O split across two device-specific failure modes: iOS pre-payment abandonment (C2A −1.77pp) and Android post-payment order failure (A2O −1.72pp).</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Product / Engineering</span>
+      <span>+ BDM</span>
+    </div>
+    <ul>
+      <li><strong>iOS C2A (pre-payment abandonment):</strong> Experience 7998 price increased from $79.88 to $85.76 (+$5.88 / +7.4%) in the post period — audit whether this price level is surfacing at variant selection within the iOS Mweb checkout flow and causing abandonment before payment. Pull device-level Mixpanel funnel for iOS users on exp 7998 to identify the exact step where they drop (variant selection vs payment form). Session recordings unavailable for thevaticantickets.com; instrument if needed.</li>
+      <li><strong>Android A2O (post-payment failure):</strong> Pull Android Mweb payment gateway error logs for Apr 4 – May 3 — A2O dropped −4.6pp on Android. Check whether Vatican Museums SP is returning a capacity-full error at order confirmation (slot taken between select-page view and payment submission). If confirmed, add a real-time slot availability check immediately before the payment step to surface the failure earlier rather than after payment is attempted.</li>
+      <li><strong>BDM:</strong> The confirmed +7.4% price increase on Experience 7998 ($79.88→$85.76) coincides with the post-period iOS C2A drop. Evaluate whether a price rollback or rate renegotiation with the Vatican SP is viable for the peak May–June window.</li>
+    </ul>
+  </div>
+
+  <!-- SECTION 3 -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <!-- Fixed segment banner -->
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:10px 14px;margin-bottom:20px;font-size:13px;color:#1b5e20;">
+    <strong>Fixed segment for all funnel analysis:</strong> MB · Paid · Google Ads<br>
+    <span style="color:#555;font-size:12px;">
+      Post-period LP users: 92,955 &nbsp;|&nbsp; Share of CE post traffic: 51.0%
+      &nbsp;|&nbsp; Checkout impact: approx. −172 orders vs pre period (81% of CE total order decline)<br>
+      Note: Google Ads accounts for 93% of Paid traffic (112,128 / 120,911 post LP users) — Paid-level analysis below is equivalent to Google Ads within rounding.
+    </span>
+  </div>
+
+  <!-- Shapley decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">S2C carries 64% of ΔCVR. C2O is a material secondary driver at 40%. LP2S improved slightly (−4%), offsetting a small portion of the decline.</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-s2c" style="flex:64">S2C 64%</div>
+      <div class="shapley-bar shapley-c2o" style="flex:40">C2O 40%</div>
+    </div>
+    <div style="font-size:11px;color:#555;margin-bottom:8px;">Note: LP2S contributed +4% (slight CVR improvement), partially offsetting the decline — not shown above as it is a positive contributor.</div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S +0.25pp (improved)</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −2.63pp</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O −2.27pp</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = −0.63pp. S2C accounts for −0.40pp of that and C2O accounts for −0.25pp. LP2S's slight improvement (+0.25pp) reduced the net impact by 0.03pp. Both S2C and C2O require action — S2C is the primary lever but C2O at 40% Shapley is too large to ignore.
+    </p>
+  </div>
+
+  <!-- Mix cascade -->
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Level 1: MB vs HO distribution</div>
+    <div class="verdict-line neutral">Mix ruled out at Level 1 — both MB and HO show conversion-dominant effects. HO share increased slightly (+1.0pp) but its conversion drop (−2.3pp) is proportionally the same as MB (−0.6pp CVR). Traffic shift explains only 20.8% of ΔCVR.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre LP Users</th>
+          <th class="num">Post LP Users</th>
+          <th class="num">Pre Share</th>
+          <th class="num">Post Share</th>
+          <th class="num">Δ Share</th>
+          <th class="num">Pre CVR</th>
+          <th class="num">Post CVR</th>
+          <th class="num">Δ CVR</th>
+          <th class="num">Dominant Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong> ✓ Primary</td>
+          <td class="num">162,076</td>
+          <td class="num">181,258</td>
+          <td class="num">95.5%</td>
+          <td class="num">94.5%</td>
+          <td class="num">−1.0pp</td>
+          <td class="num">4.49%</td>
+          <td class="num">3.88%</td>
+          <td class="num neg">−0.61pp</td>
+          <td class="num">Conversion</td>
+        </tr>
+        <tr>
+          <td><strong>HO</strong></td>
+          <td class="num">7,687</td>
+          <td class="num">10,528</td>
+          <td class="num">4.5%</td>
+          <td class="num">5.5%</td>
+          <td class="num">+1.0pp</td>
+          <td class="num">9.11%</td>
+          <td class="num">6.82%</td>
+          <td class="num neg">−2.29pp</td>
+          <td class="num">Conversion</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      MB is the dominant segment at 95.5% of traffic — its −0.61pp CVR drop drives the CE story. HO saw a larger percentage drop (−2.29pp) on growing traffic, consistent with direct-site visitors facing the same availability constraints. Mix contribution is 20.8% — the drop is a conversion failure, not an audience shift.
+    </p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Level 2: Paid vs Organic (within MB)</div>
+    <div class="verdict-line neutral">Mix ruled out at Level 2 — both Paid and Organic show conversion-dominant effects. Paid share declined slightly (−1.5pp) but the conversion drop (−0.68pp CVR) is present in both channels. Channel mix accounts for 20.6% of ΔCVR.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre LP Users</th>
+          <th class="num">Post LP Users</th>
+          <th class="num">Pre Share</th>
+          <th class="num">Post Share</th>
+          <th class="num">Δ Share</th>
+          <th class="num">Pre CVR</th>
+          <th class="num">Post CVR</th>
+          <th class="num">Δ CVR</th>
+          <th class="num">Dominant Driver</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong> ✓ Fixed</td>
+          <td class="num">85,503</td>
+          <td class="num">92,955</td>
+          <td class="num">52.8%</td>
+          <td class="num">51.3%</td>
+          <td class="num">−1.5pp</td>
+          <td class="num">6.19%</td>
+          <td class="num">5.51%</td>
+          <td class="num neg">−0.68pp</td>
+          <td class="num">Conversion</td>
+        </tr>
+        <tr>
+          <td><strong>Organic</strong></td>
+          <td class="num">76,573</td>
+          <td class="num">88,303</td>
+          <td class="num">47.3%</td>
+          <td class="num">48.7%</td>
+          <td class="num">+1.5pp</td>
+          <td class="num">2.59%</td>
+          <td class="num">2.17%</td>
+          <td class="num neg">−0.42pp</td>
+          <td class="num">Conversion</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Both Paid and Organic CVR declined — confirming this is a platform-wide conversion failure, not a channel acquisition problem. The CVR drop in Organic (−0.42pp) is proportionally similar to Paid (−0.68pp), which is expected when the supply constraint affects all users who reach the select page regardless of acquisition channel.
+    </p>
+  </div>
+
+  <!-- Daily S2C + C2O trend -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C and C2O trend — Pre vs Post period</div>
+    <div class="verdict-line">S2C declined gradually from late March, with an acute drop on Apr 4–5 (Easter weekend), then partially recovered but remained below pre-period baseline. C2O shows a parallel gradual decline — both steps moved together, not in sequence.</div>
+    <div id="trend-s2c" class="chart-container"></div>
+    <div id="trend-c2o" class="chart-container" style="margin-top:16px;"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The S2C trend shows the onset beginning in late March (Mar 28 S2C = 26.6%, already below pre-period early-March baseline of ~28%), indicating supply tightening ahead of Easter. The Apr 4–5 Easter weekend produced the period's lowest S2C readings (21.9%, 22.8%) as Vatican Museums was effectively sold out for the holiday dates. Post-Easter, S2C partially recovered (27–30% in Apr 11–16) before declining again in late April as May slots also filled. The late-April decline (Apr 25–30: S2C 19–26%) signals the capacity constraint extending into May — not an isolated Easter effect.
+    </p>
+  </div>
+
+  <!-- Experience S2C breakdown -->
+  <div class="analysis-block">
+    <div class="block-title">S2C by experience — CE-wide decline confirms supply mechanism</div>
+    <div class="verdict-line">All three major Vatican Museums experiences declined in S2C. The drop is not concentrated in a single product — it is CE-wide, ruling out a product-specific UX or pricing issue as the primary cause.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th class="num">Pre Select Users</th>
+          <th class="num">Post Select Users</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>6732</strong> — Vatican Museums &amp; Sistine Chapel Skip-the-Line</td>
+          <td class="num">47,683</td>
+          <td class="num">59,027</td>
+          <td class="num">24.5%</td>
+          <td class="num">21.1%</td>
+          <td class="num neg">−3.4pp</td>
+        </tr>
+        <tr>
+          <td><strong>7998</strong> — Skip-the-Line Guided Tour</td>
+          <td class="num">9,540</td>
+          <td class="num">13,693</td>
+          <td class="num">23.5%</td>
+          <td class="num">20.4%</td>
+          <td class="num neg">−3.1pp</td>
+        </tr>
+        <tr>
+          <td><strong>9379</strong> — Vatican Museums, Sistine Chapel &amp; Papal Apartments</td>
+          <td class="num">3,432</td>
+          <td class="num">4,958</td>
+          <td class="num">18.2%</td>
+          <td class="num">11.5%</td>
+          <td class="num neg">−6.7pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Experience 6732 dominates volume (59,027 post select users, ~79% of CE) and its −3.4pp drop accounts for the majority of the CE S2C change. Experience 9379 (Papal Apartments) showed the largest rate drop (−6.7pp) — consistent with a premium product whose tighter allocation fills fastest during peak season. All rates are from BQ funnel queries filtered to MB · Paid.
+    </p>
+  </div>
+
+  <!-- Availability proxy -->
+  <div class="analysis-block">
+    <div class="block-title">Availability proxy — all main Vatican Museums experiences</div>
+    <div class="verdict-line">Available booking dates declined across all major experiences in the post period. Experience 6732 (dominant product) lost 5.1 days/month; Experience 7998 also saw its price rise +7.4% — the dual supply-and-price pressure driving both S2C and C2O declines.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th class="num">Pre Days Avail</th>
+          <th class="num">Post Days Avail</th>
+          <th class="num">Δ Days</th>
+          <th class="num">Pre Price</th>
+          <th class="num">Post Price</th>
+          <th class="num">Δ Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>6732</strong> — Skip-the-Line Tickets</td>
+          <td class="num">29.7</td>
+          <td class="num">24.6</td>
+          <td class="num neg">−5.1d</td>
+          <td class="num">$74.26</td>
+          <td class="num">$76.21</td>
+          <td class="num">+$1.95 (+2.6%)</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>7998</strong> — Guided Tour w/ St. Peter's</td>
+          <td class="num">25.1</td>
+          <td class="num">24.5</td>
+          <td class="num neg">−0.6d</td>
+          <td class="num">$79.88</td>
+          <td class="num">$85.76</td>
+          <td class="num neg">+$5.88 (+7.4%)</td>
+        </tr>
+        <tr>
+          <td><strong>9379</strong> — Sistine Chapel &amp; Papal Apartments</td>
+          <td class="num">26.9</td>
+          <td class="num">24.9</td>
+          <td class="num neg">−2.0d</td>
+          <td class="num">$67.06</td>
+          <td class="num">$69.10</td>
+          <td class="num">+$2.04 (+3.0%)</td>
+        </tr>
+        <tr>
+          <td><strong>42091</strong> — Vatican + Pantheon Combo</td>
+          <td class="num">29.7</td>
+          <td class="num">28.7</td>
+          <td class="num neg">−1.0d</td>
+          <td class="num">$74.26</td>
+          <td class="num">$76.21</td>
+          <td class="num">+$1.95 (+2.6%)</td>
+        </tr>
+        <tr>
+          <td><strong>42093</strong> — Vatican Fast-Track Combo</td>
+          <td class="num">29.7</td>
+          <td class="num">28.6</td>
+          <td class="num neg">−1.1d</td>
+          <td class="num">$50.85</td>
+          <td class="num">$52.45</td>
+          <td class="num">+$1.60 (+3.1%)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Experience 6732 shows the sharpest availability decline (−5.1 days/month), consistent with near-term dates filling entirely — inventory_availability confirms 0 remaining slots for Apr 6–24 dates. Experience 7998's small availability change (−0.6d) isolates the price increase (+$5.88) as its independent C2A driver. Experience 9379's −2.0d drop alongside its −6.7pp S2C rate (the largest in the CE) suggests it may have a separate capacity constraint layered on top of the CE-wide tightening — supply team should check its allotment configuration independently.
+    </p>
+  </div>
+
+  <!-- Lead-time finding -->
+  <div class="analysis-block">
+    <div class="block-title">CVR by booking lead time — same-day and near-term windows worst affected</div>
+    <div class="verdict-line">CVR deteriorated sharpest in the near-term buckets: same-day −6.0pp, 3–6d −3.5pp, 7–13d −2.6pp. The 30d+ bucket improved slightly (+0.6pp) — confirming supply depletion is concentrated in the near-term windows, not a broad booking decline.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Lead-time bucket</th>
+          <th class="num">Pre Users</th>
+          <th class="num">Post Users</th>
+          <th class="num">Pre CVR</th>
+          <th class="num">Post CVR</th>
+          <th class="num">Δ CVR</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>Same-day (0d)</td>
+          <td class="num">2,775</td>
+          <td class="num">2,466</td>
+          <td class="num">49.2%</td>
+          <td class="num">43.2%</td>
+          <td class="num neg">−6.0pp</td>
+        </tr>
+        <tr>
+          <td>1–2 days ahead</td>
+          <td class="num">1,287</td>
+          <td class="num">1,785</td>
+          <td class="num">44.8%</td>
+          <td class="num">43.3%</td>
+          <td class="num neg">−1.5pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>3–6 days ahead</td>
+          <td class="num">1,663</td>
+          <td class="num">1,903</td>
+          <td class="num">39.4%</td>
+          <td class="num">35.9%</td>
+          <td class="num neg">−3.5pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td>7–13 days ahead</td>
+          <td class="num">2,154</td>
+          <td class="num">2,504</td>
+          <td class="num">37.3%</td>
+          <td class="num">34.7%</td>
+          <td class="num neg">−2.6pp</td>
+        </tr>
+        <tr>
+          <td>14–29 days ahead</td>
+          <td class="num">3,451</td>
+          <td class="num">4,049</td>
+          <td class="num">36.3%</td>
+          <td class="num">34.5%</td>
+          <td class="num neg">−1.8pp</td>
+        </tr>
+        <tr>
+          <td>30+ days ahead</td>
+          <td class="num">3,855</td>
+          <td class="num">3,779</td>
+          <td class="num">30.9%</td>
+          <td class="num pos">31.5%</td>
+          <td class="num pos">+0.6pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The same-day bucket also shrank in volume (2,775→2,466 users) while all other near-term buckets grew — indicating that users who previously booked same-day are not rebooking further ahead; they are leaving the funnel. The 30d+ bucket's slight improvement confirms that users with flexible schedules can still find inventory. Negotiating same-day and 3–13 day release windows with the Vatican SP is the highest-leverage supply action.
+    </p>
+  </div>
+
+  <!-- C2O sub-decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">C2O sub-decomposition — pre-payment abandonment (C2A) and post-payment failure (A2O)</div>
+    <div class="verdict-line">C2O's −2.27pp decline splits roughly evenly between C2A (pre-payment abandonment, −1.77pp) and A2O (post-payment order failure, −1.72pp) — two distinct failure modes requiring separate fixes.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th class="num">Pre Rate</th>
+          <th class="num">Post Rate</th>
+          <th class="num">Δ Rate</th>
+          <th>What it measures</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>C2A</strong> (Checkout → Attempt)</td>
+          <td class="num">44.6%</td>
+          <td class="num">42.8%</td>
+          <td class="num neg">−1.77pp</td>
+          <td>Users who start checkout but abandon before submitting payment</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>A2O</strong> (Attempt → Order)</td>
+          <td class="num">86.5%</td>
+          <td class="num">84.7%</td>
+          <td class="num neg">−1.72pp</td>
+          <td>Payment attempts that fail to produce a confirmed order</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      C2A failures (pre-payment abandonment) suggest users are backing out after seeing checkout details — consistent with the confirmed price increase on Experience 7998 ($79.88→$85.76, +7.4%) surfacing at variant selection before payment. A2O failures (post-payment) suggest successful payment submissions that fail at order confirmation — consistent with live slot inventory being depleted between select-page view and payment submission during peak demand (a race condition). These are distinct failure modes requiring different teams.
+    </p>
+  </div>
+
+  <!-- Device breakdown C2O -->
+  <div class="analysis-block">
+    <div class="block-title">C2O device breakdown — iOS and Android concentrated in different failure modes</div>
+    <div class="verdict-line">iOS Mweb C2A dropped −3.3pp (pre-payment abandonment); Android Mweb A2O dropped −4.6pp (post-payment failure). Desktop held near-flat on both sub-steps. The device split confirms two mechanistically distinct issues, not a general checkout regression.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th class="num">Pre Checkout</th>
+          <th class="num">Post Checkout</th>
+          <th class="num">Pre C2A</th>
+          <th class="num">Post C2A</th>
+          <th class="num">Δ C2A</th>
+          <th class="num">Pre A2O</th>
+          <th class="num">Post A2O</th>
+          <th class="num">Δ A2O</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>iOS Mweb</strong></td>
+          <td class="num">4,832</td>
+          <td class="num">5,676</td>
+          <td class="num">50.5%</td>
+          <td class="num">47.2%</td>
+          <td class="num neg">−3.3pp</td>
+          <td class="num">87.1%</td>
+          <td class="num">84.9%</td>
+          <td class="num neg">−2.2pp</td>
+        </tr>
+        <tr>
+          <td><strong>Desktop</strong></td>
+          <td class="num">6,875</td>
+          <td class="num">7,657</td>
+          <td class="num">39.7%</td>
+          <td class="num">39.0%</td>
+          <td class="num">−0.7pp</td>
+          <td class="num">88.6%</td>
+          <td class="num">86.7%</td>
+          <td class="num neg">−1.9pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Android Mweb</strong></td>
+          <td class="num">3,166</td>
+          <td class="num">3,375</td>
+          <td class="num">46.1%</td>
+          <td class="num">44.9%</td>
+          <td class="num neg">−1.2pp</td>
+          <td class="num">83.5%</td>
+          <td class="num">78.9%</td>
+          <td class="num neg">−4.6pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      iOS C2A (50.5%→47.2%, −3.3pp) is the dominant pre-payment signal — consistent with the confirmed +7.4% price increase on Experience 7998 ($79.88→$85.76) surfacing at variant selection before the user submits payment. Android A2O (83.5%→78.9%, −4.6pp) is the dominant post-payment signal — consistent with live inventory failure during peak demand, where a slot selected at the date picker is taken by another user before the Android payment flow completes. Desktop moved near-flat on C2A (−0.7pp) and modestly on A2O (−1.9pp), ruling out a platform-wide payment issue. Session recordings were not available for thevaticantickets.com in Mixpanel project 2657627 — mechanisms are inferred from the device × step pattern, not directly observed.
+    </p>
+  </div>
+
+  <!-- Calendar context -->
+  <div class="analysis-block">
+    <div class="block-title">Calendar context — Easter 2025 vs 2026 and the structural delta</div>
+    <div class="verdict-line neutral">The positive structural_delta_cvr (+0.008pp) does not indicate genuine improvement — it reflects Easter 2025 landing in the LY post-window (Apr 20) with catastrophic traffic and near-zero CVR, artificially depressing the LY baseline.</div>
+    <p style="font-size:13px;color:#555;margin-bottom:14px;">
+      Easter 2025 (Apr 20) fell mid-LY-post-window and drove massive unmonetisable traffic: Apr 20 = 42,200 LP users at CVR 0.80%; Apr 21 = 36,340 at 0.75%; Apr 25 = 34,608 at 0.57%. These dates massively inflate the LY denominator while contributing almost no conversions — pulling LY CVR far below the seasonal norm. Easter 2026 (Apr 4–5) hit only the first two days of the current post period (CVR 2.56%–2.84%), which is a much smaller distortion. The LY overlay chart above makes this pattern directly visible — the grey dashed line collapses to near-zero in the Apr 20–26 2025 window.
+    </p>
+    <p style="font-size:13px;color:#555;">
+      The structural delta formula (current_delta − ly_delta = −0.73pp − (−1.57pp) = +0.84pp) mathematically says "this year's decline is smaller than last year's decline in the same calendar window" — which is true, but only because LY was destroyed by Easter 2025. The correct read is: Vatican Museums CVR fell −0.63pp this post period versus pre period, and this drop is real and structural. The Easter transient on Apr 4–5 contributes a small additional noise signal; the ongoing capacity pressure from late April (Apr 25–May 3 S2C: 19–26%) is the lasting concern.
+    </p>
+  </div>
+
+  <!-- Ruled-out dimensions -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond what the supply-side capacity constraint and device-specific C2O failures already explain.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Language:</strong> English, Italian, Spanish, and French all declined in S2C proportionally. No single language showed a disproportionate drop that would suggest a localisation issue or language-specific supply gap.</li>
+      <li style="margin-bottom:8px;"><strong>Device (S2C level):</strong> All device types declined in S2C. Desktop S2C fell alongside mobile, ruling out a mobile UX change as the S2C driver. The supply constraint affects all users who reach the select page regardless of device.</li>
+      <li style="margin-bottom:8px;"><strong>LP2S:</strong> LP2S actually improved slightly (+0.25pp). LP click-through quality held up — the funnel failure begins at the select page (S2C) not the landing page. No listing page, campaign, or LP content change contributed to the CVR decline.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Attempted for both iOS and Android users on thevaticantickets.com microsite. No recordings available in Mixpanel project 2657627 for this property. The device-level C2O findings are consistent with the mechanism hypotheses but are not confirmed by recording observation.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-05-04 · CVR-RCA · CE 189 Vatican Museums</footer>
+
+<script>
+// ── 90-day CVR Trend Chart ────────────────────────────────────────────────
+(function() {
+  var series = [
+    {date:"2026-02-03",series:"current",cvr:0.05034},{date:"2026-02-03",series:"ly",cvr:0.030274},
+    {date:"2026-02-04",series:"current",cvr:0.039503},{date:"2026-02-04",series:"ly",cvr:0.030148},
+    {date:"2026-02-05",series:"current",cvr:0.042542},{date:"2026-02-05",series:"ly",cvr:0.031241},
+    {date:"2026-02-06",series:"current",cvr:0.040875},{date:"2026-02-06",series:"ly",cvr:0.029446},
+    {date:"2026-02-07",series:"current",cvr:0.037983},{date:"2026-02-07",series:"ly",cvr:0.027814},
+    {date:"2026-02-08",series:"current",cvr:0.040612},{date:"2026-02-08",series:"ly",cvr:0.028102},
+    {date:"2026-02-09",series:"current",cvr:0.044967},{date:"2026-02-09",series:"ly",cvr:0.028994},
+    {date:"2026-02-10",series:"current",cvr:0.039895},{date:"2026-02-10",series:"ly",cvr:0.032515},
+    {date:"2026-02-11",series:"current",cvr:0.036126},{date:"2026-02-11",series:"ly",cvr:0.033993},
+    {date:"2026-02-12",series:"current",cvr:0.039574},{date:"2026-02-12",series:"ly",cvr:0.038289},
+    {date:"2026-02-13",series:"current",cvr:0.039073},{date:"2026-02-13",series:"ly",cvr:0.034386},
+    {date:"2026-02-14",series:"current",cvr:0.033623},{date:"2026-02-14",series:"ly",cvr:0.02934},
+    {date:"2026-02-15",series:"current",cvr:0.033173},{date:"2026-02-15",series:"ly",cvr:0.033402},
+    {date:"2026-02-16",series:"current",cvr:0.040959},{date:"2026-02-16",series:"ly",cvr:0.03248},
+    {date:"2026-02-17",series:"current",cvr:0.038034},{date:"2026-02-17",series:"ly",cvr:0.033289},
+    {date:"2026-02-18",series:"current",cvr:0.03785},{date:"2026-02-18",series:"ly",cvr:0.032722},
+    {date:"2026-02-19",series:"current",cvr:0.03799},{date:"2026-02-19",series:"ly",cvr:0.030895},
+    {date:"2026-02-20",series:"current",cvr:0.035041},{date:"2026-02-20",series:"ly",cvr:0.034163},
+    {date:"2026-02-21",series:"current",cvr:0.036272},{date:"2026-02-21",series:"ly",cvr:0.03381},
+    {date:"2026-02-22",series:"current",cvr:0.034041},{date:"2026-02-22",series:"ly",cvr:0.028244},
+    {date:"2026-02-23",series:"current",cvr:0.036364},{date:"2026-02-23",series:"ly",cvr:0.029982},
+    {date:"2026-02-24",series:"current",cvr:0.034042},{date:"2026-02-24",series:"ly",cvr:0.033851},
+    {date:"2026-02-25",series:"current",cvr:0.035646},{date:"2026-02-25",series:"ly",cvr:0.033108},
+    {date:"2026-02-26",series:"current",cvr:0.039602},{date:"2026-02-26",series:"ly",cvr:0.03536},
+    {date:"2026-02-27",series:"current",cvr:0.046415},{date:"2026-02-27",series:"ly",cvr:0.034598},
+    {date:"2026-02-28",series:"current",cvr:0.039492},{date:"2026-02-28",series:"ly",cvr:0.033067},
+    {date:"2026-03-01",series:"current",cvr:0.040658},{date:"2026-03-01",series:"ly",cvr:0.034924},
+    {date:"2026-03-02",series:"current",cvr:0.04662},{date:"2026-03-02",series:"ly",cvr:0.041113},
+    {date:"2026-03-03",series:"current",cvr:0.04698},{date:"2026-03-03",series:"ly",cvr:0.044376},
+    {date:"2026-03-04",series:"current",cvr:0.03919},{date:"2026-03-04",series:"ly",cvr:0.046285},
+    {date:"2026-03-05",series:"current",cvr:0.037927},{date:"2026-03-05",series:"ly",cvr:0.040169},
+    {date:"2026-03-06",series:"current",cvr:0.042492},{date:"2026-03-06",series:"ly",cvr:0.039673},
+    {date:"2026-03-07",series:"current",cvr:0.03858},{date:"2026-03-07",series:"ly",cvr:0.035412},
+    {date:"2026-03-08",series:"current",cvr:0.048882},{date:"2026-03-08",series:"ly",cvr:0.044226},
+    {date:"2026-03-09",series:"current",cvr:0.049661},{date:"2026-03-09",series:"ly",cvr:0.041895},
+    {date:"2026-03-10",series:"current",cvr:0.05676},{date:"2026-03-10",series:"ly",cvr:0.046459},
+    {date:"2026-03-11",series:"current",cvr:0.053772},{date:"2026-03-11",series:"ly",cvr:0.044697},
+    {date:"2026-03-12",series:"current",cvr:0.045455},{date:"2026-03-12",series:"ly",cvr:0.046466},
+    {date:"2026-03-13",series:"current",cvr:0.048407},{date:"2026-03-13",series:"ly",cvr:0.035965},
+    {date:"2026-03-14",series:"current",cvr:0.043273},{date:"2026-03-14",series:"ly",cvr:0.037304},
+    {date:"2026-03-15",series:"current",cvr:0.045518},{date:"2026-03-15",series:"ly",cvr:0.042663},
+    {date:"2026-03-16",series:"current",cvr:0.045772},{date:"2026-03-16",series:"ly",cvr:0.037927},
+    {date:"2026-03-17",series:"current",cvr:0.053767},{date:"2026-03-17",series:"ly",cvr:0.041472},
+    {date:"2026-03-18",series:"current",cvr:0.053266},{date:"2026-03-18",series:"ly",cvr:0.046809},
+    {date:"2026-03-19",series:"current",cvr:0.046729},{date:"2026-03-19",series:"ly",cvr:0.042594},
+    {date:"2026-03-20",series:"current",cvr:0.042987},{date:"2026-03-20",series:"ly",cvr:0.037107},
+    {date:"2026-03-21",series:"current",cvr:0.050205},{date:"2026-03-21",series:"ly",cvr:0.036048},
+    {date:"2026-03-22",series:"current",cvr:0.05012},{date:"2026-03-22",series:"ly",cvr:0.042135},
+    {date:"2026-03-23",series:"current",cvr:0.050773},{date:"2026-03-23",series:"ly",cvr:0.03945},
+    {date:"2026-03-24",series:"current",cvr:0.05363},{date:"2026-03-24",series:"ly",cvr:0.043879},
+    {date:"2026-03-25",series:"current",cvr:0.057056},{date:"2026-03-25",series:"ly",cvr:0.042479},
+    {date:"2026-03-26",series:"current",cvr:0.054092},{date:"2026-03-26",series:"ly",cvr:0.039808},
+    {date:"2026-03-27",series:"current",cvr:0.052714},{date:"2026-03-27",series:"ly",cvr:0.039722},
+    {date:"2026-03-28",series:"current",cvr:0.039939},{date:"2026-03-28",series:"ly",cvr:0.030771},
+    {date:"2026-03-29",series:"current",cvr:0.044936},{date:"2026-03-29",series:"ly",cvr:0.037351},
+    {date:"2026-03-30",series:"current",cvr:0.042447},{date:"2026-03-30",series:"ly",cvr:0.043422},
+    {date:"2026-03-31",series:"current",cvr:0.046707},{date:"2026-03-31",series:"ly",cvr:0.046162},
+    {date:"2026-04-01",series:"current",cvr:0.043982},{date:"2026-04-01",series:"ly",cvr:0.038585},
+    {date:"2026-04-02",series:"current",cvr:0.043255},{date:"2026-04-02",series:"ly",cvr:0.046221},
+    {date:"2026-04-03",series:"current",cvr:0.035549},{date:"2026-04-03",series:"ly",cvr:0.041858},
+    {date:"2026-04-04",series:"current",cvr:0.025635},{date:"2026-04-04",series:"ly",cvr:0.039309},
+    {date:"2026-04-05",series:"current",cvr:0.028386},{date:"2026-04-05",series:"ly",cvr:0.038778},
+    {date:"2026-04-06",series:"current",cvr:0.042641},{date:"2026-04-06",series:"ly",cvr:0.037062},
+    {date:"2026-04-07",series:"current",cvr:0.039342},{date:"2026-04-07",series:"ly",cvr:0.038774},
+    {date:"2026-04-08",series:"current",cvr:0.035854},{date:"2026-04-08",series:"ly",cvr:0.037544},
+    {date:"2026-04-09",series:"current",cvr:0.037967},{date:"2026-04-09",series:"ly",cvr:0.038211},
+    {date:"2026-04-10",series:"current",cvr:0.036417},{date:"2026-04-10",series:"ly",cvr:0.038758},
+    {date:"2026-04-11",series:"current",cvr:0.044021},{date:"2026-04-11",series:"ly",cvr:0.030563},
+    {date:"2026-04-12",series:"current",cvr:0.04743},{date:"2026-04-12",series:"ly",cvr:0.036311},
+    {date:"2026-04-13",series:"current",cvr:0.043926},{date:"2026-04-13",series:"ly",cvr:0.038454},
+    {date:"2026-04-14",series:"current",cvr:0.049098},{date:"2026-04-14",series:"ly",cvr:0.033592},
+    {date:"2026-04-15",series:"current",cvr:0.051028},{date:"2026-04-15",series:"ly",cvr:0.04034},
+    {date:"2026-04-16",series:"current",cvr:0.053309},{date:"2026-04-16",series:"ly",cvr:0.035239},
+    {date:"2026-04-17",series:"current",cvr:0.044324},{date:"2026-04-17",series:"ly",cvr:0.02719},
+    {date:"2026-04-18",series:"current",cvr:0.045909},{date:"2026-04-18",series:"ly",cvr:0.022907},
+    {date:"2026-04-19",series:"current",cvr:0.048937},{date:"2026-04-19",series:"ly",cvr:0.020599},
+    {date:"2026-04-20",series:"current",cvr:0.049178},{date:"2026-04-20",series:"ly",cvr:0.007986},
+    {date:"2026-04-21",series:"current",cvr:0.046822},{date:"2026-04-21",series:"ly",cvr:0.007512},
+    {date:"2026-04-22",series:"current",cvr:0.050946},{date:"2026-04-22",series:"ly",cvr:0.009712},
+    {date:"2026-04-23",series:"current",cvr:0.043705},{date:"2026-04-23",series:"ly",cvr:0.011382},
+    {date:"2026-04-24",series:"current",cvr:0.043369},{date:"2026-04-24",series:"ly",cvr:0.009021},
+    {date:"2026-04-25",series:"current",cvr:0.038445},{date:"2026-04-25",series:"ly",cvr:0.005721},
+    {date:"2026-04-26",series:"current",cvr:0.033325},{date:"2026-04-26",series:"ly",cvr:0.013659},
+    {date:"2026-04-27",series:"current",cvr:0.041694},{date:"2026-04-27",series:"ly",cvr:0.01543},
+    {date:"2026-04-28",series:"current",cvr:0.036977},{date:"2026-04-28",series:"ly",cvr:0.016477},
+    {date:"2026-04-29",series:"current",cvr:0.030281},{date:"2026-04-29",series:"ly",cvr:0.018916},
+    {date:"2026-04-30",series:"current",cvr:0.025612},{date:"2026-04-30",series:"ly",cvr:0.021844},
+    {date:"2026-05-01",series:"current",cvr:0.033459},{date:"2026-05-01",series:"ly",cvr:0.023623},
+    {date:"2026-05-02",series:"current",cvr:0.033787},{date:"2026-05-02",series:"ly",cvr:0.020344},
+    {date:"2026-05-03",series:"current",cvr:0.018779},{date:"2026-05-03",series:"ly",cvr:0.022029}
+  ];
+
+  var currentSeries = series.filter(function(e){return e.series==='current';});
+  var currentDates  = currentSeries.map(function(e){return e.date;});
+  var currentCvr    = currentSeries.map(function(e){return e.cvr;});
+
+  var lyMap = {};
+  series.filter(function(e){return e.series==='ly';}).forEach(function(e){lyMap[e.date]=e.cvr;});
+  var lyCvr = currentDates.map(function(d){return lyMap[d] !== undefined ? lyMap[d] : null;});
+
+  var hasLyData = lyCvr.some(function(v){return v !== null && v > 0;});
+
+  var POST_START = '2026-04-04';
+  var POST_END   = '2026-05-03';
+  var postDates  = currentDates.filter(function(d){return d >= POST_START && d <= POST_END;});
+  var midPostDate = postDates[Math.floor(postDates.length / 2)];
+
+  if (!hasLyData) {
+    var warn = document.createElement('div');
+    warn.style.cssText = 'background:#fff3e0;border-left:4px solid #e65100;padding:8px 12px;font-size:12px;color:#bf360c;margin-bottom:8px;';
+    warn.textContent = '⚠️ Last-year overlay unavailable — no meaningful LY CVR data for this CE. Chart shows current period only.';
+    document.getElementById('trend-90day').prepend(warn);
+  }
+
+  var traces90d = [
+    {type:'scatter', mode:'lines', name:'CVR 2026',
+     x: currentDates, y: currentCvr,
+     line:{color:'#6c8ebf', width:2}}
+  ];
+  if (hasLyData) {
+    traces90d.push({
+      type:'scatter', mode:'lines', name:'CVR 2025 (LY — Easter distortion visible Apr 20–25)',
+      x: currentDates, y: lyCvr,
+      line:{color:'#9e9e9e', dash:'dash', width:1.5}
+    });
+  }
+
+  Plotly.newPlot('trend-90day', traces90d, {
+    height: 300,
+    yaxis: {tickformat:'.1%', title:'CVR', rangemode:'tozero'},
+    xaxis: {tickformat:'%d %b', dtick: 7 * 86400000, title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+    legend: {orientation:'h', y:-0.25},
+    margin: {l:55, r:20, t:30, b:70},
+    shapes: [
+      {type:'rect', x0:POST_START, x1:POST_END, y0:0, y1:1,
+       xref:'x', yref:'paper', fillcolor:'rgba(198,40,40,0.06)', line:{width:0}},
+      {type:'line', x0:POST_START, x1:POST_START, y0:0, y1:1,
+       xref:'x', yref:'paper', line:{color:'#c62828', dash:'dot', width:1}}
+    ],
+    annotations: [
+      {x: midPostDate, y: 0.94, xref:'x', yref:'paper',
+       text:'Post period', font:{color:'#c62828', size:10}, showarrow:false},
+      {x: '2026-04-21', y: 0.012, xref:'x', yref:'y',
+       text:'Easter 2025 LY distortion', font:{color:'#9e9e9e', size:9},
+       showarrow:true, arrowhead:2, arrowsize:0.8, arrowcolor:'#9e9e9e',
+       ax:60, ay:-30}
+    ]
+  }, {responsive:true});
+})();
+
+// ── Daily S2C Trend Chart ─────────────────────────────────────────────────
+(function() {
+  var preDates = ["2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10",
+    "2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17",
+    "2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24",
+    "2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31",
+    "2026-04-01","2026-04-02","2026-04-03"];
+  var preS2C = [0.2787,0.2716,0.25,0.2715,0.2895,0.3199,0.3124,0.2845,0.275,0.2591,
+    0.2814,0.291,0.3111,0.3,0.2907,0.2816,0.2899,0.3059,0.3099,0.309,0.3068,0.2996,
+    0.2948,0.2656,0.2627,0.266,0.2691,0.2662,0.2729,0.2339];
+  var postDates = ["2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09",
+    "2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16",
+    "2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23",
+    "2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30",
+    "2026-05-01","2026-05-02","2026-05-03"];
+  var postS2C = [0.2192,0.2284,0.2645,0.2543,0.2504,0.2525,0.2601,0.2689,0.289,0.2806,
+    0.2936,0.296,0.3006,0.2888,0.2839,0.2669,0.2732,0.265,0.2727,0.2463,0.2507,0.2258,
+    0.2278,0.2447,0.2619,0.2458,0.1943,0.2007,0.2207,0.2447];
+
+  var preMean = preS2C.reduce(function(a,b){return a+b;},0)/preS2C.length;
+  var postMean = postS2C.reduce(function(a,b){return a+b;},0)/postS2C.length;
+
+  Plotly.newPlot('trend-s2c', [
+    {type:'scatter', mode:'lines+markers', name:'Pre (Mar 5 – Apr 3)',
+     x:preDates, y:preS2C, line:{color:'#6c8ebf',width:2.5}, marker:{size:3,color:'#6c8ebf'}},
+    {type:'scatter', mode:'lines+markers', name:'Post (Apr 4 – May 3)',
+     x:postDates, y:postS2C, line:{color:'#c62828',width:2.5}, marker:{size:3,color:'#c62828'}}
+  ], {
+    height:240,
+    yaxis:{tickformat:'.0%', title:'S2C rate'},
+    xaxis:{tickformat:'%d %b', dtick:7*86400000},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+    legend:{orientation:'h', y:-0.35},
+    margin:{l:55, r:20, t:20, b:70},
+    title:{text:'S2C Rate — Daily', font:{size:13}},
+    shapes:[
+      {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preMean,y1:preMean,
+       line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+      {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postMean,y1:postMean,
+       line:{color:'#c62828',dash:'dot',width:1.5}}
+    ],
+    annotations:[
+      {x:preDates[15],y:preMean,text:'Pre avg '+(preMean*100).toFixed(1)+'%',
+       font:{color:'#6c8ebf',size:10},showarrow:false,yshift:12},
+      {x:postDates[15],y:postMean,text:'Post avg '+(postMean*100).toFixed(1)+'%',
+       font:{color:'#c62828',size:10},showarrow:false,yshift:-16}
+    ]
+  }, {responsive:true});
+})();
+
+// ── Daily C2O Trend Chart ─────────────────────────────────────────────────
+(function() {
+  var preDates = ["2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10",
+    "2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17",
+    "2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24",
+    "2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31",
+    "2026-04-01","2026-04-02","2026-04-03"];
+  var preC2O = [0.3479,0.4108,0.4172,0.4342,0.3908,0.42,0.3987,0.4047,0.4374,0.4235,
+    0.3781,0.3836,0.3921,0.4163,0.4008,0.3747,0.4051,0.3737,0.3666,0.3787,0.3995,0.3863,
+    0.3785,0.3523,0.3785,0.3329,0.3556,0.3711,0.3638,0.3873];
+  var postDates = ["2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09",
+    "2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16",
+    "2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23",
+    "2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30",
+    "2026-05-01","2026-05-02","2026-05-03"];
+  var postC2O = [0.3493,0.3712,0.32,0.3024,0.3058,0.3185,0.341,0.3885,0.3693,0.3459,
+    0.3778,0.3657,0.4128,0.3617,0.3942,0.4032,0.4,0.3918,0.4068,0.3952,0.3689,0.4,
+    0.3241,0.3678,0.3447,0.2889,0.3054,0.3784,0.4065,0.3478];
+
+  var preMean = preC2O.reduce(function(a,b){return a+b;},0)/preC2O.length;
+  var postMean = postC2O.reduce(function(a,b){return a+b;},0)/postC2O.length;
+
+  Plotly.newPlot('trend-c2o', [
+    {type:'scatter', mode:'lines+markers', name:'Pre (Mar 5 – Apr 3)',
+     x:preDates, y:preC2O, line:{color:'#6c8ebf',width:2.5}, marker:{size:3,color:'#6c8ebf'}},
+    {type:'scatter', mode:'lines+markers', name:'Post (Apr 4 – May 3)',
+     x:postDates, y:postC2O, line:{color:'#c62828',width:2.5}, marker:{size:3,color:'#c62828'}}
+  ], {
+    height:240,
+    yaxis:{tickformat:'.0%', title:'C2O rate'},
+    xaxis:{tickformat:'%d %b', dtick:7*86400000},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font:{family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+    legend:{orientation:'h', y:-0.35},
+    margin:{l:55, r:20, t:20, b:70},
+    title:{text:'C2O Rate — Daily', font:{size:13}},
+    shapes:[
+      {type:'line',x0:preDates[0],x1:preDates[preDates.length-1],y0:preMean,y1:preMean,
+       line:{color:'#6c8ebf',dash:'dot',width:1.5}},
+      {type:'line',x0:postDates[0],x1:postDates[postDates.length-1],y0:postMean,y1:postMean,
+       line:{color:'#c62828',dash:'dot',width:1.5}}
+    ],
+    annotations:[
+      {x:preDates[15],y:preMean,text:'Pre avg '+(preMean*100).toFixed(1)+'%',
+       font:{color:'#6c8ebf',size:10},showarrow:false,yshift:12},
+      {x:postDates[15],y:postMean,text:'Post avg '+(postMean*100).toFixed(1)+'%',
+       font:{color:'#c62828',size:10},showarrow:false,yshift:-16}
+    ]
+  }, {responsive:true});
+})();
+</script>
+</body>
+</html>

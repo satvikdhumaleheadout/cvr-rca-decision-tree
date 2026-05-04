@@ -4,6 +4,57 @@ This file tracks every meaningful change pushed to this repository. Each entry c
 
 ---
 
+## [v1.5] — 2026-05-04 — Evaluator redesign + findings synthesis enforcement
+
+**Summary:** Two interconnected upgrades: (1) `evaluator.md` redesigned with failure mode classification and structured gap reporting, making evaluations diagnose the *cause* of each gap rather than just noting its existence; (2) `SKILL.md` enforcement of Step 2b tightened — the Source column on every Evidence inventory claim is now mandatory, closing the main hallucination vector from the previous version.
+
+### SKILL.md — c010 / c011
+
+**Step 2b — Structured findings synthesis (c010)**
+- Claude now writes `findings.md` before writing any HTML, with four required sections: Root cause (one sentence), Mechanism (causal chain), Timing (classification + evidence), Evidence inventory (table with Claim / Supporting data / Source / Confidence)
+- Open items section forces explicit tracking of every Consistent with / Unverified claim — each must be resolved with a query, arithmetic, or explicitly accepted with appropriate language
+- Step 3 writes from `findings.md` as source of truth — not directly from raw query outputs
+- Rationale: test runs showed Claude writing reports using impressions and approximations rather than confirmed numbers from the transcript. findings.md is the checkpoint that catches this before HTML is committed.
+
+**Evidence inventory Source column (c011)**
+- Every claim in the Evidence inventory must name its data origin: a specific `summary.json` field, a named BQ query result, or a specific table row that will appear in the report
+- A number with no named source must be derived explicitly with written arithmetic or removed — it must not enter the report
+- Rationale: the hallucination risk in previous runs was highest at the transition from transcript to report, where approximate values replaced confirmed BQ query outputs. The Source column makes the provenance of every number explicit and checkable.
+
+**Output paths updated**
+- All output paths now use `<run_dir>` shorthand (`<run_dir>/transcript.md`, `<run_dir>/findings.md`, `<run_dir>/report.html`, `<run_dir>/evaluation.md`) — consistent with auto-increment run folder naming introduced in c016
+
+### evaluator.md — e001 (v1.5)
+
+**Failure Mode Classification (new)**
+- Every gap (score ≤ 4) now requires a **Why** line with one of four tags: `[MISSING_INSTRUCTION]` / `[AMBIGUOUS_INSTRUCTION]` / `[EXEC_ERROR]` / `[DATA_LIMIT]`
+- Each tag requires a grounding citation proving the skill files were actually checked — not assumed to be missing or present. No tag without a citation.
+- Rationale: previous evaluations identified gaps but not their causes, making it impossible to know whether to fix the skill file or fix Claude's execution. The failure mode tag makes that distinction explicit and actionable.
+
+**What to review — skill files first (new)**
+- Evaluator now reads all four skill reference files (SKILL.md, hypothesis.md, context.md, report_structure.md) before reading the report or transcript
+- This is what makes `[MISSING_INSTRUCTION]` defensible — you cannot claim an instruction was absent unless you actually looked
+- Order: skill files → report → transcript → summary.json
+
+**Gap + Why structure per theme**
+- Each theme with score ≤ 4 now outputs a Gap block (what was missing/wrong, specific not vague) and a Why block (tag + citation + one-sentence fix description)
+- Replaces the previous free-form "improvement if score ≤ 3" which frequently produced vague advice
+
+**Section 4 — Failure Mode Summary table (new)**
+- After Top 2–3 improvements, a table aggregates every gap from Section 2: Gap label · Theme · Tag · Fix target (named file + one-phrase edit description)
+- This table is the input to skill file improvement decisions — each row is a potential edit to a named file
+
+**Self-honesty check expanded**
+- Four specific checks added, one per tag type: confirms evaluator actually checked all skill files for MISSING_INSTRUCTION, actually quoted instructions for AMBIGUOUS, actually confirmed a transcript attempt for EXEC_ERROR, actually named the instruction and data for DATA_LIMIT
+
+### Test runs
+
+Two new runs added (`v1.3`):
+- **ce189_2026-03-05_2026-05-03** (Vatican Museums) — 25/35. Dual-driver: S2C supply capacity pressure (spring demand exceeded fixed Vatican slot supply, confirmed via availability proxy and lead-time bucket query) + C2O iOS/Android device split (price shock + live inventory). First run evaluated against the new evaluator v1.5 rubric.
+- **ce6495_2026-03-05_2026-05-03** (Kualoa Ranch) — 24/35. S2C demand quality decline: spring break wind-down replaced high-intent vacationers with low-intent off-peak tourists. First run to conclusively establish seasonal demand quality as a mechanism (no supply, pricing, or UX change confirmed).
+
+---
+
 ## [v1.0] — 2026-04-27 — Initial release
 
 **Summary:** First versioned release of the CVR-RCA skill. Establishes the full investigation framework, reference files, SQL pipeline, rendering helpers, and evaluation rubric.
@@ -185,6 +236,21 @@ This makes the skill easier to maintain: process changes update `SKILL.md`, anal
 - **c008 — 90-day chart to Section 1:** Chart moves from Section 3 (conditional) to Section 1 (always), appearing after metric cards and before the root cause callout. Post-window shade is green for improvements, red for declines.
 - **c009 — Fixed Segment banner:** New HTML component after mix cascade output, before Shapley block. Declares `MB/HO · Paid/Organic · Channel` scope for all downstream funnel analysis.
 - **c010 — Raw user counts mandatory:** All tables showing rates or shares must include Pre Users and Post Users columns. "Table shows rates/shares with no user counts" added to anti-patterns list.
+
+---
+
+## [v1.5] — 2026-05-04 — Evaluator failure mode classification
+
+**Summary:** The evaluator now diagnoses *why* each gap occurred, not just *what* was missing. Every gap in a theme score gets a failure mode tag (`[MISSING_INSTRUCTION]`, `[AMBIGUOUS_INSTRUCTION]`, `[EXEC_ERROR]`, `[DATA_LIMIT]`) backed by a grounded citation from the skill files. A new Section 4 summary table aggregates all gaps into a single cross-run view that maps directly to skill file edits. This turns the evaluation from a retrospective scorecard into a skill improvement roadmap.
+
+### Changes by file
+
+**`evals/evaluator.md`** (e001)
+- **What to review** — Added skill reference files (SKILL.md, hypothesis.md, context.md, report_structure.md) as the first pre-read step, before the report and transcript. Reading the skill files first is required so the evaluator can verify whether an instruction existed before classifying a gap.
+- **Scoring** — Added two new required fields per theme: `Gap` (if score ≤ 4) describing specifically what was missing or wrong; `Why` (required for every gap) — a failure mode tag with a grounding citation.
+- **Failure Mode Classification** (new section) — Defines four tags with meanings, and a grounding requirement for each. Tag assignment without a citation is explicitly prohibited. Citation format templates provided for all four tag types.
+- **Output format** — Updated Section 2 to show inline `Gap` / `Why` blocks with a worked example. Added Section 4: Failure Mode Summary table mapping every gap to a specific file + fix description.
+- **Self-honesty check** — Added four grounding checks (one per tag type): did you actually look in the skill files, quote the instruction, confirm an attempt in the transcript, verify data unavailability?
 
 ---
 
