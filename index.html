@@ -663,7 +663,7 @@ const NODES = [
     badge: null,
     inputs: [],
     outputs: ['ce_id', 'pre_start', 'pre_end', 'post_start', 'post_end'],
-    condition: 'Always fires — entry point.\nDefaults to prior full week vs current week if no dates given.',
+    condition: 'Always fires — entry point.\nDefaults to last 30 days vs prior 30 days if no dates given.',
     description: 'User invokes /cvr-rca. Immediately reads context.md, hypothesis.md, actions.md, and report_structure.md (the "Before you begin" block). Opens the investigation transcript. Validates CE ID + date inputs, sets default date windows if omitted, then kicks off the baseline pipeline.',
   },
 
@@ -766,7 +766,7 @@ const NODES = [
     inputs: ['shapley.shapley{LP2S/S2C/C2O}', 'shapley.pct_contribution', 'shapley.significant_steps'],
     outputs: ['primary_driver', 'significant_steps[]'],
     condition: 'ONLY IF mix_dominance.is_dominant = false.',
-    description: 'Second mandatory question. A step is significant if |contribution / ΔCVR| ≥ 0.30. Multiple steps can be significant simultaneously. primary_driver = step with largest |Shapley value|. Steps below threshold are noted as "not the story" in the ruled-out section of the report.',
+    description: 'Second mandatory question. A step is significant if |contribution / ΔCVR| ≥ 0.30. Multiple steps can be significant simultaneously — if LP2S and S2C both exceed the threshold, both driver branches fire in parallel. primary_driver = step with largest |Shapley value|. Steps below threshold are noted as "not the story" in the ruled-out section of the report.',
   },
   {
     id: 'lp2s-driver', type: 'analysis', icon: '🔬',
@@ -776,7 +776,7 @@ const NODES = [
     inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts'],
     outputs: ['mechanism (pricing/UX/supply/competition)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "LP2S" in significant_steps.',
-    description: 'Three-tier triage (see hypothesis.md). Tier 1: run dimension cuts in parallel — device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If a dimension concentrates, drill to intersection then to page_url (the target output). Tier 2: if no concentration, run pricing analysis — final_price_usd pre/post for top experiences. Tier 3: if pricing is also flat, session recordings on the LP are the primary tool. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
+    description: 'Three-tier triage (work in order, do not skip ahead). Tier 1 — dimension cuts in parallel: device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If any dimension concentrates, drill to the intersection (e.g. French × mobile), then to page_url — the specific URL is the target output. Tier 2 — if no dimension concentrates: pricing analysis (final_price_usd pre/post for top experiences from product_rankings_features). A CE-wide price uplift depresses LP2S broadly with no dimension concentration. Tier 3 — if pricing is also flat: session recordings on the LP are the primary tool; note "no quantitative locus found" in the transcript. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
   },
   {
     id: 's2c-driver', type: 'analysis', icon: '🔬',
@@ -875,7 +875,7 @@ const NODES = [
     badge: null,
     inputs: ['custom query results', 'dimension cuts', 'URL anomalies'],
     outputs: ['locus: URL | device | experience | language | CE-wide', 'recording_trigger: bool'],
-    condition: 'Always fires after custom queries.\nYES → session recordings. NO → conclude from available evidence.',
+    condition: 'Always fires after custom queries.\nYES (concentrated in a dimension) → session recordings.\nNO (diffuse / CE-wide) → skip recordings, conclude from quantitative evidence.',
     description: 'If the drop is concentrated in a specific URL, device type, experience ID, or language — the locus is identified and Mixpanel session recordings are pulled for direct visual evidence. If the drop is diffuse across all dimensions (CE-wide), recordings are skipped and the investigation concludes from quantitative data alone.',
   },
 
