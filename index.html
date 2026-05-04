@@ -760,13 +760,13 @@ const NODES = [
   },
   {
     id: 'mix-root', type: 'analysis', icon: '🔍',
-    label: 'Mix Root Cause', sublabel: 'Campaign / routing / budget analysis',
+    label: 'Mix Root Cause', sublabel: 'Routing exit investigation — 3 tiers per level',
     x: 80, y: 2390, phase: 'Analysis',
     badge: null,
-    inputs: ['mbho_mix[]', 'channel_mix[]', 'mix_dominance', 'Q6 URL results'],
-    outputs: ['root cause narrative', 'DRI: Marketing / Performance Marketing', 'action items'],
+    inputs: ['mbho_mix[]', 'channel_mix[]', 'cascade exit level (1/2/3)', 'Q6 URL results'],
+    outputs: ['shift week · sub-segment · affected URLs · declaration', 'DRI: Marketing / Performance Marketing'],
     condition: 'ONLY IF cascade routing exit at any level.',
-    description: 'Identifies why traffic routing shifted: paid campaign paused/budget reallocated (HO share drops), LP routing error in campaigns (language/geo campaigns pointing to wrong page), or seasonal organic MB spike. DRI is always Marketing or Performance Marketing. Feeds directly into Section 1 callout and Section 2 action card.',
+    description: 'Investigation path differs by exit level — same 3-tier structure: (1) Time the shift (weekly volumes → anchor week), (2) Sub-segment cut (within the exiting dimension), (3) URL impact (page_url volumes for the losing segment). Level 1 exit (HO vs MB): sub-segment = language or market within HO; URL = which collection pages lost HO traffic. Level 2 exit (Paid vs Organic): sub-segment = which paid channel declined; URL = which LPs that channel stopped serving. Level 3 exit (Channel): sub-segment = which channel gained vs which lost (e.g. Google Search → PMAX shift); URL = LPs of losing channel. Declaration: "[Segment] dropped [X%] starting [week]. Affected pages: [URLs]. Marketing owns — conversion rates within [segment] were flat." DRI is always Marketing or Performance Marketing.',
   },
 
   // ══ CONVERSION PATH (cascade → which funnel step?) ══
@@ -788,7 +788,7 @@ const NODES = [
     inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (pricing/UX/supply/competition)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "LP2S" in significant_steps.',
-    description: 'Three-tier triage (work in order, do not skip ahead). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If any dimension concentrates, drill to the intersection (e.g. French × mobile), then to page_url — the specific URL is the target output. Tier 2 — if no dimension concentrates: pricing analysis (final_price_usd pre/post for top experiences from product_rankings_features). A CE-wide price uplift depresses LP2S broadly with no dimension concentration. Tier 3 — if pricing is also flat: session recordings on the LP are the primary tool; note "no quantitative locus found" in the transcript. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
+    description: 'Three-tier triage (work in order, do not skip ahead). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S, browsing_country (Geo/Non-Geo) × LP2S. For the Geo/Non-Geo cut use the dedicated query from context.md (requires CE country pre-step + top-5 CTE logic). If any dimension concentrates, drill to the intersection (e.g. French × mobile), then to page_url — the specific URL is the target output. Geo drop → cross-cut with local language; Non-Geo country drop → cross-cut with experience_id. Tier 2 — if no dimension concentrates: pricing analysis (final_price_usd pre/post for top experiences from product_rankings_features). A CE-wide price uplift depresses LP2S broadly with no dimension concentration. Tier 3 — if pricing is also flat: session recordings on the LP are the primary tool; note "no quantitative locus found" in the transcript. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
   },
   {
     id: 's2c-driver', type: 'analysis', icon: '🔬',
@@ -798,7 +798,7 @@ const NODES = [
     inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "S2C" in significant_steps.',
-    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1: language × S2C and device × S2C first (before experience-level) — a single language/device concentrating points to a localised or UX issue. Then experience × S2C + count_days_available_30d. If experience concentrates and availability dropped, run the inventory_availability lead-time bucket query to identify which specific window went empty. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
+    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: language × S2C, device × S2C, experience × S2C + count_days_available_30d, browsing_country (Geo/Non-Geo) × S2C. For Geo/Non-Geo use the dedicated context.md query. Language/device concentrating → localised or UX issue; drill to intersection then page_url. Experience concentrating + availability drop → run inventory_availability lead-time bucket query. Geo drop → cross-cut with local language + experience_id; Non-Geo drop → check experience_id for international inventory gaps and language variants. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
   },
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
@@ -948,7 +948,7 @@ const NODES = [
     x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
-    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'inventory_availability schema', 'Dimensions guide', 'table schemas'],
+    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'mix/conv effect arithmetic', 'Geo vs Non-Geo query (c013)', 'canonical L2+ template', 'inventory_availability schema', 'PERF_MAX filter (c012)'],
   },
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
@@ -956,7 +956,7 @@ const NODES = [
     x: 1670, y: 2990, phase: 'Reference File',
     usedBy: ['hypothesis'],
     fileKey: 'hypothesis',
-    chips: ['L0 routing map', 'LP2S 3-tier triage', 'S2C 2-tier triage', 'C2O 4+3 hypotheses', 'URL concentration', '10 historical patterns'],
+    chips: ['L0 routing map', 'Mix routing exit — 3 levels × 3 tiers', 'LP2S 3-tier + Geo/Non-Geo', 'S2C 2-tier + Geo/Non-Geo', 'C2O 4+3 + Geo/Non-Geo optional', 'URL concentration', '10 historical patterns'],
   },
   {
     id: 'file-actions', type: 'file', icon: '📄',
@@ -972,7 +972,7 @@ const NODES = [
     x: 1670, y: 5000, phase: 'Reference File',
     usedBy: ['html-report'],
     fileKey: 'reportStruct',
-    chips: ['90d chart in S1 (always)', 'positive CVR green variant', 'fixed segment banner', 'raw user counts mandatory', 'weekly x-axis ticks'],
+    chips: ['90d chart in S1 (always)', 'positive CVR green variant', 'mix cascade analysis block (3 tables)', 'fixed segment banner', 'raw user counts mandatory', 'weekly x-axis ticks'],
   },
   {
     id: 'file-evaluator', type: 'file', icon: '📄',
@@ -989,6 +989,14 @@ const NODES = [
     usedBy: ['hypothesis'],
     fileKey: 'workedExample',
     chips: ['Mix-dominant walkthrough', 'Conversion + locus walkthrough', 'French × iOS cross-cut', 'session recordings'],
+  },
+  {
+    id: 'file-events', type: 'file', icon: '📄',
+    label: 'events.md', sublabel: 'GTM/Mixpanel funnel event reference',
+    x: 1670, y: 4150, phase: 'Reference File',
+    usedBy: ['recordings'],
+    fileKey: 'events',
+    chips: ['LP events — 15 structured + 4 unstructured', 'S2C events — 14 structured + 3 unstructured', 'C2O events — 15 structured + 8 unstructured', 'session join key (h-sid / HSID)', 'excluded noise events'],
   },
 ];
 
@@ -1051,6 +1059,7 @@ const EDGES = [
   { id:'c5b', from:'file-report-struct',to:'html-report',  type:'consults', label:'HTML/CSS spec'             },
   { id:'c6',  from:'file-evaluator',   to:'evaluation',    type:'consults', label:'7-theme rubric'            },
   { id:'c7',  from:'file-worked-example', to:'hypothesis',  type:'consults', label:'worked examples'           },
+  { id:'c8',  from:'file-events',         to:'recordings',  type:'consults', label:'event map — what to look for' },
 ];
 
 // ── Canvas section labels ─────────────────────────────────────────────────────
@@ -1208,24 +1217,23 @@ A shift in traffic share toward MB depresses overall CVR even if per-segment rat
 
 ---
 
-## Mix Cascade — Fixing the Primary Segment (NEW in c006)
+## Mix Cascade — Routing vs Conversion Determination (c006/c010/c012)
 
-Run as the first L1 step in every funnel investigation. Three levels:
+Run as the first L1 step. Three levels — at each level compare mix_effect vs conversion_effect from the query output:
 
-**Level 1 — MB vs HO:** Read from \`summary.json\` (mb_share, ho_share) — no query needed. Fix \`is_microbrand_page = TRUE/FALSE\`.
+**mix_effect = Δshare × pre_rate** · **conversion_effect = pre_share × Δrate**
 
-**Level 2 — Paid vs Organic:** Custom BQ query grouping \`channel_name\` into Paid (Google Ads, Microsoft Ads, Facebook Ads, Affiliates) vs Organic. Fix the dominant type.
+Compute explicitly in the transcript (sum across segments). The dominant term is the story. Mix dominates → routing exit at that level. Conversion dominates → fix segment, descend.
 
-**Level 3 — Channel within Paid:** Only if Paid was fixed. Break out individual channel names. Fix the largest absolute checkout-impact channel.
+**Level 1 — MB vs HO:** summary.json — no query. Fix \`is_microbrand_page = TRUE/FALSE\`.
+**Level 2 — Paid vs Organic (within fixed brand):** BQ query. Must include PERFORMANCE_MAX filter AND use \`COUNT(DISTINCT CASE WHEN has_X THEN user_id END)\` (not COUNTIF) — funnel table fans out on multi-experience sessions; COUNTIF numerators can exceed denominators.
+**Level 3 — Channel within Paid:** BQ query, same fix pattern. Channels: Google Ads, Microsoft Ads, Facebook Ads (Meta), Affiliates.
 
-**Decision rule:** Fix a level when one segment has >15% of post users AND its absolute checkout impact (|Δcvr| × post users) exceeds all others combined. If distributed, log "no dominant segment" and carry all values.
+**Declare in transcript before any funnel branches:**
+- Conversion path: \`Fixed segment: [MB/HO] · [Paid/Org] · [channel]\` + filter strings
+- Routing exit: \`Mix change at Level [X] — [reason]\` → follow routing exit investigation in hypothesis.md
 
-**Declare fixed segment before writing any further hypotheses:**
-\`\`\`
-Fixed segment: MB · Paid · Google Ads
-Filters: AND is_microbrand_page = TRUE AND channel_name = 'Google Ads'
-\`\`\`
-Every L2+ query must carry these filters.
+**Decision rule:** Fix a level when one segment has >15% post users AND its checkout impact dominates. Routing exit when mix_effect dominates conversion_effect at that level.
 
 ---
 
@@ -1305,13 +1313,54 @@ Lead-time bucket query: bucket \`DATE_DIFF(experience_date, extracted_date, DAY)
 
 ---
 
+## Geo vs Non-Geo dimension (c013)
+
+Use when the CE is in a high-domestic-demand market and you suspect different dynamics between local and international visitors.
+
+**Pre-step:** Look up CE home country: \`SELECT DISTINCT country FROM dim_experiences WHERE combined_entity_id = '<ce_id>'\`. Use \`dim_experiences.country\` — \`dim_combined_entities.country\` can be NULL for sheet-only CEs.
+
+Query returns top 5 countries by combined pre+post volume, home country always included. Each row tagged with \`geo_segment\`: Geo (home country) / Non-Geo / Unknown. Apply fixed segment filters from cascade.
+
+**Interpreting results:**
+- Geo drop only → local supply, pricing, or campaign issue. Cross-cut with local language.
+- Non-Geo country drop → international traffic quality, language/UX gap, international supply. Cross-cut with experience_id.
+- Use for LP2S, S2C, and (optionally) C2A when the drop is broad with no device/experience concentration.
+
+---
+
+## Canonical L2+ query template (c012)
+
+All L2+ queries use this pattern — swap \`<dimension>\` in SELECT/GROUP BY. Fixed segment filters (last two WHERE lines) never change within a single investigation:
+
+\`\`\`sql
+SELECT <dimension>, period,
+  COUNT(DISTINCT user_id) AS users_lp,
+  SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN has_select_page_viewed THEN user_id END), COUNT(DISTINCT user_id)) AS lp2s,
+  SAFE_DIVIDE(COUNT(DISTINCT CASE WHEN has_checkout_started THEN user_id END),
+              COUNT(DISTINCT CASE WHEN has_select_page_viewed THEN user_id END)) AS s2c,
+  ...
+FROM mixpanel_user_page_funnel_progression
+WHERE combined_entity_id = '<CE_ID>'
+  AND event_date BETWEEN '<PRE_START>' AND '<POST_END>'
+  AND (advertising_channel_type IS NULL OR advertising_channel_type != 'PERFORMANCE_MAX')
+  AND is_microbrand_page = <TRUE|FALSE>  -- fixed from cascade Level 1
+  AND channel_name = '<channel>'         -- fixed from cascade Level 3
+GROUP BY 1, 2
+\`\`\`
+
+Use \`COUNT(DISTINCT CASE WHEN ... END)\` not COUNTIF — the funnel table fans out rows for multi-experience sessions; COUNTIF numerators can exceed COUNT(DISTINCT user_id) denominators and produce rates > 1.0.
+
+---
+
 ## Changelog (selected)
 | # | Date | Change |
 |---|------|--------|
-| c002 | 2026-04-27 | Query Principles, Q3 Trend, Dimensions to Query, Session Recordings guidance added (moved from SKILL.md) |
+| c002 | 2026-04-27 | Query Principles, Q3 Trend, Dimensions to Query, Session Recordings guidance added |
 | c004 | 2026-04-28 | inventory_availability + inventory_changes schemas; lead-time bucket query |
 | c006 | 2026-04-29 | Mix Cascade section added (3-level cascade, decision rule, fixed-segment declaration) |
-| c009 | 2026-04-29 | Investigation patterns moved to hypothesis.md — context.md now owns domain vocab + schemas + query rules only |
+| c009 | 2026-04-29 | Investigation patterns moved to hypothesis.md |
+| c012 | 2026-05-04 | Fixed COUNTIF → COUNT(DISTINCT CASE WHEN) in cascade Level 2/3 and L2+ queries; added PERFORMANCE_MAX filter to Level 2/3 cascade queries; added mix_effect/conversion_effect arithmetic guide with worked example |
+| c013 | 2026-05-04 | Added Geo vs Non-Geo dimension: CE country pre-step, country-level query with top-5 CTE + home country always included, interpretation guide for Geo/Non-Geo signals |
 `,
 
 hypothesis: `# hypothesis.md — Central Branch Reference (v1.4, two-level)
@@ -1348,49 +1397,62 @@ Multiple L0 signals combine. If S2C dominates AND sharp break: "experience-level
 
 The investigation ends at a **leaf** (specific mechanism + segment + URL/date), NOT when this list is exhausted. Common reasons the list runs out before a leaf: cross-cut not tested, finer grain not drilled, cause is in a different table.
 
-### Mix — first-pass
-Query \`COUNT(DISTINCT user_id)\` by \`page_url\` pre vs post for the affected segment. Which URLs gained/lost volume? A paid campaign serving specific collection pages that stopped → those pages show a traffic drop. Marketing owns it.
+### Mix — routing exit investigation (3 levels × 3 tiers)
+
+A routing exit means traffic composition shifted. Same 3-tier structure for all levels: (1) Time the shift → weekly volumes, find anchor week. (2) Sub-segment cut → narrow within the exiting dimension. (3) URL impact → page_url volumes for losing segment.
+
+**Level 1 exit (HO vs MB shift):** Sub-segment = language or market within HO. Declaration: "HO traffic dropped [X%] starting [week]. Concentrated in [lang/market]. Affected pages: [URLs]. Conversion rates within HO were flat — Marketing owns."
+
+**Level 2 exit (Paid vs Organic shift):** Sub-segment = which paid channel declined. Declaration: "Paid traffic dropped [X%] starting [date]. Channel: [X]. Affected pages: [URLs]. Marketing owns."
+
+**Level 3 exit (Channel shift within Paid):** Sub-segment = which channel gained/lost (e.g. Google Search → PMAX). Declaration: "[Channel A] lost [X%] impression share to [Channel B] starting [week]. Affected pages: [URLs]. Conversion rates within [Channel A] were flat — spend/allocation story."
+
+Finding complete when you can name: shift week · sub-segment · affected page URLs.
 
 ### LP2S — three-tier (work in order)
 
 **Tier 1 — Dimension cuts in parallel:**
 - \`device_type\` × LP2S — mobile drop → UI/performance change
 - \`language\` × LP2S — single language drop → geo-specific pricing/UX
-- \`page_type\` × LP2S — Collection drop (not Experience) → browse-level friction
+- \`page_type\` × LP2S — Collection drop → browse-level friction
 - \`experience_id\` × LP2S — few experiences → listing quality/price/availability
+- \`browsing_country\` (Geo/Non-Geo) × LP2S — use dedicated query from \`context.md → "Geo vs Non-Geo"\`. Geo drop → local pricing/supply/campaign; Non-Geo drop → international traffic quality or UX gap.
 
-If a dimension concentrates: run intersection (e.g., French × mobile), drill to \`page_url\`. **The page URL is the target output.**
+If a dimension concentrates: run intersection (e.g., French × mobile), drill to \`page_url\`. **The page URL is the target output.** Geo drop → cross-cut with local language; Non-Geo drop → cross-cut with experience_id.
 
 **Tier 2 — If no dimension concentrates:** Price analysis — \`final_price_usd\` from \`product_rankings_features\` pre vs post. CE-wide price uplift depresses LP2S broadly.
 
-**Tier 3 — If pricing flat:** Session recordings — look for UX pattern affecting all users (slow load, broken carousel, changed CTA). Note "no quantitative locus found".
+**Tier 3 — If pricing flat:** Session recordings — look for UX pattern affecting all users. Note "no quantitative locus found".
 
 ### S2C — two-tier (work in order)
 
 **Tier 1 — Dimension cuts in parallel:**
 - \`language\` × S2C — single language → localised select-page issue
-- \`device_type\` × S2C — mobile → select-page UX/rendering issue
-- \`experience_id\` × S2C — specific experiences → supply/pricing. Confirm with \`count_days_available_30d\`; run \`inventory_availability\` lead-time bucket query to identify which window went empty.
+- \`device_type\` × S2C — mobile → select-page UX/rendering
+- \`experience_id\` × S2C — specific experiences → supply/pricing. Confirm with \`count_days_available_30d\`; run \`inventory_availability\` lead-time bucket query.
+- \`browsing_country\` (Geo/Non-Geo) × S2C — use dedicated context.md query. Geo S2C drop → local supply scarcity or pricing shock at variant selection; Non-Geo drop → language/UX friction or international inventory gaps.
 
-If language/device concentrates: drill to intersection, then to \`page_url\`.
+If language/device concentrates: drill to intersection, then \`page_url\`. If Geo concentrates: cross-cut with local language + experience_id. If Non-Geo concentrates: cross-cut with experience_id and language.
 
-If experience concentrates: demand-side (\`lead_time_days\` distribution) + supply-side (\`inventory_availability\` bucket) — both shifting in same window = supply-caused.
+If experience concentrates: demand-side (\`lead_time_days\`) + supply-side (\`inventory_availability\` bucket) — both shifting = supply-caused.
 
-**Tier 2 — If no concentration:** Did checkout flow or variant selection UI change? Did availability drop uniformly (platform-wide config change)?
+**Tier 2 — If no concentration:** Did checkout flow or variant selection UI change? Did availability drop uniformly (platform-wide config)?
 
 ### C2O — decompose first, always
 
 Check \`c2o_sub\` from \`summary.json\` before any queries. C2A and A2O point to completely different causes.
 
 **If C2A dropped (pre-payment abandonment) — 4 hypotheses in parallel:**
-1. Pax availability at checkout — certain pax configurations unavailable → DRI: Ops/BDM
-2. Price display friction — total checkout price differs from listing price
+1. Pax availability at checkout — certain pax combinations unavailable → DRI: Ops/BDM
+2. Price display friction — checkout price differs from listing price
 3. Checkout UX change — form field, CTA, coupon, or trust signal change (mobile most sensitive)
 4. Session recordings on checkout page
 
+**Optional — if C2A drop is broad with no device/experience concentration:** Run Geo/Non-Geo cut. A checkout abandonment rate that spikes in specific countries can point to currency display friction or payment method unavailability in that market.
+
 **If A2O dropped (payment submitted but failed) — 3 hypotheses in parallel:**
 1. Payment gateway failure — elevated decline rate for specific gateway/card network
-2. Fraud rule tightening — new fraud model blocking more legitimate transactions
+2. Fraud rule tightening — new fraud model blocking legitimate transactions
 3. Live inventory failure — slot sold out between checkout start and payment confirmation
 
 ---
@@ -1725,6 +1787,20 @@ No card saying "monitor the situation" or "investigate further."
 | DRI is "Product team" with no specific task | Can't be forwarded |
 | Analysis block opens with "The following table shows..." | Describes data, not the finding |
 | Shapley visualization in a mix-dominant finding | The steps didn't break — showing it implies they did |
+
+---
+
+## Mix cascade analysis block (Section 3)
+
+Render one \`.analysis-block\` with three sub-tables (one per cascade level). Each table shows mix_effect vs conversion_effect explicitly so the reader can verify the routing-vs-conversion decision.
+
+**Verdict line states the overall outcome:**
+- Conversion path: "Conversion change at all levels — no routing story. Fixed segment: [MB/HO] · [Paid/Organic] · [Channel]."
+- Routing exit: "Routing story — mix change detected at Level [1/2/3]. [One-line reason.]"
+
+**Each sub-table** has columns: Segment · Pre users · Post users · Pre share · Post share · Pre CVR · Post CVR · Mix effect · Conv. effect · Verdict. Highlight the fixed segment row with \`.highlight-row\`.
+
+**If cascade exited at a mix level:** render only levels up to and including the exit level. Exit level verdict cell: "Mix exit — routing story". Do not render levels that were not run.
 `,
 
 evaluator: `# evaluator.md — Quality Evaluator (v1.5, e001)
@@ -1843,6 +1919,82 @@ Score low: "Product team" with no specifics, "investigate further", same action 
 - Every row in the Section 4 table maps to a concrete edit in a named file?
 
 > An evaluation where every theme scores 4 or 5 with no improvements is almost certainly not honest.
+`,
+
+events: `# events.md — GTM/Mixpanel Funnel Event Reference
+
+Running document mapping GTM/Mixpanel events to funnel steps. Use when a locus is fixed (language, device, TGID, page URL) — query these events filtered to that locus and compare \`pct_of_sessions\` pre vs post.
+
+**Session join key:** \`h-sid\` on LP (microbrand domain). \`HSID\` on select/checkout pages (book.* domain). Same value, different casing — align when joining across domains.
+
+---
+
+## LP Events (15 structured + 4 unstructured)
+
+**Sequential (in order of execution):**
+
+| # | Event | Key properties | Purpose |
+|---|---|---|---|
+| 1 | \`Microsite Page Viewed\` | h-sid, Language, Platform Name, Collection ID, Is Landing Page, Currency | Page load — LP2S denominator |
+| 2 | \`Page Load Time\` | h-sid, LoadTime (ms) | Observed: 2,300–3,600ms. Spike = performance regression |
+| 3 | \`Experience Card Visible\` | h-sid, Tour Group ID, Position | Cards in viewport — user reached product list |
+| 5 | \`gtm.scrollDepth\` | h-sid, gtm.scrollThreshold (10/25/40/50/75%) | Scroll depth (5 thresholds on LP) |
+| 7 | \`More Details Clicked\` | h-sid, Tour Group ID, Action (Open/Close) | Drawer opened — strong engagement signal |
+| 13 | \`Image Gallery Opened\` | h-sid, Tour Group ID, Position | Gallery opened — strong purchase consideration |
+
+**Unstructured:** Locale Selector Clicked, Locale Popup Viewed, Locale Option Selected (currency/language mismatch signal), MB Currency Changed.
+
+**Excluded noise:** Free Cancellation Tooltip, Header Dropdown, MB Banner Visible, gtm.timer/dom/load/js, Web Vitals Captured, raw gtm.click.
+
+---
+
+## S2C Events (14 structured + 3 unstructured)
+
+Select page lives on \`book.<domain>/book/<tgid>/select/\`. DataLayer resets on navigation from LP.
+
+**Key structured events:**
+
+| # | Event | Key properties | Purpose |
+|---|---|---|---|
+| 1 | \`Select Page Viewed\` | HSID, Tour Group ID, Language, Currency, Flow Type | S2C denominator |
+| 3 | \`Calendar Opened\` | HSID, Calendar Type | Drop = users not engaging with date step |
+| 4 | \`Calendar Date Selected\` | HSID, Selected Date, Table Type | Intentional date selection (cleaner than Experience Date Selected) |
+| 7 | \`Error Viewed\` | HSID, Error Message | e.g. 'Please select a date to continue' |
+| 8 | \`Tour Card Visible\` | HSID, Variant ID, Ranking, Inventory Type, Is BNPL, Is Cancellable | Each fire = one variant shown. Changes in Is BNPL across periods = product attribute change |
+| 9 | \`Variant Card Clicked\` | HSID, Tour ID, Variant ID, Is Scarce, Tour Entry Time | Tour Entry Time Single→Fixed = extra step added, drives abandonment |
+| 13 | \`Select Page CTA Clicked\` (label: Next) | HSID, Is Scarce, Is XTL, from | **S2C numerator**. \`from\`: Tour Selection Bar vs Booking Itinerary Card |
+
+**Excluded:** Experiment Viewed, Javascript Error (cross-origin, harmless), SDK Loaded (payment readiness — C2O not S2C), Experience Pax Updated (auto-fire).
+
+---
+
+## C2O Events (15 structured + 8 unstructured)
+
+Checkout page: \`book.<domain>/book/<tgid>/checkout/\`. Decomposes into C2A × A2O.
+
+**Key structured events:**
+
+| # | Event | Key properties | Purpose |
+|---|---|---|---|
+| 1 | \`Checkout Page Viewed\` | HSID, Lead Time Days, Flow Type | C2O denominator. Lead Time Days: BNPL requires ≥4 days |
+| 3 | \`BNPL Status Toggled\` | HSID, Status, Is Lead Time Condition Met | Status=Unavailable + eligible variant = lead time too short. Fires 2–3× per load (GTM race) — use last fire after Checkout Started |
+| 9 | \`Itinerary Card Edit Button Clicked\` | HSID, Type | Pencil icon — edit before back. Always precedes Back Button Clicked when pencil used |
+| 10 | \`Back Button Clicked On Checkout Page\` | HSID | Fires for BOTH browser back AND pencil edits. Isolate abandonment: filter sessions without prior Itinerary Card Edit |
+| 14 | \`Confirm & Pay Clicked\` | HSID, Details Valid, User Subscribed | \`Details Valid: true\` = **C2A numerator** — valid attempt to gateway |
+| 15 | \`Order Completed\` | HSID, Order ID, Order Value | **C2O numerator** — confirmation page |
+
+**Key unstructured:** BNPL Option Selected (explicit user toggle vs availability signal), Payment Option Selected (gateway confirmed active — changes signal infrastructure event), Listing Price Mismatch Found (spike = pricing bug), Coupon Failed (Error Code: CAL-0408 = not signed in).
+
+**Excluded:** SDK Loaded (Riskified/payment infra), gtm.historyChange, Page Transition Complete.
+
+---
+
+## Notes
+
+- All events match GTM dataLayer names, forwarded 1:1 to Mixpanel → \`mixpanel_events_partitioned\` in BQ.
+- CE 189 = Vatican Museums (thevaticantickets.com). Events captured via F12 dataLayer inspection 2026-05-03.
+- TG ID = Tour Group ID = Experience ID at collection level (interchangeable in LP queries).
+- BNPL as a feature (appearing/disappearing) has no reliable event — track as a product change query.
 `,
 
 };

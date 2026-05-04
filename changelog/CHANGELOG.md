@@ -216,4 +216,34 @@ Two new runs added (`v1.5`):
 
 ---
 
+## [v1.6] — 2026-05-04 — Query fix, Geo/Non-Geo dimension, routing exit investigation, events reference
+
+**Summary:** Four interconnected additions that sharpen the investigation's analytical depth. (1) A critical query correctness fix: cascade and L2+ queries now use `COUNT(DISTINCT CASE WHEN ...)` instead of `COUNTIF`, preventing rates > 1.0 on multi-experience sessions. (2) A new Geo vs Non-Geo dimension cut lets investigators distinguish domestic vs international traffic dynamics in high-local-demand markets. (3) The mix routing exit investigation is fully specified for all three cascade levels with a 3-tier path (time the shift → sub-segment → URL impact) and declaration templates. (4) A new `events.md` reference maps all GTM/Mixpanel events across LP, S2C, and C2O with properties, purpose, and exclusion notes.
+
+### Changes by file
+
+**`references/context.md`** — c012 / c013
+
+- **c012 — Query fix:** `COUNTIF` replaced with `COUNT(DISTINCT CASE WHEN has_X THEN user_id END)` in cascade Level 2/3 queries and the canonical L2+ template. The funnel table fans out rows when a user views multiple experiences in one session, causing `COUNTIF` numerators to exceed `COUNT(DISTINCT user_id)` denominators and produce rates > 1.0. Also added missing `PERFORMANCE_MAX` exclusion filter to Level 2 and Level 3 cascade queries.
+- **c012 — mix_effect / conversion_effect arithmetic guide:** Step-by-step formula (share_pre/post → Δshare/Δrate → mix_effect = Δshare × pre_rate, conversion_effect = pre_share × Δrate) plus a worked Level 3 example showing the full arithmetic and the fix declaration that follows.
+- **c012 — Canonical L2+ query template:** Annotated reference query showing the fixed segment lines (`is_microbrand_page` and `channel_name` filters) that carry through all L2+ queries.
+- **c013 — Geo vs Non-Geo dimension:** Pre-step to look up CE home country via `dim_experiences.country` (not `dim_combined_entities.country`, which can be NULL for sheet-only CEs). Country-level query with top-5 CTE + home country always included regardless of rank. Each row tagged `geo_segment` (Geo / Non-Geo / Unknown). Interpretation guide: Geo drop → local supply/pricing/campaign + cross-cut with local language; Non-Geo drop → international traffic quality/UX gap + cross-cut with experience_id.
+
+**`references/hypothesis.md`**
+
+- **Mix routing exit — fully specified (3 levels × 3 tiers):** Each of the three cascade exit levels now has a complete 3-tier investigation: Tier 1 time the shift (weekly volume query, anchor week), Tier 2 sub-segment cut (language/market within HO; channel within Paid; channel gain/loss within Paid), Tier 3 URL impact (page_url volumes for losing segment). Each level has a declaration template naming the shift week, sub-segment, affected URLs, and DRI.
+- **LP2S first-pass branches:** Added `browsing_country` (Geo/Non-Geo) as a Tier 1 parallel cut. Geo concentration → cross-cut with local language. Non-Geo concentration → cross-cut with `experience_id`. Points to dedicated `context.md → "Geo vs Non-Geo"` query.
+- **S2C first-pass branches:** Added `browsing_country` (Geo/Non-Geo) as a Tier 1 parallel cut. Geo S2C drop → local supply scarcity or pricing shock at variant selection. Non-Geo drop → language/UX friction or international inventory gaps.
+- **C2O (C2A) — optional Geo/Non-Geo:** Added as an optional cut when C2A drop is broad with no device/experience concentration — spikes in specific countries can indicate currency display friction or payment method unavailability.
+
+**`references/report_structure.md`**
+
+- **Mix cascade analysis block:** New `analysis-block` spec for Section 3 — three sub-tables (one per cascade level), each showing Segment · Pre/Post users · Pre/Post share · Pre/Post CVR · Mix effect · Conv. effect · Verdict. Verdict line states overall outcome (conversion path or routing exit). `highlight-row` on the fixed segment row. If cascade exited at a mix level, render only levels up to and including the exit.
+
+**`references/events.md`** (new file)
+
+Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured events (Microsite Page Viewed through More Details Swipesheet Closed) + 4 unstructured. S2C: 14 structured (Select Page Viewed through gtm.scrollDepth) + 3 unstructured. C2O: 15 structured (Checkout Page Viewed through Order Completed) + 8 unstructured. Each event lists key properties to pull and analytical purpose. Includes session join key notes (`h-sid` on LP vs `HSID` on select/checkout), deduplication guidance for GTM multi-trigger events, and excluded noise event lists per funnel step.
+
+---
+
 *Each future entry in this changelog corresponds to one GitHub push. Format: `[vX.Y] — YYYY-MM-DD — Short title` followed by a summary of what changed and why.*
