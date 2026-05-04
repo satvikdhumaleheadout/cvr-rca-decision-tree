@@ -11,6 +11,12 @@
       "version_date": "2026-05-04",
       "version_summary": "Evaluator redesign (failure mode tags) + findings synthesis gate (Step 2b)",
       "manifest": "runs/v1.5/manifest.json"
+    },
+    {
+      "version": "v1.6",
+      "version_date": "2026-05-04",
+      "version_summary": "Query fix (COUNT DISTINCT), Geo/Non-Geo dimension, routing exit investigation, events.md reference",
+      "manifest": "runs/v1.6/manifest.json"
     }
   ]
 }

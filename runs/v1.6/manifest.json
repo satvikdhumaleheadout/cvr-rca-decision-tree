@@ -1,0 +1,21 @@
+{
+  "version": "v1.6",
+  "runs": [
+    {
+      "id": "ce229_2026-03-05_2026-05-03",
+      "ce_id": "229",
+      "ce_name": "Warner Bros. Studio Tour London Tickets",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 26,
+      "eval_max": 35,
+      "root_cause": "CVR improved +0.31pp overall (C2O +4.50pp from Easter/spring high-intent planners + price dip on main product), but S2C fell −1.13pp concentrated on mobile — near-term weekend slots selling out 2–3 days in advance left last-minute mobile visitors with no available dates. Structural S2C gap vs LY (~15–17pp below) suggests tighter WBSL allotment management in 2026 vs 2025.",
+      "files": {
+        "report": "runs/v1.6/ce229_2026-03-05_2026-05-03/report.html",
+        "transcript": "runs/v1.6/ce229_2026-03-05_2026-05-03/transcript.md",
+        "evaluation": "runs/v1.6/ce229_2026-03-05_2026-05-03/evaluation.md"
+      }
+    }
+  ]
+}

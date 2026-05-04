@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Warner Bros. Studio Tour London Tickets (CE 229)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      line-height: 1.55;
+    }
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 40px 24px;
+    }
+    header .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 6px;
+    }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e4ef;
+    }
+    .metric-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 16px 16px;
+      border: 1px solid #e8ebf4;
+    }
+    .metric-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 8px;
+    }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre  { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+    .delta-neg  { background: #fdecea; color: #c62828; }
+    .delta-pos  { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout {
+      background: #fff;
+      border-left: 4px solid #2e7d32;
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin-bottom: 8px;
+      border-top: 1px solid #e8ebf4;
+      border-right: 1px solid #e8ebf4;
+      border-bottom: 1px solid #e8ebf4;
+    }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #2e7d32; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8892a4;
+      margin-bottom: 4px;
+    }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dri-badge {
+      background: #e8edf7;
+      color: #3a4a8a;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 2px 9px;
+      border-radius: 8px;
+    }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c62828;
+      background: #fdecea;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 18px;
+    }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    .verdict-line.pos { color: #2e7d32; background: #e8f5e9; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #8892a4;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e8ebf4;
+    }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .highlight-row-pos td { background: #f0faf0 !important; }
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c  { background: #c62828; }
+    .shapley-c2o  { background: #2e7d32; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .ruled-out { font-size: 13px; color: #777; font-style: italic; padding: 6px 0 0; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Warner Bros. Studio Tour London Tickets — CE 229</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-03-05 – 2026-04-03</span>
+    <span>📅 Post: 2026-04-04 – 2026-05-03</span>
+    <span>🌍 United Kingdom</span>
+    <span>🔗 <a href="https://www.london-tickets.co.uk/warner-bros-studio-tour-london/" target="_blank" style="color:#b0bec5;text-decoration:underline;">london-tickets.co.uk/warner-bros-studio-tour-london</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ================================================================ -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+  <!-- ================================================================ -->
+
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values">
+        <span class="pre">2.21%</span>
+        <span class="post">2.52%</span>
+      </div>
+      <div class="delta delta-pos">Δ +0.31pp / +13.9%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values">
+        <span class="pre">39.3%</span>
+        <span class="post">39.5%</span>
+      </div>
+      <div class="delta delta-flat">Δ +0.20pp / +0.5%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values">
+        <span class="pre">23.7%</span>
+        <span class="post">22.6%</span>
+      </div>
+      <div class="delta delta-neg">Δ −1.13pp / −4.8%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values">
+        <span class="pre">23.7%</span>
+        <span class="post">28.2%</span>
+      </div>
+      <div class="delta delta-pos">Δ +4.50pp / +19.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Traffic (LP)</div>
+      <div class="values">
+        <span class="pre">42,866</span>
+        <span class="post">42,638</span>
+      </div>
+      <div class="delta delta-flat">Δ −228 / −0.5%</div>
+    </div>
+  </div>
+
+  <!-- 90-day trend chart -->
+  <div class="analysis-block" style="margin-bottom:24px;">
+    <div class="block-title">90-day CVR trend — CE 229 · Warner Bros. Studio Tour London</div>
+    <div id="trend-90day" class="chart-container"></div>
+  </div>
+
+  <!-- Root cause callout -->
+  <div class="callout">
+    <h2>CVR Improved — What's Driving It &amp; What's Holding It Back</h2>
+    <div class="callout-item">
+      <div class="q">What drove the improvement?</div>
+      <div class="a">C2O improved +4.50pp (23.7% → 28.2%), accounting for 134% of ΔCVR. Both C2A (+4.45pp) and A2O (+2.58pp) improved. Desktop users completed bookings at dramatically higher rates (+6.78pp C2O on desktop), consistent with the Easter and spring season bringing high-intent planners to this bucket-list attraction. Prices for the main transport-inclusive tour (Exp 3370) also fell ~25% in the post period, reducing checkout sticker shock. Structurally, CVR is +0.82pp ahead of last year at the same calendar position (LY showed −0.45pp at this point).</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">What's holding it back?</div>
+      <div class="a">S2C fell −1.13pp (23.7% → 22.6%), concentrated entirely in mobile: Android Mweb −3.55pp, iOS Mweb −1.18pp, while desktop S2C improved slightly (+0.75pp). On high-traffic Saturdays (e.g., Apr 25 = 2,219 LP users), the first available tour date was 3 days away — same-weekend mobile visitors found no transport-inclusive tour slots and abandoned the select page. S2C is already ~15pp below last year (22% vs LY 37% at same dates), a structural availability gap that has persisted throughout 2026. A new product (Exp 32872 — direct tickets, no transport) also entered the assortment at only 11.3% S2C, replacing a better-converting product.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did the headwind emerge?</div>
+      <div class="a">The S2C gap vs LY has been structural since at least February 2026. Within the post period, S2C worsened sharply from Apr 25 onward (17–20%) as Easter bookings filled near-term slots and the May Day bank holiday weekend drove high browsing volume from last-minute visitors who found no available tour dates.</div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <div class="section-label">Section 2 — Actions</div>
+  <!-- ================================================================ -->
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">S2C is 15pp below LY (22% vs 37%), worsening to 17-20% in late April as near-term weekend slots sell out — mobile users browsing for same-week visits find no tour availability and abandon.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Supply / BDM</span>
+      <span>+ Ops</span>
+    </div>
+    <ul>
+      <li>Check allotment sizes for Exp 3370 (From London: Harry Potter™ Warner Bros. Studio Tour with Return Transport) — confirm whether the vendor (coach provider) has reduced seat allocation per departure in 2026 vs 2025, which would explain the persistent S2C gap vs LY.</li>
+      <li>Review release window and cut-off period settings for Exp 3370 — if the booking cut-off is too long (e.g., 48-72 hours before departure), it would block same-day/next-day bookings that mobile visitors expect.</li>
+      <li>For upcoming peak dates (bank holidays, school holiday weekends), ensure extra coach capacity is secured in advance. Priority: the May 4 bank holiday and June half-term window.</li>
+      <li>Investigate why Exp 39917 (From London: Harry Potter™ Warner Bros. Studio Tour with Coach Transfers) disappeared entirely from the post period — it had 1,013 select users at 17.1% S2C in pre. Was it delisted, ran out of inventory, or merged with another TGID? Re-activation could recover ~170 checkouts per 30-day window.</li>
+      <li>Consider adding "first available date" visibility on the listing page so mobile users can self-select before clicking through — reducing select-page abandonment when near-term dates are full.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Exp 32872 (Harry Potter™ Warner Bros. Studio Tickets — direct, no transport) entered the assortment with only 11.3% S2C on 1,160 post-period select users — users who click through find a date-picker but no transport included, likely abandoning when they realise they must arrange the 20-mile journey to Leavesden independently.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Ops / Content</span>
+      <span>+ Product</span>
+    </div>
+    <ul>
+      <li>Audit the select page for Exp 32872 — confirm whether transport requirements are clearly communicated before users select a date. A user who discovers transport is self-arranged only at the date-picker step will abandon.</li>
+      <li>Add a transport-guidance callout on the Exp 32872 listing tile and select page: "Studio access only — no transport included. Travel independently via train to Watford Junction + shuttle bus." This sets expectations upfront and reduces wasted select-page exposure.</li>
+      <li>Evaluate whether Exp 32872 should be demoted or removed from the main WBSL collection if it cannot be improved — it is currently drawing 1,160 select users per 30-day window and converting only 11.3% of them, leaving ~1,030 users abandoning at the select page.</li>
+      <li>If the product is retained, consider pairing it on the select page with a transport add-on option to recover abandoned bookings.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">Microsoft Ads traffic fell −39% (5,948 → 3,598 users, MB × Paid) while Google Ads grew +7% — confirm this reallocation was intentional and check if it should be reversed given Bing's historically positive ROI for UK attractions.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Performance Marketing</span>
+    </div>
+    <ul>
+      <li>Confirm whether the Microsoft Ads budget reduction for CE 229 was deliberate — if a campaign was paused or budget cut, validate the ROI decision. Microsoft Ads converts at 1.9% CVR (comparable to Google Ads' 2.4%), suggesting similar intent quality.</li>
+      <li>If the reduction was accidental (billing lapse, policy issue), restore Microsoft Ads spend for this CE.</li>
+      <li>If intentional, calculate the estimated revenue impact: 2,350 fewer Bing users × 43.3% LP2S × 21.2% S2C × 26.8% C2O × average order value = approximate monthly revenue foregone.</li>
+    </ul>
+  </div>
+
+  <!-- ================================================================ -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+  <!-- ================================================================ -->
+
+  <!-- Mix Cascade -->
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
+    <div class="verdict-line neutral">Conversion change at all levels — no routing story. Fixed segment: MB · Paid · Google Ads</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre users</th><th class="num">Post users</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">39,898</td><td class="num">39,296</td>
+          <td class="num">91.3%</td><td class="num">90.5%</td>
+          <td class="num">2.28%</td><td class="num">2.56%</td>
+          <td class="num">−0.016pp</td><td class="num pos">+0.256pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>HO</td>
+          <td class="num">3,827</td><td class="num">4,109</td>
+          <td class="num">8.7%</td><td class="num">9.5%</td>
+          <td class="num">2.17%</td><td class="num">3.14%</td>
+          <td class="num">+0.016pp</td><td class="num pos">+0.085pp</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 2 — Paid vs Organic (within MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre users</th><th class="num">Post users</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong></td>
+          <td class="num">34,259</td><td class="num">33,800</td>
+          <td class="num">85.9%</td><td class="num">86.0%</td>
+          <td class="num">2.34%</td><td class="num">2.61%</td>
+          <td class="num">+0.004pp</td><td class="num pos">+0.230pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>Organic</td>
+          <td class="num">5,639</td><td class="num">5,497</td>
+          <td class="num">14.1%</td><td class="num">14.0%</td>
+          <td class="num">1.92%</td><td class="num">2.24%</td>
+          <td class="num">−0.003pp</td><td class="num pos">+0.046pp</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 3 — Channel breakdown within Paid (MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre users</th><th class="num">Post users</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">28,383</td><td class="num">30,237</td>
+          <td class="num">82.7%</td><td class="num">89.4%</td>
+          <td class="num">2.44%</td><td class="num">2.65%</td>
+          <td class="num pos">+0.163pp</td><td class="num pos">+0.172pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num">5,948</td><td class="num">3,598</td>
+          <td class="num">17.3%</td><td class="num">10.6%</td>
+          <td class="num">1.90%</td><td class="num">2.39%</td>
+          <td class="num neg">−0.127pp</td><td class="num pos">+0.085pp</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Conversion dominates at all three cascade levels — this is a funnel quality story, not a traffic routing story. MB is 91% of CE traffic. Within MB, Paid is 86% and Google Ads is 89% of Paid. Note: Microsoft Ads lost 39% of its user volume (5,948 → 3,598), though conversion still dominated at Level 3. The Microsoft Ads volume drop is flagged as an action item.
+    </p>
+  </div>
+
+  <!-- Fixed Segment Banner -->
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:10px 14px;margin-bottom:20px;font-size:13px;color:#1b5e20;">
+    <strong>Fixed segment for all funnel analysis:</strong> MB (is_microbrand_page = TRUE) · Paid · Google Ads<br>
+    <span style="color:#555;font-size:12px;">
+      Post-period users: 30,237 &nbsp;|&nbsp; Share of CE post traffic: 70.9%
+      &nbsp;|&nbsp; CVR change within segment: +2.44% → +2.65% (+0.21pp)
+    </span>
+  </div>
+
+  <!-- Shapley -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line pos">C2O carries 134% of ΔCVR (+0.411pp), more than offsetting S2C's −38% drag (−0.116pp). Net CVR gain: +0.308pp.</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex: 4">LP2S 4%</div>
+      <div class="shapley-bar shapley-s2c" style="flex: 38">S2C −38%</div>
+      <div class="shapley-bar shapley-c2o" style="flex: 134">C2O +134%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S +0.012pp</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −0.116pp</span>
+      <span><span class="legend-dot" style="background:#2e7d32"></span>C2O +0.411pp</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = +0.308pp. C2O is the primary driver. The S2C headwind (−0.116pp) is significant and will erode the net CVR gain if the supply constraints and assortment issues are not resolved before the C2O seasonal uplift fades.
+    </p>
+  </div>
+
+  <!-- C2O sub-decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">C2O sub-decomposition — C2A vs A2O</div>
+    <div class="verdict-line pos">Both C2A and A2O improved. The improvement is primarily C2A (+4.45pp) — users who started checkout are completing it more often.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Sub-metric</th>
+          <th class="num">Pre</th>
+          <th class="num">Post</th>
+          <th class="num">Δ</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row-pos">
+          <td><strong>C2A</strong> (checkout → payment attempt)</td>
+          <td class="num">29.1%</td>
+          <td class="num">33.6%</td>
+          <td class="num pos">+4.45pp</td>
+          <td>More users completing the checkout form and submitting payment</td>
+        </tr>
+        <tr>
+          <td><strong>A2O</strong> (payment attempt → order confirmed)</td>
+          <td class="num">81.6%</td>
+          <td class="num">84.2%</td>
+          <td class="num pos">+2.58pp</td>
+          <td>Slightly higher payment success rate</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The C2A improvement is consistent with: (1) a higher-intent post-period audience (Easter and spring season planners booking well in advance), and (2) lower displayed prices for the main product in the post period (~$91-105 vs ~$128-134 in pre), reducing sticker shock at the checkout form. The A2O improvement is modest and within normal range — no payment gateway issue.
+    </p>
+  </div>
+
+  <!-- Daily S2C trend (full CE) -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C trend — pre vs post</div>
+    <div class="verdict-line">S2C collapsed to 17–20% in late April (Apr 25 onward), driven by near-term slots filling up as peak-season mobile visitors browse on weekends.</div>
+    <div id="s2c-trend" class="chart-container"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The post period opened with S2C around 24-27% in early-to-mid April, before declining sharply from Apr 25 onward. Apr 25 (Saturday, 2,219 LP users) had S2C of 17.75% — the worst day of the entire analysis window. This coincides with availability data showing the first available tour date was 3 days away on Apr 25, leaving same-weekend visitors with no bookable slots. Last year's S2C at the same calendar position was 34-37%.
+    </p>
+  </div>
+
+  <!-- S2C by device -->
+  <div class="analysis-block">
+    <div class="block-title">S2C by device — within fixed segment (MB × Google Ads)</div>
+    <div class="verdict-line">S2C decline is entirely in mobile: Android −3.55pp, iOS −1.18pp. Desktop S2C improved +0.75pp.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Device</th>
+          <th class="num">Pre Users</th>
+          <th class="num">Post Users</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+          <th class="num">Pre C2O</th>
+          <th class="num">Post C2O</th>
+          <th class="num">Δ C2O</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Android Mweb</strong></td>
+          <td class="num">6,991</td>
+          <td class="num">8,047</td>
+          <td class="num">19.52%</td>
+          <td class="num">15.97%</td>
+          <td class="num neg">−3.55pp</td>
+          <td class="num">26.5%</td>
+          <td class="num">31.2%</td>
+          <td class="num pos">+4.66pp</td>
+        </tr>
+        <tr>
+          <td>iOS Mweb</td>
+          <td class="num">12,570</td>
+          <td class="num">13,706</td>
+          <td class="num">16.08%</td>
+          <td class="num">14.90%</td>
+          <td class="num neg">−1.18pp</td>
+          <td class="num">27.3%</td>
+          <td class="num">29.5%</td>
+          <td class="num pos">+2.10pp</td>
+        </tr>
+        <tr class="highlight-row-pos">
+          <td><strong>Desktop</strong></td>
+          <td class="num">8,657</td>
+          <td class="num">8,325</td>
+          <td class="num">36.05%</td>
+          <td class="num">36.80%</td>
+          <td class="num pos">+0.75pp</td>
+          <td class="num">20.7%</td>
+          <td class="num">27.5%</td>
+          <td class="num pos"><strong>+6.78pp</strong></td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Desktop and mobile show opposite S2C dynamics. Desktop users — who plan ahead and book in advance — found the tour available for their chosen dates and converted at higher rates. Mobile users — disproportionately last-minute bookers browsing while already in London — arrived at the select page to find near-term slots full and abandoned. Note also that mobile traffic share grew (pre: 69.5% of LP, post: 72.5%), meaning the S2C headwind has both a rate and a volume component.
+    </p>
+  </div>
+
+  <!-- Experience-level S2C -->
+  <div class="analysis-block">
+    <div class="block-title">S2C by experience — within fixed segment (MB × Google Ads)</div>
+    <div class="verdict-line">Exp 3370 dominates (81% of post select users) with S2C declining −1.52pp. Exp 39917 exited the assortment. Exp 32872 entered with only 11.3% S2C.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th class="num">Pre Select Users</th>
+          <th class="num">Post Select Users</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+          <th class="num">Checkout Impact</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>3370</strong> — With Return Transport</td>
+          <td class="num">10,683</td>
+          <td class="num">10,677</td>
+          <td class="num">19.55%</td>
+          <td class="num">18.03%</td>
+          <td class="num neg">−1.52pp</td>
+          <td class="num neg">−162</td>
+        </tr>
+        <tr>
+          <td>3492 — With Coach Transfers</td>
+          <td class="num">878</td>
+          <td class="num">2,762</td>
+          <td class="num">14.81%</td>
+          <td class="num">17.56%</td>
+          <td class="num pos">+2.75pp</td>
+          <td class="num pos">+485 (volume-driven)</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>39917 — With Coach Transfers (exited)</strong></td>
+          <td class="num">1,013</td>
+          <td class="num" style="color:#aaa">0 (not present)</td>
+          <td class="num">17.08%</td>
+          <td class="num" style="color:#aaa">—</td>
+          <td class="num neg">Lost ~173 checkouts</td>
+          <td class="num neg">−173</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>32872 — Direct Tickets (entered)</strong></td>
+          <td class="num" style="color:#aaa">0 (not present)</td>
+          <td class="num">1,160</td>
+          <td class="num" style="color:#aaa">—</td>
+          <td class="num">11.29%</td>
+          <td class="num neg">New product, low S2C</td>
+          <td class="num neg">Only 131 checkouts (vs ~198 expected at Exp 39917's rate)</td>
+        </tr>
+        <tr>
+          <td>9578 — Small-Group + Train</td>
+          <td class="num">1,063</td>
+          <td class="num">613</td>
+          <td class="num">11.10%</td>
+          <td class="num">15.01%</td>
+          <td class="num pos">+3.91pp</td>
+          <td class="num">—</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The assortment shift from Exp 39917 to Exp 32872 cost approximately 67 checkouts per 30-day period (173 expected from 39917 → 131 from 32872). Exp 32872 is a direct-entry ticket product that requires users to arrange their own transport to WBSL in Leavesden — users likely discover this on the select page and abandon. The disappearance of Exp 39917 should be investigated; it may have been mistakenly delisted or run out of allotment.
+    </p>
+  </div>
+
+  <!-- Availability proxy -->
+  <div class="analysis-block">
+    <div class="block-title">Availability proxy — Exp 3370 (main product, With Return Transport)</div>
+    <div class="verdict-line">On high-traffic Saturdays (Apr 25, May 2), days_to_first_available = 3 days — the nearest bookable tour date was already taken through the weekend, leaving mobile last-minute bookers with no viable slots.</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Day</th>
+          <th class="num">LP Users (CE)</th>
+          <th class="num">CE S2C</th>
+          <th class="num">Days to First Avail</th>
+          <th class="num">Days Avail 30d</th>
+          <th class="num">Avg Price (USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Apr 13</td><td>Mon</td><td class="num">1,320</td><td class="num">23.1%</td>
+          <td class="num">0</td><td class="num">31</td><td class="num">$114.6</td>
+        </tr>
+        <tr>
+          <td>Apr 19</td><td>Sun</td><td class="num">1,606</td><td class="num">25.1%</td>
+          <td class="num">0</td><td class="num">31</td><td class="num">$108.2</td>
+        </tr>
+        <tr>
+          <td>Apr 22</td><td>Wed</td><td class="num">1,243</td><td class="num">25.5%</td>
+          <td class="num">0</td><td class="num">30</td><td class="num">$105.4</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Apr 23</strong></td><td>Thu</td><td class="num">1,339</td><td class="num">21.4%</td>
+          <td class="num neg"><strong>3</strong></td><td class="num">28</td><td class="num">$91.9</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Apr 25</strong></td><td><strong>Sat</strong></td><td class="num">2,219</td><td class="num neg"><strong>17.8%</strong></td>
+          <td class="num neg"><strong>3</strong></td><td class="num">28</td><td class="num">$92.2</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Apr 26</strong></td><td>Sun</td><td class="num">1,844</td><td class="num neg"><strong>20.0%</strong></td>
+          <td class="num neg"><strong>2</strong></td><td class="num">28</td><td class="num">$91.9</td>
+        </tr>
+        <tr>
+          <td>Apr 27</td><td>Mon</td><td class="num">1,564</td><td class="num">22.1%</td>
+          <td class="num">0</td><td class="num">31</td><td class="num">$92.0</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Apr 30</strong></td><td>Thu</td><td class="num">1,374</td><td class="num neg"><strong>18.5%</strong></td>
+          <td class="num neg"><strong>1</strong></td><td class="num">30</td><td class="num">$131.2</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>May 1</strong></td><td>Fri</td><td class="num">1,454</td><td class="num neg"><strong>17.0%</strong></td>
+          <td class="num neg"><strong>1</strong></td><td class="num">30</td><td class="num">$119.0</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>May 2</strong></td><td><strong>Sat</strong></td><td class="num">1,529</td><td class="num neg"><strong>19.8%</strong></td>
+          <td class="num neg"><strong>1</strong></td><td class="num">29</td><td class="num">$118.8</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>May 3</strong></td><td>Sun</td><td class="num">2,008</td><td class="num neg"><strong>19.9%</strong></td>
+          <td class="num neg"><strong>1</strong></td><td class="num">30</td><td class="num">$119.0</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Days where <code>days_to_first_available ≥ 1</code> consistently align with low S2C days. When the first available tour date is 2-3 days away, same-week tourists (who represent a large share of mobile weekend browsing) cannot book and abandon. This is consistent with near-term capacity being sold through after the Easter rush, leaving only mid-week or far-future dates available. The supply team should check whether WBSL weekend allotments are smaller in 2026 than in 2025 — LY S2C at the same dates was 34-37%, implying near-term dates were accessible last year. Session recordings were unavailable to directly observe "no available dates" UI behaviour.
+    </p>
+  </div>
+
+  <!-- Ruled out -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond what the device × availability analysis already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Language:</strong> Not queried as a separate dimension given that 91% of CE traffic is MB English-language (london-tickets.co.uk) and mix dominance was ruled out. No material language-specific signal expected beyond device split.</li>
+      <li style="margin-bottom:8px;"><strong>MB/HO mix:</strong> MB share declined from 91.3% to 90.5% — a 0.7pp shift producing a mix_effect of only −0.016pp. Not a driver.</li>
+      <li style="margin-bottom:8px;"><strong>Paid/Organic mix:</strong> Shares held stable (86% Paid throughout). Mix effect = 0.001pp. Not a driver.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Attempted for 3 Android Mweb users who abandoned at the select page in May 2026. All returned "No replays available." The availability pattern (days_to_first_available ≥ 1 on S2C-collapse days) is the primary evidence for the near-term availability mechanism; recordings would have confirmed the "empty calendar" UI experience but are not required for the finding.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-05-04 · CVR-RCA · CE 229 Warner Bros. Studio Tour London Tickets</footer>
+
+<!-- ================================================================ -->
+<!-- PLOTLY SCRIPTS -->
+<!-- ================================================================ -->
+<script>
+// ---- 90-day CVR trend chart ----
+const trendData = {"series":[{"date":"2026-02-03","series":"current","cvr":0.029074},{"date":"2026-02-03","series":"ly","cvr":0.023212},{"date":"2026-02-04","series":"current","cvr":0.035075},{"date":"2026-02-04","series":"ly","cvr":0.026599},{"date":"2026-02-05","series":"current","cvr":0.031539},{"date":"2026-02-05","series":"ly","cvr":0.033135},{"date":"2026-02-06","series":"current","cvr":0.028302},{"date":"2026-02-06","series":"ly","cvr":0.031209},{"date":"2026-02-07","series":"current","cvr":0.02982},{"date":"2026-02-07","series":"ly","cvr":0.018344},{"date":"2026-02-08","series":"current","cvr":0.025787},{"date":"2026-02-08","series":"ly","cvr":0.023417},{"date":"2026-02-09","series":"current","cvr":0.024096},{"date":"2026-02-09","series":"ly","cvr":0.01518},{"date":"2026-02-10","series":"current","cvr":0.028839},{"date":"2026-02-10","series":"ly","cvr":0.028881},{"date":"2026-02-11","series":"current","cvr":0.03134},{"date":"2026-02-11","series":"ly","cvr":0.023355},{"date":"2026-02-12","series":"current","cvr":0.023495},{"date":"2026-02-12","series":"ly","cvr":0.022286},{"date":"2026-02-13","series":"current","cvr":0.021739},{"date":"2026-02-13","series":"ly","cvr":0.02277},{"date":"2026-02-14","series":"current","cvr":0.029283},{"date":"2026-02-14","series":"ly","cvr":0.029268},{"date":"2026-02-15","series":"current","cvr":0.033979},{"date":"2026-02-15","series":"ly","cvr":0.022509},{"date":"2026-02-16","series":"current","cvr":0.027312},{"date":"2026-02-16","series":"ly","cvr":0.024913},{"date":"2026-02-17","series":"current","cvr":0.032422},{"date":"2026-02-17","series":"ly","cvr":0.026682},{"date":"2026-02-18","series":"current","cvr":0.028559},{"date":"2026-02-18","series":"ly","cvr":0.017961},{"date":"2026-02-19","series":"current","cvr":0.03029},{"date":"2026-02-19","series":"ly","cvr":0.02544},{"date":"2026-02-20","series":"current","cvr":0.029155},{"date":"2026-02-20","series":"ly","cvr":0.02861},{"date":"2026-02-21","series":"current","cvr":0.029956},{"date":"2026-02-21","series":"ly","cvr":0.022575},{"date":"2026-02-22","series":"current","cvr":0.040648},{"date":"2026-02-22","series":"ly","cvr":0.025214},{"date":"2026-02-23","series":"current","cvr":0.034215},{"date":"2026-02-23","series":"ly","cvr":0.024889},{"date":"2026-02-24","series":"current","cvr":0.028137},{"date":"2026-02-24","series":"ly","cvr":0.026107},{"date":"2026-02-25","series":"current","cvr":0.02208},{"date":"2026-02-25","series":"ly","cvr":0.019587},{"date":"2026-02-26","series":"current","cvr":0.025601},{"date":"2026-02-26","series":"ly","cvr":0.01683},{"date":"2026-02-27","series":"current","cvr":0.028336},{"date":"2026-02-27","series":"ly","cvr":0.029851},{"date":"2026-02-28","series":"current","cvr":0.019095},{"date":"2026-02-28","series":"ly","cvr":0.035146},{"date":"2026-03-01","series":"current","cvr":0.027448},{"date":"2026-03-01","series":"ly","cvr":0.03532},{"date":"2026-03-02","series":"current","cvr":0.023438},{"date":"2026-03-02","series":"ly","cvr":0.027671},{"date":"2026-03-03","series":"current","cvr":0.026563},{"date":"2026-03-03","series":"ly","cvr":0.028364},{"date":"2026-03-04","series":"current","cvr":0.030151},{"date":"2026-03-04","series":"ly","cvr":0.029467},{"date":"2026-03-05","series":"current","cvr":0.026978},{"date":"2026-03-05","series":"ly","cvr":0.024358},{"date":"2026-03-06","series":"current","cvr":0.027725},{"date":"2026-03-06","series":"ly","cvr":0.035738},{"date":"2026-03-07","series":"current","cvr":0.027624},{"date":"2026-03-07","series":"ly","cvr":0.034926},{"date":"2026-03-08","series":"current","cvr":0.029809},{"date":"2026-03-08","series":"ly","cvr":0.035381},{"date":"2026-03-09","series":"current","cvr":0.030287},{"date":"2026-03-09","series":"ly","cvr":0.033467},{"date":"2026-03-10","series":"current","cvr":0.020543},{"date":"2026-03-10","series":"ly","cvr":0.03173},{"date":"2026-03-11","series":"current","cvr":0.026334},{"date":"2026-03-11","series":"ly","cvr":0.035382},{"date":"2026-03-12","series":"current","cvr":0.025052},{"date":"2026-03-12","series":"ly","cvr":0.033122},{"date":"2026-03-13","series":"current","cvr":0.027719},{"date":"2026-03-13","series":"ly","cvr":0.024068},{"date":"2026-03-14","series":"current","cvr":0.018424},{"date":"2026-03-14","series":"ly","cvr":0.025403},{"date":"2026-03-15","series":"current","cvr":0.022062},{"date":"2026-03-15","series":"ly","cvr":0.035976},{"date":"2026-03-16","series":"current","cvr":0.02194},{"date":"2026-03-16","series":"ly","cvr":0.036487},{"date":"2026-03-17","series":"current","cvr":0.024198},{"date":"2026-03-17","series":"ly","cvr":0.028029},{"date":"2026-03-18","series":"current","cvr":0.026201},{"date":"2026-03-18","series":"ly","cvr":0.035881},{"date":"2026-03-19","series":"current","cvr":0.025237},{"date":"2026-03-19","series":"ly","cvr":0.024332},{"date":"2026-03-20","series":"current","cvr":0.021718},{"date":"2026-03-20","series":"ly","cvr":0.033793},{"date":"2026-03-21","series":"current","cvr":0.01967},{"date":"2026-03-21","series":"ly","cvr":0.022913},{"date":"2026-03-22","series":"current","cvr":0.020253},{"date":"2026-03-22","series":"ly","cvr":0.031678},{"date":"2026-03-23","series":"current","cvr":0.027907},{"date":"2026-03-23","series":"ly","cvr":0.030218},{"date":"2026-03-24","series":"current","cvr":0.02029},{"date":"2026-03-24","series":"ly","cvr":0.034255},{"date":"2026-03-25","series":"current","cvr":0.019782},{"date":"2026-03-25","series":"ly","cvr":0.024266},{"date":"2026-03-26","series":"current","cvr":0.022023},{"date":"2026-03-26","series":"ly","cvr":0.024925},{"date":"2026-03-27","series":"current","cvr":0.023024},{"date":"2026-03-27","series":"ly","cvr":0.017647},{"date":"2026-03-28","series":"current","cvr":0.023458},{"date":"2026-03-28","series":"ly","cvr":0.023697},{"date":"2026-03-29","series":"current","cvr":0.022202},{"date":"2026-03-29","series":"ly","cvr":0.028869},{"date":"2026-03-30","series":"current","cvr":0.029523},{"date":"2026-03-30","series":"ly","cvr":0.037464},{"date":"2026-03-31","series":"current","cvr":0.021011},{"date":"2026-03-31","series":"ly","cvr":0.032215},{"date":"2026-04-01","series":"current","cvr":0.024045},{"date":"2026-04-01","series":"ly","cvr":0.029371},{"date":"2026-04-02","series":"current","cvr":0.031621},{"date":"2026-04-02","series":"ly","cvr":0.022632},{"date":"2026-04-03","series":"current","cvr":0.023529},{"date":"2026-04-03","series":"ly","cvr":0.030868},{"date":"2026-04-04","series":"current","cvr":0.022567},{"date":"2026-04-04","series":"ly","cvr":0.032151},{"date":"2026-04-05","series":"current","cvr":0.020115},{"date":"2026-04-05","series":"ly","cvr":0.027127},{"date":"2026-04-06","series":"current","cvr":0.024239},{"date":"2026-04-06","series":"ly","cvr":0.033799},{"date":"2026-04-07","series":"current","cvr":0.026969},{"date":"2026-04-07","series":"ly","cvr":0.026536},{"date":"2026-04-08","series":"current","cvr":0.020864},{"date":"2026-04-08","series":"ly","cvr":0.025435},{"date":"2026-04-09","series":"current","cvr":0.031226},{"date":"2026-04-09","series":"ly","cvr":0.020792},{"date":"2026-04-10","series":"current","cvr":0.018921},{"date":"2026-04-10","series":"ly","cvr":0.015377},{"date":"2026-04-11","series":"current","cvr":0.033426},{"date":"2026-04-11","series":"ly","cvr":0.026519},{"date":"2026-04-12","series":"current","cvr":0.026144},{"date":"2026-04-12","series":"ly","cvr":0.02875},{"date":"2026-04-13","series":"current","cvr":0.022742},{"date":"2026-04-13","series":"ly","cvr":0.024036},{"date":"2026-04-14","series":"current","cvr":0.034536},{"date":"2026-04-14","series":"ly","cvr":0.023343},{"date":"2026-04-15","series":"current","cvr":0.028855},{"date":"2026-04-15","series":"ly","cvr":0.023858},{"date":"2026-04-16","series":"current","cvr":0.03437},{"date":"2026-04-16","series":"ly","cvr":0.023921},{"date":"2026-04-17","series":"current","cvr":0.033898},{"date":"2026-04-17","series":"ly","cvr":0.027968},{"date":"2026-04-18","series":"current","cvr":0.030806},{"date":"2026-04-18","series":"ly","cvr":0.021985},{"date":"2026-04-19","series":"current","cvr":0.037016},{"date":"2026-04-19","series":"ly","cvr":0.020747},{"date":"2026-04-20","series":"current","cvr":0.04142},{"date":"2026-04-20","series":"ly","cvr":0.024691},{"date":"2026-04-21","series":"current","cvr":0.042829},{"date":"2026-04-21","series":"ly","cvr":0.02341},{"date":"2026-04-22","series":"current","cvr":0.035663},{"date":"2026-04-22","series":"ly","cvr":0.025583},{"date":"2026-04-23","series":"current","cvr":0.030738},{"date":"2026-04-23","series":"ly","cvr":0.018976},{"date":"2026-04-24","series":"current","cvr":0.035691},{"date":"2026-04-24","series":"ly","cvr":0.024345},{"date":"2026-04-25","series":"current","cvr":0.02478},{"date":"2026-04-25","series":"ly","cvr":0.031659},{"date":"2026-04-26","series":"current","cvr":0.026368},{"date":"2026-04-26","series":"ly","cvr":0.023492},{"date":"2026-04-27","series":"current","cvr":0.034422},{"date":"2026-04-27","series":"ly","cvr":0.018392},{"date":"2026-04-28","series":"current","cvr":0.026942},{"date":"2026-04-28","series":"ly","cvr":0.025751},{"date":"2026-04-29","series":"current","cvr":0.022115},{"date":"2026-04-29","series":"ly","cvr":0.033358},{"date":"2026-04-30","series":"current","cvr":0.019009},{"date":"2026-04-30","series":"ly","cvr":0.032196},{"date":"2026-05-01","series":"current","cvr":0.018239},{"date":"2026-05-01","series":"ly","cvr":0.024965},{"date":"2026-05-02","series":"current","cvr":0.016374},{"date":"2026-05-02","series":"ly","cvr":0.027778},{"date":"2026-05-03","series":"current","cvr":0.021888},{"date":"2026-05-03","series":"ly","cvr":0.027843}]};
+
+const currentSeries = trendData.series.filter(e => e.series === 'current');
+const currentDates = currentSeries.map(e => e.date);
+const currentCvr = currentSeries.map(e => e.cvr);
+
+const lyMap = {};
+trendData.series.filter(e => e.series === 'ly').forEach(e => { lyMap[e.date] = e.cvr; });
+const lyCvr = currentDates.map(d => lyMap[d] ?? null);
+
+const hasLyData = lyCvr.some(v => v !== null && v !== undefined && v > 0);
+
+const POST_START = '2026-04-04';
+const POST_END   = '2026-05-03';
+const postDates  = currentDates.filter(d => d >= POST_START && d <= POST_END);
+
+const traces90d = [
+  {type:'scatter', mode:'lines', name:'CVR 2026',
+   x: currentDates, y: currentCvr, line:{color:'#6c8ebf', width:2}}
+];
+if (hasLyData) {
+  traces90d.push(
+    {type:'scatter', mode:'lines', name:'CVR 2025 (LY)',
+     x: currentDates, y: lyCvr, line:{color:'#9e9e9e', dash:'dash', width:1.5}}
+  );
+}
+
+const midPostDate = postDates[Math.floor(postDates.length / 2)];
+const postShadeColor = 'rgba(46,125,50,0.06)'; // green (CVR improved)
+const postLineColor  = '#2e7d32';
+
+Plotly.newPlot('trend-90day', traces90d, {
+  height: 280,
+  yaxis: {tickformat:'.1%', title:'CVR'},
+  xaxis: {tickformat:'%d %b', dtick: 7 * 86400000, title:''},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+  font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+  legend: {orientation:'h', y:-0.2},
+  margin: {l:55, r:20, t:30, b:60},
+  shapes: [
+    {type:'rect', x0:POST_START, x1:POST_END, y0:0, y1:1,
+     xref:'x', yref:'paper', fillcolor: postShadeColor, line:{width:0}},
+    {type:'line', x0:POST_START, x1:POST_START, y0:0, y1:1,
+     xref:'x', yref:'paper', line:{color: postLineColor, dash:'dot', width:1}}
+  ],
+  annotations: [{x: midPostDate, y: 0.92, xref:'x', yref:'paper',
+    text:'Post period', font:{color: postLineColor, size:10}, showarrow:false}]
+}, {responsive:true});
+
+// ---- Daily S2C trend chart ----
+const preDates = ["2026-03-05","2026-03-06","2026-03-07","2026-03-08","2026-03-09","2026-03-10","2026-03-11","2026-03-12","2026-03-13","2026-03-14","2026-03-15","2026-03-16","2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-21","2026-03-22","2026-03-23","2026-03-24","2026-03-25","2026-03-26","2026-03-27","2026-03-28","2026-03-29","2026-03-30","2026-03-31","2026-04-01","2026-04-02","2026-04-03"];
+const preS2C = [0.2622,0.2423,0.2136,0.252,0.2391,0.2441,0.2777,0.2626,0.3066,0.2107,0.2303,0.3073,0.2756,0.3023,0.2385,0.2514,0.2413,0.2444,0.2687,0.2563,0.216,0.2313,0.2258,0.2143,0.2299,0.2308,0.2467,0.2607,0.2475,0.269];
+const postS2CDates = ["2026-04-04","2026-04-05","2026-04-06","2026-04-07","2026-04-08","2026-04-09","2026-04-10","2026-04-11","2026-04-12","2026-04-13","2026-04-14","2026-04-15","2026-04-16","2026-04-17","2026-04-18","2026-04-19","2026-04-20","2026-04-21","2026-04-22","2026-04-23","2026-04-24","2026-04-25","2026-04-26","2026-04-27","2026-04-28","2026-04-29","2026-04-30","2026-05-01","2026-05-02","2026-05-03"];
+const postS2C = [0.2419,0.2114,0.2711,0.2868,0.2559,0.292,0.231,0.2682,0.2596,0.2305,0.2239,0.2257,0.2791,0.2554,0.2419,0.2507,0.2674,0.2629,0.2552,0.2143,0.2117,0.1775,0.1995,0.2207,0.2202,0.2174,0.1849,0.1698,0.1981,0.1992];
+
+const preMeanS2C = preS2C.reduce((a,b)=>a+b,0)/preS2C.length;
+const postMeanS2C = postS2C.reduce((a,b)=>a+b,0)/postS2C.length;
+
+Plotly.newPlot('s2c-trend', [
+  {
+    type:'scatter', mode:'lines+markers', name:'Pre (Mar 5 – Apr 3)',
+    x: preDates, y: preS2C,
+    line:{color:'#6c8ebf', width:2.5},
+    marker:{size:4, color:'#6c8ebf'}
+  },
+  {
+    type:'scatter', mode:'lines+markers', name:'Post (Apr 4 – May 3)',
+    x: postS2CDates, y: postS2C,
+    line:{color:'#c62828', width:2.5},
+    marker:{size:4, color:'#c62828'}
+  }
+], {
+  height: 280,
+  yaxis: {tickformat:'.0%', title:'S2C rate'},
+  xaxis: {title:''},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+  font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+  legend: {orientation:'h', y:-0.3},
+  margin: {l:55, r:20, t:30, b:50},
+  shapes: [
+    {type:'line', x0:preDates[0], x1:preDates[preDates.length-1],
+     y0:preMeanS2C, y1:preMeanS2C, line:{color:'#6c8ebf', dash:'dot', width:1.5}},
+    {type:'line', x0:postS2CDates[0], x1:postS2CDates[postS2CDates.length-1],
+     y0:postMeanS2C, y1:postMeanS2C, line:{color:'#c62828', dash:'dot', width:1.5}}
+  ],
+  annotations: [
+    {x:preDates[Math.floor(preDates.length/2)], y:preMeanS2C,
+     text:'Pre avg ' + (preMeanS2C*100).toFixed(1) + '%',
+     font:{color:'#6c8ebf', size:11}, showarrow:false, yshift:12},
+    {x:postS2CDates[Math.floor(postS2CDates.length/2)], y:postMeanS2C,
+     text:'Post avg ' + (postMeanS2C*100).toFixed(1) + '%',
+     font:{color:'#c62828', size:11}, showarrow:false, yshift:-16}
+  ]
+}, {responsive:true});
+</script>
+
+</body>
+</html>
