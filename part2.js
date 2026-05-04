@@ -89,85 +89,97 @@ const NODES = [
     description: 'Runs helpers.py shapley() over 6 permutations of (LP2S, S2C, C2O) — contributions sum exactly to ΔCVR. Runs helpers.py mix() for MB/HO and Paid/Organic: mix_effect = Δshare × pre_rate, conversion_effect = pre_share × Δrate. Flags mix_dominance.is_dominant if either exceeds 50% of |ΔCVR|. Writes single summary.json Claude reads for all downstream decisions.',
   },
 
-  // ══ PHASE 5: THREE MANDATORY QUESTIONS ══
+  // ══ PHASE 5: L0 ORIENT ══
   {
     id: 'mix-decision', type: 'decision', icon: '⚖️',
-    label: 'L0: Mix Signal', sublabel: 'Orientation hint — not a hard gate (c021)',
+    label: 'L0 — Orient', sublabel: 'All 3 signals read simultaneously from summary.json',
     x: 780, y: 1495, phase: 'Decision',
     badge: null,
-    inputs: ['mix_dominance.mbho_mix_share', 'mix_dominance.channel_mix_share', 'mix_dominance.is_dominant'],
-    outputs: ['is_dominant: bool → orientation signal'],
-    condition: 'Always fires after aggregate.py.\nOrientation only — the L1 cascade (not this signal) determines routing vs conversion.',
-    description: 'L0 orientation signal. mix_dominance.is_dominant = true means the cascade is likely to find a mix exit early — prepare for a routing story. False means the cascade will likely confirm conversion changes at all levels. This is NOT a hard gate — do not skip the L1 cascade or short-circuit to a mix story based on this signal alone. The cascade runs regardless of what is_dominant says, and the cascade is what actually determines the path (c021).',
+    inputs: ['mix_dominance.is_dominant', 'shapley{LP2S/S2C/C2O}', 'trend_context{shape/structural_delta/pre_period_healthy}'],
+    outputs: ['orientation signals → feed L1 cascade'],
+    condition: 'Always fires after aggregate.py.\nAll three signals read simultaneously — orientation only.\nNone of these signals routes by itself; L1 cascade determines the actual path.',
+    description: 'Three orientation signals read at once: (1) mix_dominance.is_dominant — hint whether cascade will find a routing exit early or confirm conversion at all levels. (2) shapley — which funnel step carries the majority of ΔCVR; used to direct L2+ branches AFTER the cascade declares the fixed segment. (3) trend_context — shape (sharp break / gradual / recovery), structural_delta_cvr vs LY, weekday composition check, and pre_period_healthy flag. No routing decision is made here — these are priors that set expectations for what the cascade and L2+ branches will find.',
   },
 
-  // ══ BRANCH A: MIX DOMINANT ══
+  // ══ L1: MIX CASCADE (always first) ══
+  {
+    id: 'mix-cascade', type: 'analysis', icon: '🔢',
+    label: 'L1 — Mix Cascade', sublabel: 'Routing vs Conversion Determination (c021)',
+    x: 780, y: 1790, phase: 'Investigation',
+    badge: null,
+    inputs: ['summary.json (mb_share, ho_share, mix_effect, conversion_effect)', 'ce_id', 'pre/post dates'],
+    outputs: ['ROUTING EXIT at Level 1/2/3 (mix change story) OR fixed_segment + filter strings (conversion path)'],
+    condition: 'ALWAYS fires immediately after L0 — the FIRST substantive L1 step.\nRuns before any LP2S / S2C / C2O analysis.\nCan exit at Level 1, 2, or 3 with a routing story.',
+    description: 'Three-level cascade. At EACH level compare mix_effect vs conversion_effect. If mix_effect dominates → ROUTING EXIT at that level (traffic routing story, not a funnel problem). If conversion_effect dominates → fix the segment, descend to the next level. Level 1 (MB vs HO): summary.json — no query. Mix exit → why did HO traffic fall or MB grow? Level 2 (Paid vs Organic within fixed brand): BQ query. Mix exit → campaign paused, budget cut? Level 3 (Channel within Paid): BQ query. Mix exit → channel shift story (e.g. Google Ads vs Bing Ads vs Meta). Conversion through all three → declare Fixed segment: "[MB/HO] · [Paid/Org] · [channel]". Every L2+ funnel query carries those filters. Log the cascade as its own L1 section in the transcript tree map.',
+  },
+
+  // ══ ROUTING EXIT PATH (cascade → mix investigation) ══
   {
     id: 'q6-urls', type: 'ref', icon: '🗄️',
-    label: 'Q6 — URL Traffic', sublabel: 'BQ Reference · Mix path',
-    x: 200, y: 1790, phase: 'Data Collection',
+    label: 'Q6 — URL Traffic', sublabel: 'BQ Reference · Routing exit path',
+    x: 200, y: 2090, phase: 'Data Collection',
     badge: null,
     inputs: ['ce_id', 'pre/post dates', 'primary_mbho'],
     outputs: ['page_url', 'page_type', 'users_lp pre/post', 'lp2s_rate pre/post', 'Δ_rate', 'anomaly_flag'],
-    condition: 'ONLY IF mix_dominance.is_dominant = true\nOR locus is URL-concentrated (any path).',
+    condition: 'ONLY IF cascade routing exit at any level\nOR locus is URL-concentrated (any path).',
     description: 'Top 20 URLs by pre-period LP traffic, min 50 users. Computes delta_abs and delta_rel per step per URL. Flags anomalies where rate dropped ≥15% relative AND ≥3pp absolute. Reveals which specific pages lost/gained volume — identifies LP routing error, campaign landing page change, or specific experience collapse.',
   },
   {
     id: 'mix-root', type: 'analysis', icon: '🔍',
     label: 'Mix Root Cause', sublabel: 'Campaign / routing / budget analysis',
-    x: 80, y: 2090, phase: 'Analysis',
+    x: 80, y: 2390, phase: 'Analysis',
     badge: null,
     inputs: ['mbho_mix[]', 'channel_mix[]', 'mix_dominance', 'Q6 URL results'],
     outputs: ['root cause narrative', 'DRI: Marketing / Performance Marketing', 'action items'],
-    condition: 'ONLY IF mix_dominance.is_dominant = true.',
+    condition: 'ONLY IF cascade routing exit at any level.',
     description: 'Identifies why traffic routing shifted: paid campaign paused/budget reallocated (HO share drops), LP routing error in campaigns (language/geo campaigns pointing to wrong page), or seasonal organic MB spike. DRI is always Marketing or Performance Marketing. Feeds directly into Section 1 callout and Section 2 action card.',
   },
 
-  // ══ BRANCH B: FUNNEL — Q2 ══
+  // ══ CONVERSION PATH (cascade → which funnel step?) ══
   {
     id: 'step-decision', type: 'decision', icon: '📊',
-    label: 'Q2: Which Step Primary?', sublabel: 'LP2S · S2C · C2O — Shapley ≥ 30%',
-    x: 1100, y: 1790, phase: 'Decision',
+    label: 'Which Step Primary?', sublabel: 'LP2S · S2C · C2O — Shapley ≥ 30%',
+    x: 1100, y: 2090, phase: 'Decision',
     badge: null,
     inputs: ['shapley.shapley{LP2S/S2C/C2O}', 'shapley.pct_contribution', 'shapley.significant_steps'],
     outputs: ['primary_driver', 'significant_steps[]'],
-    condition: 'ONLY IF mix_dominance.is_dominant = false.',
-    description: 'Second mandatory question. A step is significant if |contribution / ΔCVR| ≥ 0.30. Multiple steps can be significant simultaneously — if LP2S and S2C both exceed the threshold, both driver branches fire in parallel. primary_driver = step with largest |Shapley value|. Steps below threshold are noted as "not the story" in the ruled-out section of the report.',
+    condition: 'ONLY IF cascade confirms conversion path (fixed segment declared).\nUses Shapley from L0 orientation to direct L2+ branches.',
+    description: 'A step is significant if |contribution / ΔCVR| ≥ 0.30. Multiple steps can be significant simultaneously — if LP2S and S2C both exceed the threshold, both driver branches fire in parallel. primary_driver = step with largest |Shapley value|. Steps below threshold are noted as "not the story" in the ruled-out section of the report. All downstream queries carry the fixed segment filters declared by the cascade.',
   },
   {
     id: 'lp2s-driver', type: 'analysis', icon: '🔬',
     label: 'LP2S Driver Analysis', sublabel: 'Listing Page → Select',
-    x: 415, y: 2090, phase: 'Analysis',
+    x: 415, y: 2390, phase: 'Analysis',
     badge: null,
-    inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts'],
+    inputs: ['shapley.LP2S contribution', 'headline.delta.lp2s', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (pricing/UX/supply/competition)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "LP2S" in significant_steps.',
-    description: 'Three-tier triage (work in order, do not skip ahead). Tier 1 — dimension cuts in parallel: device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If any dimension concentrates, drill to the intersection (e.g. French × mobile), then to page_url — the specific URL is the target output. Tier 2 — if no dimension concentrates: pricing analysis (final_price_usd pre/post for top experiences from product_rankings_features). A CE-wide price uplift depresses LP2S broadly with no dimension concentration. Tier 3 — if pricing is also flat: session recordings on the LP are the primary tool; note "no quantitative locus found" in the transcript. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
+    description: 'Three-tier triage (work in order, do not skip ahead). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: device × LP2S, language × LP2S, page_type × LP2S, experience × LP2S. If any dimension concentrates, drill to the intersection (e.g. French × mobile), then to page_url — the specific URL is the target output. Tier 2 — if no dimension concentrates: pricing analysis (final_price_usd pre/post for top experiences from product_rankings_features). A CE-wide price uplift depresses LP2S broadly with no dimension concentration. Tier 3 — if pricing is also flat: session recordings on the LP are the primary tool; note "no quantitative locus found" in the transcript. DRI: Product, BDM, Performance Marketing, or Content depending on mechanism.',
   },
   {
     id: 's2c-driver', type: 'analysis', icon: '🔬',
     label: 'S2C Driver Analysis', sublabel: 'Select → Checkout',
-    x: 795, y: 2090, phase: 'Analysis',
+    x: 795, y: 2390, phase: 'Analysis',
     badge: null,
-    inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts'],
+    inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "S2C" in significant_steps.',
-    description: 'Two-tier triage (see hypothesis.md). Tier 1: language × S2C and device × S2C first (before experience-level) — a single language/device concentrating points to a localised or UX issue. Then experience × S2C + count_days_available_30d. If experience concentrates and availability dropped, run the inventory_availability lead-time bucket query to identify which specific window went empty. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
+    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1: language × S2C and device × S2C first (before experience-level) — a single language/device concentrating points to a localised or UX issue. Then experience × S2C + count_days_available_30d. If experience concentrates and availability dropped, run the inventory_availability lead-time bucket query to identify which specific window went empty. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
   },
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
     label: 'C2O Driver Analysis', sublabel: 'Checkout → Order',
-    x: 1175, y: 2090, phase: 'Analysis',
+    x: 1175, y: 2390, phase: 'Analysis',
     badge: null,
-    inputs: ['shapley.C2O contribution', 'c2o_sub.delta_c2a', 'c2o_sub.delta_a2o', 'trend shape'],
+    inputs: ['shapley.C2O contribution', 'c2o_sub.delta_c2a', 'c2o_sub.delta_a2o', 'trend shape', 'fixed segment filters'],
     outputs: ['c2a or a2o sub-metric dominant', 'DRI hypothesis', 'feeds C2A vs A2O decision'],
     condition: 'ONLY IF "C2O" in significant_steps.',
-    description: 'Always decompose C2O into C2A × A2O before forming hypotheses. C2A drop (abandon before payment): 4 hypotheses — (1) pax availability at checkout (no pack style for selected pax combo, DRI: Ops/BDM), (2) price display friction (fees visible at checkout vs listing), (3) checkout UX change (form, CTA, coupon breakage), (4) session recordings once device/language locus found. A2O drop (payment submitted but failed): 3 hypotheses — (1) gateway failure, (2) fraud rule tightening, (3) live inventory sync failure. DRI: Payments / Engineering for A2O.',
+    description: 'Always decompose C2O into C2A × A2O before forming hypotheses. All queries filtered to fixed segment. C2A drop (abandon before payment): 4 hypotheses — (1) pax availability at checkout (no pack style for selected pax combo, DRI: Ops/BDM), (2) price display friction (fees visible at checkout vs listing), (3) checkout UX change (form, CTA, coupon breakage), (4) session recordings once device/language locus found. A2O drop (payment submitted but failed): 3 hypotheses — (1) gateway failure, (2) fraud rule tightening, (3) live inventory sync failure. DRI: Payments / Engineering for A2O.',
   },
   {
     id: 'c2a-a2o', type: 'decision', icon: '💳',
     label: 'C2A vs A2O Drop?', sublabel: 'Abandonment vs payment failure',
-    x: 1175, y: 2385, phase: 'Decision',
+    x: 1175, y: 2685, phase: 'Decision',
     badge: null,
     inputs: ['c2o_sub.delta_c2a', 'c2o_sub.delta_a2o'],
     outputs: ['DRI: Product/UX (C2A↓)', 'DRI: Payments/Eng (A2O↓)', 'DRI: Both'],
@@ -179,24 +191,12 @@ const NODES = [
   {
     id: 'trend-pattern', type: 'decision', icon: '📉',
     label: 'Q3: Sudden / Gradual / Seasonal?', sublabel: 'Trend shape + LY delta + pre_period_healthy',
-    x: 795, y: 2385, phase: 'Decision',
+    x: 795, y: 2685, phase: 'Decision',
     badge: null,
     inputs: ['trend.pre/post daily series (Q3)', 'trend_context.series (Q7)', 'trend_context.structural_delta_cvr', 'trend_context.pre_period_healthy'],
     outputs: ['pattern: sudden | gradual | seasonal', 'onset_date (if sudden)', 'structural_delta_cvr', 'pre_period_healthy', 'weekday composition check'],
-    condition: 'ONLY IF mix_dominance.is_dominant = false.\n3 sub-steps: 3a shape, 3b LY overlay, 3c weekday composition.',
+    condition: 'Fires after conversion-path cascade.\n3 sub-steps: 3a shape, 3b LY overlay, 3c weekday composition.',
     description: 'Q3 has three sub-steps. 3a: 90-day trend shape — sharp break (something changed that day), gradual erosion (structural issue compounding), or recovery in progress (prior incident). 3b: Compare current_delta_cvr to ly_delta_cvr; compute structural_delta_cvr = current minus LY — calibrates how much is seasonal vs new. 3c: Check weekday composition — a post period with more weekends can produce an apparent drop with no real change. pre_period_healthy = FALSE → pre was already degraded, Shapley understates true change.',
-  },
-
-  // ══ L1: MIX CASCADE ══
-  {
-    id: 'mix-cascade', type: 'analysis', icon: '🔢',
-    label: 'L1 — Mix Cascade', sublabel: 'Routing vs Conversion Determination (c021)',
-    x: 795, y: 2690, phase: 'Investigation',
-    badge: null,
-    inputs: ['summary.json (mb_share, ho_share, mix_effect, conversion_effect)', 'ce_id', 'pre/post dates'],
-    outputs: ['routing exit at Level 1/2/3 (mix change story) OR fixed_segment + filter strings (conversion path)'],
-    condition: 'Always fires — runs before any funnel hypotheses, regardless of L0 mix_dominance signal.\nCan exit at any level with a routing story.',
-    description: 'Three-level cascade. At EACH level compare mix_effect vs conversion_effect. If mix_effect dominates → ROUTING EXIT at that level (this is a traffic routing story, not a funnel problem). If conversion_effect dominates → fix the segment, descend to next level. Level 1 (MB vs HO): summary.json — no query. Mix exit → why did HO traffic fall or MB grow? Level 2 (Paid vs Organic within fixed brand): BQ query. Mix exit → campaign paused, budget cut? Level 3 (Channel within Paid): BQ query. Mix exit → channel shift story. Conversion through all three → declare Fixed segment: "[MB/HO] · [Paid/Org] · [channel]". Every L2+ funnel query carries those filters. Log the cascade as its own L1 section in the transcript tree map.',
   },
 
   // ══ RECONVERGE: HYPOTHESIS ══
@@ -370,30 +370,29 @@ const EDGES = [
   { id:'e6',  from:'q7-ly',         to:'aggregate',      type:'always',      label:'stage7.json'               },
   { id:'e7',  from:'aggregate',     to:'mix-decision',   type:'always',      label:'summary.json'              },
 
-  // Mix branch
-  { id:'e8',  from:'mix-decision',  to:'q6-urls',        type:'conditional', label:'YES: mix > 50% of ΔCVR'   },
-  { id:'e9',  from:'mix-decision',  to:'mix-root',       type:'conditional', label:'YES: routing story'        },
+  // L0 → L1 cascade (always)
+  { id:'e8',  from:'mix-decision',  to:'mix-cascade',    type:'always',      label:'L0 signals read'           },
+
+  // Mix cascade → routing exit path
+  { id:'e9',  from:'mix-cascade',   to:'q6-urls',        type:'conditional', label:'routing exit L1/L2/L3'     },
   { id:'e10', from:'q6-urls',       to:'mix-root',       type:'conditional', label:'URL traffic results'       },
 
-  // Funnel branch
-  { id:'e11', from:'mix-decision',  to:'step-decision',  type:'conditional', label:'NO: funnel path'           },
+  // Mix cascade → conversion path (fixed segment declared)
+  { id:'e11', from:'mix-cascade',   to:'step-decision',  type:'conditional', label:'conversion path — fixed segment' },
   { id:'e12', from:'step-decision', to:'lp2s-driver',    type:'conditional', label:'"LP2S" ∈ sig_steps'        },
   { id:'e13', from:'step-decision', to:'s2c-driver',     type:'conditional', label:'"S2C" ∈ sig_steps'         },
   { id:'e14', from:'step-decision', to:'c2o-driver',     type:'conditional', label:'"C2O" ∈ sig_steps'         },
   { id:'e15', from:'c2o-driver',    to:'c2a-a2o',        type:'conditional', label:'delta_c2a + delta_a2o'     },
 
-  // Trend pattern (Q3)
-  { id:'e16', from:'step-decision', to:'trend-pattern',  type:'conditional', label:'reads Q3 + Q7 series'      },
+  // Trend pattern (Q3) — runs alongside driver analysis
+  { id:'e16', from:'step-decision', to:'trend-pattern',  type:'always',      label:'reads Q3 + Q7 series'      },
 
-  // Funnel drivers → mix cascade (mandatory L1 before hypothesis)
+  // All paths converge at hypothesis
   { id:'e17', from:'mix-root',      to:'hypothesis',     type:'conditional', label:'mix mechanism'             },
-  { id:'e18', from:'lp2s-driver',   to:'mix-cascade',    type:'conditional', label:'LP2S framing'              },
-  { id:'e19', from:'s2c-driver',    to:'mix-cascade',    type:'conditional', label:'S2C framing'               },
-  { id:'e20', from:'c2a-a2o',       to:'mix-cascade',    type:'conditional', label:'C2O framing'               },
-  { id:'e21', from:'trend-pattern', to:'mix-cascade',    type:'always',      label:'onset pattern'             },
-
-  // Mix cascade → hypothesis
-  { id:'e21b', from:'mix-cascade',  to:'hypothesis',     type:'always',      label:'routing exit OR fixed segment' },
+  { id:'e18', from:'lp2s-driver',   to:'hypothesis',     type:'conditional', label:'LP2S mechanism'            },
+  { id:'e19', from:'s2c-driver',    to:'hypothesis',     type:'conditional', label:'S2C mechanism'             },
+  { id:'e20', from:'c2a-a2o',       to:'hypothesis',     type:'conditional', label:'C2O sub-driver'            },
+  { id:'e21', from:'trend-pattern', to:'hypothesis',     type:'always',      label:'onset pattern'             },
 
   // Custom queries
   { id:'e22', from:'hypothesis',    to:'custom-select',  type:'always',      label:'L2 branch set'             },
@@ -411,7 +410,7 @@ const EDGES = [
 
   // Consults (file → node, dotted)
   { id:'c1',  from:'file-skill',       to:'user-input',    type:'consults', label:'master protocol'           },
-  { id:'c2',  from:'file-context',     to:'mix-decision',  type:'consults', label:'domain definitions + DRI'  },
+  { id:'c2',  from:'file-context',     to:'mix-cascade',   type:'consults', label:'Mix Cascade queries + domain vocab' },
   { id:'c3',  from:'file-hypothesis',  to:'hypothesis',    type:'consults', label:'L0 map + first-pass branches' },
   { id:'c4',  from:'file-actions',     to:'html-report',   type:'consults', label:'action templates'          },
   { id:'c5',  from:'file-report-struct',to:'findings',     type:'consults', label:'output spec — read before synthesis' },
@@ -422,24 +421,24 @@ const EDGES = [
 
 // ── Canvas section labels ─────────────────────────────────────────────────────
 const SECTION_LABELS = [
-  { text: '① Input',               x: 30, y: 42  },
-  { text: '② CE Metadata',         x: 30, y: 327 },
-  { text: '③ Base Funnel',         x: 30, y: 607 },
-  { text: '④ Parallel BQ Queries', x: 30, y: 887 },
-  { text: '⑤ Aggregation',         x: 30, y: 1167 },
-  { text: '⑥ Q1: Mix Decision',    x: 30, y: 1467},
-  { text: '⑦ Mix / Step Branches', x: 30, y: 1762},
-  { text: '⑧ Driver Analysis',     x: 30, y: 2062},
-  { text: '⑨ Q2+Q3 Sub-decisions', x: 30, y: 2357},
-  { text: '⑩ L1 Mix Cascade',       x: 30, y: 2662},
-  { text: '⑪ Hypothesis',          x: 30, y: 2962},
-  { text: '⑫ Custom Queries',      x: 30, y: 3262},
-  { text: '⑬ Query Results',       x: 30, y: 3562},
-  { text: '⑭ Locus + Recordings',  x: 30, y: 3862},
-  { text: '⑮ Transcript',          x: 30, y: 4432},
-  { text: '⑯ Step 2b — Findings', x: 30, y: 4592},
-  { text: '⑰ HTML Report',         x: 30, y: 4802},
-  { text: '⑱ Evaluation',          x: 30, y: 5062},
+  { text: '① Input',                    x: 30, y: 42  },
+  { text: '② CE Metadata',              x: 30, y: 327 },
+  { text: '③ Base Funnel',              x: 30, y: 607 },
+  { text: '④ Parallel BQ Queries',      x: 30, y: 887 },
+  { text: '⑤ Aggregation',              x: 30, y: 1167 },
+  { text: '⑥ L0 — Orient',             x: 30, y: 1467},
+  { text: '⑦ L1 — Mix Cascade',         x: 30, y: 1762},
+  { text: '⑧ Routing Exit / Step Selection', x: 30, y: 2062},
+  { text: '⑨ Driver Analysis',          x: 30, y: 2362},
+  { text: '⑩ Q3 + C2O Sub-decisions',   x: 30, y: 2657},
+  { text: '⑪ Hypothesis',               x: 30, y: 2962},
+  { text: '⑫ Custom Queries',           x: 30, y: 3262},
+  { text: '⑬ Query Results',            x: 30, y: 3562},
+  { text: '⑭ Locus + Recordings',       x: 30, y: 3862},
+  { text: '⑮ Transcript',               x: 30, y: 4432},
+  { text: '⑯ Step 2b — Findings',      x: 30, y: 4592},
+  { text: '⑰ HTML Report',              x: 30, y: 4802},
+  { text: '⑱ Evaluation',              x: 30, y: 5062},
 ];
 
 // ── File contents (curated markdown rendered in the side panel) ───────────────
