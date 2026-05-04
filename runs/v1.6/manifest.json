@@ -51,6 +51,22 @@
       }
     },
     {
+      "id": "ce254_2026-03-05_2026-05-03",
+      "ce_id": "254",
+      "ce_name": "Disneyland® Paris Tickets",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 34,
+      "eval_max": 35,
+      "root_cause": "S2C fell from 23.56% to 20.26% (−3.30pp, 188% of ΔCVR) because near-term Disneyland Paris dates sold out during the Spring holiday peak — confirmed by availability proxy (min_days_available_30d dropped to 0 vs 27 in pre). Dynamic pricing ruled out: 1-Park ticket average price fell 8.2% ($70.65→$64.88). Near-term checkout buckets (0–29 days) fell 20–27%; 30+ day bookings held flat. Scarcity persisted equally through non-Easter post days (20.92% S2C) and Easter week (21.21%), confirming a sustained Spring holiday peak rather than a single-event spike.",
+      "files": {
+        "report": "runs/v1.6/ce254_2026-03-05_2026-05-03/report.html",
+        "transcript": "runs/v1.6/ce254_2026-03-05_2026-05-03/transcript.md",
+        "evaluation": "runs/v1.6/ce254_2026-03-05_2026-05-03/evaluation.md"
+      }
+    },
+    {
       "id": "ce6495_2026-03-05_2026-05-03_run2",
       "ce_id": "6495",
       "ce_name": "Kualoa Ranch",

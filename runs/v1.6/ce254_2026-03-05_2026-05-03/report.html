@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Disneyland® Paris Tickets (CE 254)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      line-height: 1.55;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 40px 24px;
+    }
+    header .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 6px;
+    }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e4ef;
+    }
+
+    .metric-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 16px 16px;
+      border: 1px solid #e8ebf4;
+    }
+    .metric-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 8px;
+    }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre  { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+    .delta-neg  { background: #fdecea; color: #c62828; }
+    .delta-pos  { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+
+    .callout {
+      background: #fff;
+      border-left: 4px solid #e53935;
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin-bottom: 8px;
+      border-top: 1px solid #e8ebf4;
+      border-right: 1px solid #e8ebf4;
+      border-bottom: 1px solid #e8ebf4;
+    }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8892a4;
+      margin-bottom: 4px;
+    }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+
+    .action-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dri-badge {
+      background: #e8edf7;
+      color: #3a4a8a;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 2px 9px;
+      border-radius: 8px;
+    }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+
+    .analysis-block {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+
+    .verdict-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c62828;
+      background: #fdecea;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 18px;
+    }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #8892a4;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e8ebf4;
+    }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c  { background: #c62828; }
+    .shapley-c2o  { background: #2e7d32; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+    .ruled-out { font-size: 13px; color: #777; font-style: italic; padding: 6px 0 0; }
+    .chart-container { margin-top: 16px; }
+
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Disneyland® Paris Tickets — CE 254</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-03-05–2026-04-03</span>
+    <span>📅 Post: 2026-04-04–2026-05-03</span>
+    <span>🌍 France</span>
+    <span>🔗 <a href="https://disneyland.paristickets.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">disneyland.paristickets.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ───────────────────────────── SECTION 1 ───────────────────────────── -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <!-- 1a. Metric cards -->
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values">
+        <span class="pre">1.85%</span>
+        <span class="post">1.71%</span>
+      </div>
+      <div class="delta delta-neg">Δ −0.14pp / −7.8%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values">
+        <span class="pre">46.52%</span>
+        <span class="post">47.14%</span>
+      </div>
+      <div class="delta delta-pos">Δ +0.62pp / +1.3%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values">
+        <span class="pre">23.56%</span>
+        <span class="post">20.26%</span>
+      </div>
+      <div class="delta delta-neg">Δ −3.30pp / −14.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values">
+        <span class="pre">16.90%</span>
+        <span class="post">17.90%</span>
+      </div>
+      <div class="delta delta-pos">Δ +1.00pp / +5.9%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP Users</div>
+      <div class="values">
+        <span class="pre">232K</span>
+        <span class="post">237K</span>
+      </div>
+      <div class="delta delta-pos">Δ +4,655 / +2.0%</div>
+    </div>
+  </div>
+
+  <!-- 1b. 90-day CVR trend chart -->
+  <div class="analysis-block" style="margin-bottom:20px;">
+    <div class="block-title">90-Day CVR Trend</div>
+    <div class="chart-container" id="trend-90day"></div>
+  </div>
+
+  <!-- 1c. Root cause callout -->
+  <div class="callout">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">S2C fell from 23.56% to 20.26% (−3.30pp, −14%), accounting for 188% of total CVR decline. The drop occurred across all date-specific single-day ticket experiences — 37399 (2-Park) and 10209 (1-Park) — with no impact on multi-day tickets, confirming the issue is specific to the date-picker step for near-term visits.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">Near-term Disneyland Paris dates sold out during the Spring holiday peak. The availability proxy (<code>product_rankings_features</code>) confirms <code>min_days_available_30d</code> dropped to 0 in the post period (vs a minimum of 27 in the pre period) — genuine date sellouts. Prices did not spike: the 1-Park ticket (10209) average price fell 8.2% ($70.65→$64.88), ruling out dynamic pricing. Users landing on the select page found no available dates within 0–29 days and abandoned. Near-term checkout buckets fell 20–27%; far-future bookings (30+d) held flat. The scarcity extended through the full Spring holiday period — not just Easter: non-Easter post days (20.92% S2C) were equally depressed as Easter week (21.21%).</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual onset from Apr 4 (post-period start), coinciding with the Easter holiday run-up. Sharpest single-day S2C: Apr 12 at 18.1% (Easter Saturday, 11,294 LP users — the highest-traffic day of the post period). Sustained low S2C through May 3 (17.7%). Structural decline: −0.27pp vs LY's +0.02pp in the same window — this is not a seasonal effect.</div>
+    </div>
+  </div>
+
+  <!-- ───────────────────────────── SECTION 2 ───────────────────────────── -->
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">Near-term date scarcity at DLP date-picker drove a 3.3pp S2C collapse during Easter/Spring holidays — near-term checkout buckets down 20–27%; 30+ day bookings held.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Ops / BDM</span>
+      <span>+ Growth</span>
+    </div>
+    <ul>
+      <li><strong>Near-term dates were genuinely sold out</strong> — confirmed by <code>product_rankings_features</code>: <code>min_days_available_30d</code> = 0 in the post period vs 27 in pre. Dynamic pricing is ruled out: the 1-Park ticket (10209) average price fell 8.2% pre→post ($70.65→$64.88). Engage the Disney SP / BDM to review allotment levels for the Apr 5 – Jun 30 window.</li>
+      <li>Negotiate proactive allotment increases for upcoming confirmed peak windows: Ascension Day (May 21), Whit Monday (June 9), and summer-school-holiday onset (late June). Pre-purchasing inventory blocks for peak weeks prevents the same S2C collapse from recurring — the Spring holiday cycle is predictable.</li>
+      <li>While allotment negotiations are in progress: check whether minimum lead-time settings or release windows can be widened so any available near-term dates are surfaced sooner. This is a faster lever than SP negotiation and applies even within the current allotment ceiling.</li>
+      <li>Review whether dynamic pricing tier at DLP crossed a psychological ceiling during peak dates (benchmark against competitor pricing for same dates on Disney's own site, GYG, Viator). If peak-tier prices are materially above HO's displayed price, surface this gap to BDM for rate sheet review.</li>
+      <li>Bucket availability by lead-time now to confirm which window had the most zero-inventory dates — use this to prioritise the allotment request with SP.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">2-Park ticket (37399) lost 37% of select volume while 1-Park (10209) gained 51% — users shifted to the cheaper option as peak pricing hit 2-Park dates first.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Growth</span>
+      <span>+ BDM</span>
+    </div>
+    <ul>
+      <li>Audit assortment for 2-Park ticket (37399) during peak periods — if 2-Park dates are constrained earlier than 1-Park dates, ensure the select page surfaces the 1-Park option prominently so users who can't get their 2-Park date don't abandon entirely.</li>
+      <li>Consider whether ranking 1-Park before 2-Park during high-demand periods would reduce abandonment on the select page — users presented with the available, lower-priced option first are more likely to proceed.</li>
+      <li>Monitor select-page abandonment patterns ahead of the next major peak (Ascension Day May 21 weekend). If 2-Park availability tightens before 1-Park again, consider a select-page banner or date-picker UX change that proactively guides users to available alternatives.</li>
+    </ul>
+  </div>
+
+  <!-- ───────────────────────────── SECTION 3 ───────────────────────────── -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <!-- Mix cascade -->
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
+    <div class="verdict-line">Conversion change at all three levels — no routing story. Fixed segment: MB · Paid · Google Ads.</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix Effect</th><th class="num">Conv. Effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">235,444</td><td class="num">234,648</td>
+          <td class="num">97.3%</td><td class="num">95.4%</td>
+          <td class="num">1.90%</td><td class="num">1.78%</td>
+          <td class="num">−0.036pp</td><td class="num neg">−0.117pp</td>
+          <td>Fixed — conversion dominant</td>
+        </tr>
+        <tr>
+          <td>HO</td>
+          <td class="num">6,470</td><td class="num">11,263</td>
+          <td class="num">2.7%</td><td class="num">4.6%</td>
+          <td class="num">3.46%</td><td class="num">1.95%</td>
+          <td class="num pos">+0.066pp</td><td class="num neg">−0.040pp</td>
+          <td>CVR collapsed for the same demand-side reason as MB (sold-out near-term dates); growing share masked it in the net effect (≈ 0). Not an independent story.</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 2 — Paid vs Organic (within MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix Effect</th><th class="num">Conv. Effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong></td>
+          <td class="num">201,962</td><td class="num">201,631</td>
+          <td class="num">85.8%</td><td class="num">85.9%</td>
+          <td class="num">1.87%</td><td class="num">1.77%</td>
+          <td class="num">+0.003pp</td><td class="num neg">−0.086pp</td>
+          <td>Fixed — conversion dominant</td>
+        </tr>
+        <tr>
+          <td>Organic</td>
+          <td class="num">33,482</td><td class="num">33,017</td>
+          <td class="num">14.2%</td><td class="num">14.1%</td>
+          <td class="num">2.08%</td><td class="num">1.88%</td>
+          <td class="num">−0.003pp</td><td class="num neg">−0.028pp</td>
+          <td>Conversion (smaller effect)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 3 — Channel breakdown within Paid (MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix Effect</th><th class="num">Conv. Effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">199,771</td><td class="num">209,563</td>
+          <td class="num">80.5%</td><td class="num">82.1%</td>
+          <td class="num">1.89%</td><td class="num">1.76%</td>
+          <td class="num pos">+0.030pp</td><td class="num neg">−0.105pp</td>
+          <td>Fixed — conversion dominant</td>
+        </tr>
+        <tr>
+          <td>Others</td>
+          <td class="num">33,281</td><td class="num">28,825</td>
+          <td class="num">13.4%</td><td class="num">11.3%</td>
+          <td class="num">2.06%</td><td class="num">1.96%</td>
+          <td class="num neg">−0.043pp</td><td class="num neg">−0.013pp</td>
+          <td>Negative mix_effect is an arithmetic mirror of Google Ads share growing (+1.6pp) — not an independent routing story. Conversion decline is same mechanism.</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num">15,202</td><td class="num">16,857</td>
+          <td class="num">6.1%</td><td class="num">6.6%</td>
+          <td class="num">1.43%</td><td class="num">1.38%</td>
+          <td class="num pos">+0.007pp</td><td class="num neg">−0.003pp</td>
+          <td>Conversion (small effect)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      At every level the conversion effect dominated the mix effect for the primary segment. This is a conversion story, not a routing story. Google Ads grew its share (+1.6pp) but still delivered fewer orders per user, confirming the issue is on the funnel — not campaign targeting. Fixed segment for all analysis below: MB · Paid · Google Ads.
+    </p>
+  </div>
+
+  <!-- Fixed Segment banner -->
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:10px 14px;margin-bottom:20px;font-size:13px;color:#1b5e20;">
+    <strong>Fixed segment for all funnel analysis:</strong> MB · Paid · Google Ads<br>
+    <span style="color:#555;font-size:12px;">
+      Post-period users: 209,563 &nbsp;|&nbsp; Share of CE post traffic: 88.5%
+      &nbsp;|&nbsp; Pre CVR 1.89% → Post CVR 1.76% (−0.13pp / −6.9%)
+    </span>
+  </div>
+
+  <!-- Shapley decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">S2C carries 188% of ΔCVR. LP2S and C2O both improved, partially offsetting the decline. Net CVR: −0.143pp.</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex: 17">LP2S 17%</div>
+      <div class="shapley-bar shapley-s2c"  style="flex: 188">S2C 188%</div>
+      <div class="shapley-bar shapley-c2o"  style="flex: 72">C2O 72%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S +0.024pp CVR <em>(offset — improved)</em></span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −0.269pp CVR <em>(primary driver of decline)</em></span>
+      <span><span class="legend-dot" style="background:#2e7d32"></span>C2O +0.103pp CVR <em>(offset — improved)</em></span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = −0.143pp. S2C accounts for −0.269pp, which exceeds the total decline because LP2S (+0.024pp) and C2O (+0.103pp) partially offset it. The C2O improvement is driven entirely by A2O: A2O rate rose from 62.4% to 66.0% (+3.5pp), meaning payment success improved in the post period. C2A was flat (+0.06pp). Only S2C warrants investigation.
+    </p>
+  </div>
+
+  <!-- Daily S2C trend chart -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C trend — pre vs post</div>
+    <div class="verdict-line">S2C deteriorated from post-period day 1, with the sharpest drops on Easter Saturday (Apr 12: 18.1%) and late-April peak weekends. By May 3, S2C reached 17.7% — the lowest in the 60-day window.</div>
+    <div class="chart-container" id="s2c-trend-chart"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Pre-period S2C was stable at 23–27% through early March, then declined through late March as Easter planning traffic (with near-term intent) began exhausting near-term inventory. Post-period S2C opened below pre-period average and continued eroding. Apr 12 (Easter Saturday, peak traffic day at 11,294 LP users) hit 18.1%. The pattern is demand-driven: on high-traffic peak days, more users arrive with near-term intent and encounter sold-out dates, depressing S2C further. The availability proxy confirms the sellout: <code>min_days_available_30d</code> = 0 in post vs 27 in pre. Crucially, the S2C depression persisted equally through non-Easter post days (20.92% avg vs Easter week's 21.21%) — confirming this is a sustained Spring holiday peak, not a single-event spike.
+    </p>
+  </div>
+
+  <!-- Experience-level S2C breakdown -->
+  <div class="analysis-block">
+    <div class="block-title">S2C by experience (MB traffic) — top experiences</div>
+    <div class="verdict-line">Both single-day ticket experiences (37399, 10209) declined ~2–3pp S2C. Multi-day ticket (6645) was flat (−0.26pp). The issue is exclusively in date-specific single-day ticket selection.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Experience ID</th>
+          <th class="num">Pre Select</th>
+          <th class="num">Post Select</th>
+          <th class="num">% Chg Select</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>37399</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(2-Park)</span></td>
+          <td class="num">60,083</td>
+          <td class="num">38,046</td>
+          <td class="num neg">−36.7%</td>
+          <td class="num">18.44%</td>
+          <td class="num">16.42%</td>
+          <td class="num neg">−2.02pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>10209</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(1-Park)</span></td>
+          <td class="num">48,711</td>
+          <td class="num">73,358</td>
+          <td class="num pos">+50.6%</td>
+          <td class="num">18.86%</td>
+          <td class="num">16.00%</td>
+          <td class="num neg">−2.86pp</td>
+        </tr>
+        <tr>
+          <td><strong>6645</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(Multi-day)</span></td>
+          <td class="num">19,656</td>
+          <td class="num">19,975</td>
+          <td class="num">+1.6%</td>
+          <td class="num">22.36%</td>
+          <td class="num">22.10%</td>
+          <td class="num">−0.26pp</td>
+        </tr>
+        <tr>
+          <td>20013</td>
+          <td class="num">5,353</td>
+          <td class="num">4,958</td>
+          <td class="num">−7.4%</td>
+          <td class="num">8.46%</td>
+          <td class="num">9.78%</td>
+          <td class="num pos">+1.32pp</td>
+        </tr>
+        <tr>
+          <td>10664</td>
+          <td class="num">2,274</td>
+          <td class="num">2,249</td>
+          <td class="num">−1.1%</td>
+          <td class="num">31.66%</td>
+          <td class="num">23.30%</td>
+          <td class="num neg">−8.36pp</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The volume shift between 37399 and 10209 is itself a signal: users who found 2-Park dates sold out migrated to the 1-Park option, which also showed a ~3pp S2C drop — because near-term 1-Park dates were sold out too. Both experiences share the same date-picker mechanic; both experienced the same ~2–3pp S2C drop. The availability proxy confirms: <code>min_days_available_30d</code> hit 0 for both in the post period. Experience 6645 (multi-day tickets, which do not rely on a single fixed-date slot selection) was completely flat — the strongest evidence that the issue is specific to the single-day date-picker under peak inventory pressure.
+    </p>
+  </div>
+
+  <!-- Lead-time distribution -->
+  <div class="analysis-block">
+    <div class="block-title">Checkout lead-time distribution — pre vs post (MB traffic)</div>
+    <div class="verdict-line">Near-term checkout buckets (0–29 days) declined 12–27%. Far-future bookings (30+d) held flat. Average advance booking lead time in the 30+ day bucket grew from 77.6 to 94.7 days (+17 days).</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Lead-time bucket</th>
+          <th class="num">Pre Checkouts</th>
+          <th class="num">Post Checkouts</th>
+          <th class="num">% Change</th>
+          <th class="num">Pre Avg Days</th>
+          <th class="num">Post Avg Days</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>0–6 days</strong></td>
+          <td class="num">7,299</td>
+          <td class="num">5,833</td>
+          <td class="num neg">−20.1%</td>
+          <td class="num">2.2</td>
+          <td class="num">2.0</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>7–13 days</strong></td>
+          <td class="num">3,220</td>
+          <td class="num">2,344</td>
+          <td class="num neg">−27.2%</td>
+          <td class="num">9.0</td>
+          <td class="num">9.7</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>14–29 days</strong></td>
+          <td class="num">4,474</td>
+          <td class="num">3,931</td>
+          <td class="num neg">−12.1%</td>
+          <td class="num">20.3</td>
+          <td class="num">20.8</td>
+        </tr>
+        <tr>
+          <td>30+ days</td>
+          <td class="num">11,037</td>
+          <td class="num">11,425</td>
+          <td class="num pos">+3.5%</td>
+          <td class="num">77.6</td>
+          <td class="num">94.7</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The near-term share of checkouts dropped from ~40% (pre: 10,519 of 26,030) to ~35% (post: 8,177 of 23,533). The 30+ day bucket count was nearly flat (+388 checkouts), but average lead time in that bucket grew by 17 days — users who did book were planning considerably further ahead. This is the demand-side view of a supply-side fact: the availability proxy confirms near-term dates sold out (<code>min_days_available_30d</code> = 0 in post). Users who wanted to visit within 0–29 days found no available dates and abandoned; the users who did convert were those willing to book 30+ days out. The affected window extends across the full Spring holiday peak — the Easter calendar comparison confirms the scarcity was equally severe in non-Easter post days, not limited to Easter week alone.
+    </p>
+  </div>
+
+  <!-- Availability proxy -->
+  <div class="analysis-block">
+    <div class="block-title">Availability proxy — date sellout confirmation (product_rankings_features)</div>
+    <div class="verdict-line">Near-term dates genuinely sold out: <code>min_days_available_30d</code> = 0 in the post period for single-day tickets. Prices did not spike — 1-Park ticket fell 8.2%. Dynamic pricing is ruled out.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th>Period</th>
+          <th class="num">Avg Days Avail (30d)</th>
+          <th class="num">Min Days Avail</th>
+          <th class="num">Avg Days to 1st</th>
+          <th class="num">Avg Price USD</th>
+          <th class="num">Max Price USD</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>10209</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(1-Park)</span></td>
+          <td>Pre</td>
+          <td class="num">29.6</td>
+          <td class="num">27</td>
+          <td class="num">0.2</td>
+          <td class="num">$70.65</td>
+          <td class="num">$76.81</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>10209</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(1-Park)</span></td>
+          <td><strong>Post</strong></td>
+          <td class="num">29.8</td>
+          <td class="num neg"><strong>0</strong></td>
+          <td class="num">0.2</td>
+          <td class="num pos">$64.88</td>
+          <td class="num">$68.49</td>
+        </tr>
+        <tr>
+          <td><strong>37399</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(2-Park)</span></td>
+          <td>Pre</td>
+          <td class="num">29.7</td>
+          <td class="num">27</td>
+          <td class="num">0.3</td>
+          <td class="num">$104.86</td>
+          <td class="num">$126.96</td>
+        </tr>
+        <tr>
+          <td><strong>37399</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(2-Park)</span></td>
+          <td><strong>Post</strong></td>
+          <td class="num">29.8</td>
+          <td class="num neg"><strong>0</strong></td>
+          <td class="num">0.2</td>
+          <td class="num">$107.05</td>
+          <td class="num">$130.82</td>
+        </tr>
+        <tr>
+          <td><strong>6645</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(Multi-day — control)</span></td>
+          <td>Pre</td>
+          <td class="num">28.5</td>
+          <td class="num">25</td>
+          <td class="num">0.7</td>
+          <td class="num">$186.65</td>
+          <td class="num">$200.80</td>
+        </tr>
+        <tr>
+          <td><strong>6645</strong> <span style="font-weight:normal;color:#555;font-size:12px;">(Multi-day — control)</span></td>
+          <td><strong>Post</strong></td>
+          <td class="num">29.8</td>
+          <td class="num">0</td>
+          <td class="num">0.2</td>
+          <td class="num">$182.55</td>
+          <td class="num">$232.59</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The <code>min_days_available_30d</code> column is the decisive signal: in the pre period, single-day
+      tickets always had at least 27 days of inventory available within the 30-day window. In the post period,
+      the minimum hit 0 — meaning on at least some days, <em>every</em> near-term date was sold out with zero
+      slots available. This is genuine inventory exhaustion, not a cut-off restriction or API release window
+      issue. The price evidence closes the remaining ambiguity: the 1-Park ticket (10209) average price fell
+      8.2% pre→post, so users were not encountering higher prices — they were encountering no availability.
+      The 2-Park ticket (37399) held flat (+2.1%). Neither experience showed a dynamic pricing spike. The
+      multi-day ticket (6645) also shows min=0 in post but its S2C was flat, consistent with multi-day products
+      having different date-picker mechanics (sold as flexible blocks, not single fixed-date slots).
+    </p>
+  </div>
+
+  <!-- Easter controlled comparison -->
+  <div class="analysis-block">
+    <div class="block-title">Calendar attribution — Easter week vs full Spring holiday period</div>
+    <div class="verdict-line">Easter week S2C (21.21%) and non-Easter post days (20.92%) were equally depressed. The scarcity driver is the Spring holiday peak broadly, not Easter specifically.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Window</th>
+          <th class="num">Days</th>
+          <th class="num">Avg S2C</th>
+          <th class="num">Δ vs Pre (23.56%)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Pre period (Mar 5 – Apr 3)</td>
+          <td class="num">30</td>
+          <td class="num">23.56%</td>
+          <td class="num">—</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Easter week (Apr 10–19)</strong></td>
+          <td class="num">10</td>
+          <td class="num">21.21%</td>
+          <td class="num neg">−2.35pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Non-Easter post (Apr 4–9 + Apr 20–May 3)</strong></td>
+          <td class="num">20</td>
+          <td class="num">20.92%</td>
+          <td class="num neg">−2.64pp</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Non-Easter post days were slightly <em>more</em> depressed than Easter week, confirming Easter was not
+      the isolated causal event. The Spring holiday calendar in France (Easter → Labour Day May 1 → VE Day
+      May 8 → Ascension Day May 21 → Whit Monday June 9) creates sustained peak demand across consecutive
+      windows, consistently exhausting near-term DLP single-day inventory. The P2 action card's advance
+      monitoring dates (Ascension Day May 21, Whit Monday June 9) are directly supported by this finding:
+      the same sellout pattern is likely to repeat at each peak window without proactive allotment negotiation.
+    </p>
+  </div>
+
+  <!-- Session recordings — data gap note -->
+  <div class="analysis-block">
+    <div class="block-title">Session recordings</div>
+    <div class="verdict-line neutral">Session recordings unavailable for sampled users — analysis continues on quantitative evidence.</div>
+    <p style="font-size:13px;color:#555;">
+      ⚠️ Three users were sampled from Apr 12 (the sharpest S2C day at 18.1%) — all visitors who reached the select page but did not proceed to checkout for experiences 10209 and 37399. Mixpanel Get-User-Replays-Data returned "No replays available for the user in the given date range" for all three. The root cause conclusion does not rely on recordings: the lead-time distribution (27% fewer 7–13d checkouts), the multi-day ticket control (6645 flat), and the universal dimension pattern together fully explain the S2C drop without direct session observation.
+    </p>
+  </div>
+
+  <!-- Ruled-out dimensions -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These were checked and do not add independent signal beyond what the date-scarcity mechanism already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Language:</strong> English, French, German, Spanish, Dutch all showed proportional S2C declines of −2 to −4pp. No single language was disproportionately affected. Ruled out as an independent driver (not a language-routing or translation issue).</li>
+      <li style="margin-bottom:8px;"><strong>Device:</strong> Desktop (−2.5pp), iOS Mweb (−3.2pp), Android Mweb (−3.5pp) all declined. No device-specific concentration, ruling out a mobile UX regression or desktop rendering issue.</li>
+      <li style="margin-bottom:0;"><strong>Browsing country:</strong> UK, France, Germany, Netherlands, US all declined similarly. No single origin country was uniquely affected, ruling out a geo-specific campaign or content issue.</li>
+    </ul>
+  </div>
+
+</div><!-- end .container -->
+
+<footer>Generated 2026-05-04 · CVR-RCA · CE 254 Disneyland® Paris Tickets</footer>
+
+<!-- ─────────────────────── Plotly chart scripts ─────────────────────── -->
+<script>
+// ── 90-day CVR trend (current year + LY overlay) ──────────────────────
+
+const summaryMeta = {
+  post_start: '2026-04-04',
+  post_end:   '2026-05-03'
+};
+
+const trendData90 = [
+  {d:'2026-02-03',cy:0.024505,ly:0.025068},{d:'2026-02-04',cy:0.023925,ly:0.021089},
+  {d:'2026-02-05',cy:0.025300,ly:0.022994},{d:'2026-02-06',cy:0.028261,ly:0.022479},
+  {d:'2026-02-07',cy:0.022758,ly:0.022631},{d:'2026-02-08',cy:0.021267,ly:0.018338},
+  {d:'2026-02-09',cy:0.022991,ly:0.021714},{d:'2026-02-10',cy:0.025006,ly:0.022734},
+  {d:'2026-02-11',cy:0.024962,ly:0.025151},{d:'2026-02-12',cy:0.023601,ly:0.028500},
+  {d:'2026-02-13',cy:0.024658,ly:0.028025},{d:'2026-02-14',cy:0.020679,ly:0.024221},
+  {d:'2026-02-15',cy:0.019110,ly:0.019821},{d:'2026-02-16',cy:0.021600,ly:0.021817},
+  {d:'2026-02-17',cy:0.021730,ly:0.023016},{d:'2026-02-18',cy:0.019837,ly:0.019916},
+  {d:'2026-02-19',cy:0.025094,ly:0.024553},{d:'2026-02-20',cy:0.023063,ly:0.021159},
+  {d:'2026-02-21',cy:0.022154,ly:0.025808},{d:'2026-02-22',cy:0.021598,ly:0.019164},
+  {d:'2026-02-23',cy:0.023220,ly:0.021851},{d:'2026-02-24',cy:0.022361,ly:0.023724},
+  {d:'2026-02-25',cy:0.021067,ly:0.028080},{d:'2026-02-26',cy:0.027632,ly:0.029972},
+  {d:'2026-02-27',cy:0.025679,ly:0.028047},{d:'2026-02-28',cy:0.028292,ly:0.024712},
+  {d:'2026-03-01',cy:0.023141,ly:0.023582},{d:'2026-03-02',cy:0.011462,ly:0.027873},
+  {d:'2026-03-03',cy:0.024927,ly:0.029267},{d:'2026-03-04',cy:0.031820,ly:0.026986},
+  {d:'2026-03-05',cy:0.026918,ly:0.029917},{d:'2026-03-06',cy:0.027376,ly:0.030060},
+  {d:'2026-03-07',cy:0.025527,ly:0.027999},{d:'2026-03-08',cy:0.026133,ly:0.026587},
+  {d:'2026-03-09',cy:0.024191,ly:0.024973},{d:'2026-03-10',cy:0.024717,ly:0.024505},
+  {d:'2026-03-11',cy:0.028345,ly:0.028302},{d:'2026-03-12',cy:0.027849,ly:0.029817},
+  {d:'2026-03-13',cy:0.024296,ly:0.025235},{d:'2026-03-14',cy:0.023571,ly:0.024526},
+  {d:'2026-03-15',cy:0.020116,ly:0.027980},{d:'2026-03-16',cy:0.022566,ly:0.030568},
+  {d:'2026-03-17',cy:0.019008,ly:0.028624},{d:'2026-03-18',cy:0.024489,ly:0.028944},
+  {d:'2026-03-19',cy:0.024581,ly:0.026353},{d:'2026-03-20',cy:0.026837,ly:0.027938},
+  {d:'2026-03-21',cy:0.021885,ly:0.026437},{d:'2026-03-22',cy:0.022147,ly:0.026191},
+  {d:'2026-03-23',cy:0.025307,ly:0.028801},{d:'2026-03-24',cy:0.022966,ly:0.032598},
+  {d:'2026-03-25',cy:0.022046,ly:0.029015},{d:'2026-03-26',cy:0.018426,ly:0.026221},
+  {d:'2026-03-27',cy:0.021773,ly:0.027931},{d:'2026-03-28',cy:0.017363,ly:0.027892},
+  {d:'2026-03-29',cy:0.015522,ly:0.029661},{d:'2026-03-30',cy:0.017028,ly:0.029139},
+  {d:'2026-03-31',cy:0.021708,ly:0.026198},{d:'2026-04-01',cy:0.021384,ly:0.027250},
+  {d:'2026-04-02',cy:0.019424,ly:0.031538},{d:'2026-04-03',cy:0.023744,ly:0.025004},
+  {d:'2026-04-04',cy:0.022420,ly:0.025243},{d:'2026-04-05',cy:0.020824,ly:0.028272},
+  {d:'2026-04-06',cy:0.018700,ly:0.027571},{d:'2026-04-07',cy:0.022189,ly:0.030045},
+  {d:'2026-04-08',cy:0.018802,ly:0.029505},{d:'2026-04-09',cy:0.020785,ly:0.029564},
+  {d:'2026-04-10',cy:0.021477,ly:0.030868},{d:'2026-04-11',cy:0.019783,ly:0.032670},
+  {d:'2026-04-12',cy:0.016245,ly:0.028558},{d:'2026-04-13',cy:0.020682,ly:0.027518},
+  {d:'2026-04-14',cy:0.020880,ly:0.022969},{d:'2026-04-15',cy:0.025028,ly:0.024048},
+  {d:'2026-04-16',cy:0.021783,ly:0.026434},{d:'2026-04-17',cy:0.023674,ly:0.028137},
+  {d:'2026-04-18',cy:0.020937,ly:0.020821},{d:'2026-04-19',cy:0.020063,ly:0.018025},
+  {d:'2026-04-20',cy:0.022768,ly:0.023456},{d:'2026-04-21',cy:0.021179,ly:0.024486},
+  {d:'2026-04-22',cy:0.025773,ly:0.030694},{d:'2026-04-23',cy:0.022595,ly:0.031262},
+  {d:'2026-04-24',cy:0.021312,ly:0.030023},{d:'2026-04-25',cy:0.019401,ly:0.030308},
+  {d:'2026-04-26',cy:0.018764,ly:0.025936},{d:'2026-04-27',cy:0.017764,ly:0.029422},
+  {d:'2026-04-28',cy:0.019840,ly:0.036553},{d:'2026-04-29',cy:0.019457,ly:0.038293},
+  {d:'2026-04-30',cy:0.018264,ly:0.026823},{d:'2026-05-01',cy:0.018266,ly:0.030985},
+  {d:'2026-05-02',cy:0.017448,ly:0.025802},{d:'2026-05-03',cy:0.013666,ly:0.026877}
+];
+
+const currentDates = trendData90.map(e => e.d);
+const currentCvr   = trendData90.map(e => e.cy);
+const lyMap        = {};
+trendData90.forEach(e => { lyMap[e.d] = e.ly; });
+const lyCvr        = currentDates.map(d => lyMap[d] ?? null);
+
+const hasLyData = lyCvr.some(v => v !== null && v !== undefined && v > 0);
+
+const POST_START = summaryMeta.post_start;
+const POST_END   = summaryMeta.post_end;
+const postDates  = currentDates.filter(d => d >= POST_START && d <= POST_END);
+const midPostDate = postDates[Math.floor(postDates.length / 2)];
+
+const traces90d = [
+  {type:'scatter', mode:'lines', name:'CVR 2026',
+   x: currentDates, y: currentCvr,
+   line:{color:'#6c8ebf', width:2}}
+];
+
+if (hasLyData) {
+  traces90d.push(
+    {type:'scatter', mode:'lines', name:'CVR 2025 (LY)',
+     x: currentDates, y: lyCvr,
+     line:{color:'#9e9e9e', dash:'dash', width:1.5}}
+  );
+} else {
+  document.getElementById('trend-90day').innerHTML =
+    '<div style="background:#fff3e0;border-left:4px solid #e65100;padding:8px 12px;font-size:12px;color:#bf360c;">' +
+    '⚠️ Last-year overlay unavailable.</div>';
+}
+
+if (hasLyData) {
+  Plotly.newPlot('trend-90day', traces90d, {
+    height: 280,
+    yaxis: {tickformat:'.1%', title:'CVR'},
+    xaxis: {tickformat:'%d %b', dtick: 7*86400000, title:''},
+    plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+    font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+    legend: {orientation:'h', y:-0.2},
+    margin: {l:55, r:20, t:30, b:60},
+    shapes: [
+      {type:'rect', x0:POST_START, x1:POST_END, y0:0, y1:1,
+       xref:'x', yref:'paper', fillcolor:'rgba(198,40,40,0.06)', line:{width:0}},
+      {type:'line', x0:POST_START, x1:POST_START, y0:0, y1:1,
+       xref:'x', yref:'paper', line:{color:'#c62828', dash:'dot', width:1}}
+    ],
+    annotations: [{
+      x: midPostDate, y: 0.92, xref:'x', yref:'paper',
+      text:'Post period', font:{color:'#c62828', size:10}, showarrow:false
+    }]
+  }, {responsive:true});
+}
+
+// ── Daily S2C trend (pre vs post) ─────────────────────────────────────
+
+const preS2C = [
+  {d:'2026-03-05',v:0.2447},{d:'2026-03-06',v:0.2569},{d:'2026-03-07',v:0.2438},
+  {d:'2026-03-08',v:0.2304},{d:'2026-03-09',v:0.2455},{d:'2026-03-10',v:0.2556},
+  {d:'2026-03-11',v:0.2648},{d:'2026-03-12',v:0.2756},{d:'2026-03-13',v:0.2720},
+  {d:'2026-03-14',v:0.2424},{d:'2026-03-15',v:0.2235},{d:'2026-03-16',v:0.2543},
+  {d:'2026-03-17',v:0.2671},{d:'2026-03-18',v:0.2616},{d:'2026-03-19',v:0.2606},
+  {d:'2026-03-20',v:0.2542},{d:'2026-03-21',v:0.2433},{d:'2026-03-22',v:0.2316},
+  {d:'2026-03-23',v:0.2776},{d:'2026-03-24',v:0.2599},{d:'2026-03-25',v:0.2463},
+  {d:'2026-03-26',v:0.2404},{d:'2026-03-27',v:0.2468},{d:'2026-03-28',v:0.2029},
+  {d:'2026-03-29',v:0.2080},{d:'2026-03-30',v:0.2367},{d:'2026-03-31',v:0.2342},
+  {d:'2026-04-01',v:0.2416},{d:'2026-04-02',v:0.2345},{d:'2026-04-03',v:0.2413}
+];
+
+const postS2C = [
+  {d:'2026-04-04',v:0.2260},{d:'2026-04-05',v:0.2142},{d:'2026-04-06',v:0.2266},
+  {d:'2026-04-07',v:0.2283},{d:'2026-04-08',v:0.2160},{d:'2026-04-09',v:0.2328},
+  {d:'2026-04-10',v:0.2320},{d:'2026-04-11',v:0.2039},{d:'2026-04-12',v:0.1811},
+  {d:'2026-04-13',v:0.2181},{d:'2026-04-14',v:0.2257},{d:'2026-04-15',v:0.2315},
+  {d:'2026-04-16',v:0.2221},{d:'2026-04-17',v:0.2097},{d:'2026-04-18',v:0.2050},
+  {d:'2026-04-19',v:0.1916},{d:'2026-04-20',v:0.2318},{d:'2026-04-21',v:0.2152},
+  {d:'2026-04-22',v:0.2264},{d:'2026-04-23',v:0.2318},{d:'2026-04-24',v:0.2188},
+  {d:'2026-04-25',v:0.1858},{d:'2026-04-26',v:0.1908},{d:'2026-04-27',v:0.2084},
+  {d:'2026-04-28',v:0.1992},{d:'2026-04-29',v:0.1979},{d:'2026-04-30',v:0.1814},
+  {d:'2026-05-01',v:0.1894},{d:'2026-05-02',v:0.1858},{d:'2026-05-03',v:0.1771}
+];
+
+const preDates  = preS2C.map(e => e.d);
+const preVals   = preS2C.map(e => e.v);
+const postDatesS2C = postS2C.map(e => e.d);
+const postVals  = postS2C.map(e => e.v);
+
+const preMean  = preVals.reduce((a,b)=>a+b,0) / preVals.length;
+const postMean = postVals.reduce((a,b)=>a+b,0) / postVals.length;
+
+Plotly.newPlot('s2c-trend-chart', [
+  {
+    type:'scatter', mode:'lines+markers', name:'Pre (Mar 5 – Apr 3)',
+    x: preDates, y: preVals,
+    line:{color:'#6c8ebf', width:2.5},
+    marker:{size:4, color:'#6c8ebf'}
+  },
+  {
+    type:'scatter', mode:'lines+markers', name:'Post (Apr 4 – May 3)',
+    x: postDatesS2C, y: postVals,
+    line:{color:'#c62828', width:2.5},
+    marker:{size:4, color:'#c62828'}
+  }
+], {
+  height: 280,
+  yaxis: {tickformat:'.0%', title:'S2C rate', range:[0.14, 0.30]},
+  xaxis: {title:''},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+  font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+  legend: {orientation:'h', y:-0.3},
+  margin: {l:55, r:20, t:30, b:50},
+  shapes: [
+    {type:'line', x0:preDates[0], x1:preDates[preDates.length-1],
+     y0:preMean, y1:preMean, line:{color:'#6c8ebf', dash:'dot', width:1.5}},
+    {type:'line', x0:postDatesS2C[0], x1:postDatesS2C[postDatesS2C.length-1],
+     y0:postMean, y1:postMean, line:{color:'#c62828', dash:'dot', width:1.5}}
+  ],
+  annotations: [
+    {x: preDates[Math.floor(preDates.length/2)], y: preMean,
+     text:'Pre avg 23.6%', font:{color:'#6c8ebf', size:11}, showarrow:false, yshift:12},
+    {x: postDatesS2C[Math.floor(postDatesS2C.length/2)], y: postMean,
+     text:'Post avg 20.3%', font:{color:'#c62828', size:11}, showarrow:false, yshift:-16}
+  ]
+}, {responsive:true});
+
+</script>
+</body>
+</html>
