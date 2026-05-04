@@ -5,6 +5,12 @@
       "version_date": "2026-04-28",
       "version_summary": "Investigation tree model + unified run folder",
       "manifest": "runs/v1.3/manifest.json"
+    },
+    {
+      "version": "v1.5",
+      "version_date": "2026-05-04",
+      "version_summary": "Evaluator redesign (failure mode tags) + findings synthesis gate (Step 2b)",
+      "manifest": "runs/v1.5/manifest.json"
     }
   ]
 }

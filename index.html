@@ -726,13 +726,13 @@ const NODES = [
   // ══ PHASE 5: THREE MANDATORY QUESTIONS ══
   {
     id: 'mix-decision', type: 'decision', icon: '⚖️',
-    label: 'Q1: Is Mix Dominant?', sublabel: 'Routing problem vs funnel problem',
+    label: 'L0: Mix Signal', sublabel: 'Orientation hint — not a hard gate (c021)',
     x: 780, y: 1495, phase: 'Decision',
     badge: null,
     inputs: ['mix_dominance.mbho_mix_share', 'mix_dominance.channel_mix_share', 'mix_dominance.is_dominant'],
-    outputs: ['is_dominant: bool → branch'],
-    condition: 'Always fires after aggregate.py.\nThreshold: either mix share > 50% of |ΔCVR|.',
-    description: 'First mandatory question. If MB/HO traffic share shifted OR Paid/Organic shifted enough to explain >50% of ΔCVR, the story is routing (marketing), not funnel (product). Both branches are mutually exclusive. Mix-dominant → short-circuit to Q6 + Mix Root Cause. Not dominant → proceed to Q2 and Q3.',
+    outputs: ['is_dominant: bool → orientation signal'],
+    condition: 'Always fires after aggregate.py.\nOrientation only — the L1 cascade (not this signal) determines routing vs conversion.',
+    description: 'L0 orientation signal. mix_dominance.is_dominant = true means the cascade is likely to find a mix exit early — prepare for a routing story. False means the cascade will likely confirm conversion changes at all levels. This is NOT a hard gate — do not skip the L1 cascade or short-circuit to a mix story based on this signal alone. The cascade runs regardless of what is_dominant says, and the cascade is what actually determines the path (c021).',
   },
 
   // ══ BRANCH A: MIX DOMINANT ══
@@ -824,13 +824,13 @@ const NODES = [
   // ══ L1: MIX CASCADE ══
   {
     id: 'mix-cascade', type: 'analysis', icon: '🔢',
-    label: 'L1 — Mix Cascade', sublabel: 'MB/HO → Paid/Organic → Channel (mandatory)',
+    label: 'L1 — Mix Cascade', sublabel: 'Routing vs Conversion Determination (c021)',
     x: 795, y: 2690, phase: 'Investigation',
     badge: null,
-    inputs: ['summary.json (mb_share, ho_share)', 'ce_id', 'pre/post dates', 'is_microbrand_page fix from L0'],
-    outputs: ['fixed_segment declaration', 'filter strings for all L2+ queries'],
-    condition: 'Always fires on the funnel path, before any L2 hypotheses.\nMandatory even if mix was not dominant at L0.',
-    description: 'Three-level cascade that fixes the primary segment before any funnel analysis. Level 1 (MB vs HO): read from summary.json — no query needed. Level 2 (Paid vs Organic within fixed brand): custom BQ query, group by channel type. Level 3 (Channel within Paid): only if Paid was fixed at Level 2 — which specific paid channel dominates? Fix a level when one segment has >15% of post users AND its absolute checkout impact exceeds all others combined. After cascade, declare the fixed segment in the transcript: "Fixed segment: MB · Paid · Google Ads — AND is_microbrand_page = TRUE AND channel_name = \'Google Ads\'". Every L2+ query carries these filters.',
+    inputs: ['summary.json (mb_share, ho_share, mix_effect, conversion_effect)', 'ce_id', 'pre/post dates'],
+    outputs: ['routing exit at Level 1/2/3 (mix change story) OR fixed_segment + filter strings (conversion path)'],
+    condition: 'Always fires — runs before any funnel hypotheses, regardless of L0 mix_dominance signal.\nCan exit at any level with a routing story.',
+    description: 'Three-level cascade. At EACH level compare mix_effect vs conversion_effect. If mix_effect dominates → ROUTING EXIT at that level (this is a traffic routing story, not a funnel problem). If conversion_effect dominates → fix the segment, descend to next level. Level 1 (MB vs HO): summary.json — no query. Mix exit → why did HO traffic fall or MB grow? Level 2 (Paid vs Organic within fixed brand): BQ query. Mix exit → campaign paused, budget cut? Level 3 (Channel within Paid): BQ query. Mix exit → channel shift story. Conversion through all three → declare Fixed segment: "[MB/HO] · [Paid/Org] · [channel]". Every L2+ funnel query carries those filters. Log the cascade as its own L1 section in the transcript tree map.',
   },
 
   // ══ RECONVERGE: HYPOTHESIS ══
@@ -897,25 +897,35 @@ const NODES = [
     label: 'Investigation Transcript', sublabel: 'Tree map + detail sections',
     x: 795, y: 4460, phase: 'Output',
     badge: null,
-    inputs: ['all branch decisions + rationale', 'queries run + results', 'hypotheses confirmed/ruled out', 'findings.md synthesis'],
+    inputs: ['all branch decisions + rationale', 'queries run + results', 'hypotheses confirmed/ruled out'],
     outputs: ['<run_dir>/transcript.md'],
     condition: 'Always fires after locus decision (both paths).',
-    description: 'Structured markdown file with two layers: (1) Tree map at top — full branch structure at a glance, updated as each branch resolves with CONFIRMED / RULED OUT / LEAF status. (2) Detail sections below — L0 orientation, L1 cascade results, L2+ parallel query batches with results, Root cause confirmed paragraph. Every number in findings.md must trace to a named query result in the detail sections. Written to <run_dir>/transcript.md alongside summary.json and report.html.',
+    description: 'Structured markdown file with two layers: (1) Tree map at top — full branch structure at a glance, updated as each branch resolves with CONFIRMED / RULED OUT / LEAF status. (2) Detail sections below — L0 orientation, L1 cascade results, L2+ parallel query batches with results, Root cause confirmed paragraph. Every number that enters findings.md must trace to a named query result in the detail sections.',
+  },
+  {
+    id: 'findings', type: 'output', icon: '🔍',
+    label: 'Step 2b — Findings Synthesis', sublabel: 'findings.md · gate before HTML',
+    x: 795, y: 4620, phase: 'Output',
+    badge: null,
+    inputs: ['<run_dir>/transcript.md', 'all confirmed query results'],
+    outputs: ['<run_dir>/findings.md — Root cause · Mechanism · Timing · Evidence inventory (with Source) · Open items'],
+    condition: 'Always fires after transcript. Must be written and open items resolved before html-report.',
+    description: 'Mandatory synthesis gate added in c010. Before writing any HTML, write findings.md with four sections: (1) Root cause — one sentence: what broke, in which segment, by how much. (2) Mechanism — the causal chain. (3) Timing — sudden/gradual/seasonal and the key evidence. (4) Evidence inventory — table with Claim / Supporting data / Source / Confidence. Every count or metric must have a named Source: a specific summary.json field, a named BQ query result, or a specific report table row. A number with no named source must be derived explicitly or removed. Then re-read critically: each "Consistent with" or "Unverified" row is an open item. Resolve with a query, arithmetic, or explicitly accept and reflect in report language. Only once all open items are resolved does Step 3 (HTML) begin. This gate is the main defence against impressions and approximations entering the report.',
   },
   {
     id: 'html-report', type: 'output', icon: '🌐',
     label: 'HTML Report', sublabel: 'Section 1: Summary → Section 2: Actions → Section 3: Analysis',
-    x: 795, y: 4750, phase: 'Output',
+    x: 795, y: 4830, phase: 'Output',
     badge: null,
-    inputs: ['summary.json', 'investigation findings', 'session recording table', 'actions.md templates', 'report_structure.md spec'],
+    inputs: ['findings.md (source of truth)', 'summary.json', 'session recording table', 'actions.md templates', 'report_structure.md spec'],
     outputs: ['<run_dir>/report.html'],
-    condition: 'Always fires after transcript is written.',
-    description: 'Self-contained HTML. Section 1: (1a) 5 metric cards — CVR/LP2S/S2C/C2O/Traffic with pp + % deltas; (1b) 90-day CVR trend chart with LY overlay — always in Section 1, post window shaded green (improvement) or red (decline); (1c) root cause callout — red border for drops, green border for improvements, answers What/Why/When with no hedging. Positive CVR variant has heading "CVR Improved — What\'s Driving It & What\'s Holding It Back". Fixed segment banner after mix cascade output, before Shapley block. Section 2: ≤3 action cards P1–P3, specific DRI + task. Section 3: evidence only — Shapley bar, mix table, dimension cuts that showed signal; all tables must include Pre Users + Post Users columns alongside rates.',
+    condition: 'Always fires after findings.md is written and open items resolved.',
+    description: 'Self-contained HTML written from findings.md as source of truth — not directly from raw query outputs. Section 1: (1a) 5 metric cards — CVR/LP2S/S2C/C2O/Traffic with pp + % deltas; (1b) 90-day CVR trend chart with LY overlay — always in Section 1, post window shaded green (improvement) or red (decline); (1c) root cause callout — red border for drops, green border for improvements, answers What/Why/When with no hedging. Positive CVR variant has heading "CVR Improved — What\'s Driving It & What\'s Holding It Back". Fixed segment banner after mix cascade output, before Shapley block. Section 2: ≤3 action cards P1–P3, specific DRI + task. Section 3: evidence only — Shapley bar, mix table, dimension cuts that showed signal; all tables must include Pre Users + Post Users columns alongside rates.',
   },
   {
     id: 'evaluation', type: 'eval', icon: '⭐',
     label: 'Evaluation', sublabel: '7-theme rubric · score 1–5 · failure mode tags',
-    x: 795, y: 5040, phase: 'Evaluation',
+    x: 795, y: 5090, phase: 'Evaluation',
     badge: null,
     inputs: ['4 skill reference files (read first)', 'html-report', 'investigation transcript', 'summary.json', 'evaluator.md rubric'],
     outputs: ['<run_dir>/evaluation.md', 'score per theme (1–5)', 'Gap + Why per gap', 'Failure Mode Summary table'],
@@ -1017,7 +1027,7 @@ const EDGES = [
   { id:'e21', from:'trend-pattern', to:'mix-cascade',    type:'always',      label:'onset pattern'             },
 
   // Mix cascade → hypothesis
-  { id:'e21b', from:'mix-cascade',  to:'hypothesis',     type:'always',      label:'fixed segment declared'    },
+  { id:'e21b', from:'mix-cascade',  to:'hypothesis',     type:'always',      label:'routing exit OR fixed segment' },
 
   // Custom queries
   { id:'e22', from:'hypothesis',    to:'custom-select',  type:'always',      label:'L2 branch set'             },
@@ -1029,7 +1039,8 @@ const EDGES = [
   { id:'e26', from:'locus',         to:'recordings',     type:'conditional', label:'YES: locus confirmed'      },
   { id:'e27', from:'recordings',    to:'transcript',     type:'conditional', label:'recording observations'    },
   { id:'e28', from:'locus',         to:'transcript',     type:'always',      label:'investigation complete'    },
-  { id:'e29', from:'transcript',    to:'html-report',    type:'always',      label:'findings + rationale'      },
+  { id:'e29', from:'transcript',    to:'findings',       type:'always',      label:'root cause confirmed'      },
+  { id:'e29b', from:'findings',     to:'html-report',    type:'always',      label:'verified findings.md'      },
   { id:'e30', from:'html-report',   to:'evaluation',     type:'always',      label:'completed report'          },
 
   // Consults (file → node, dotted)
@@ -1037,7 +1048,8 @@ const EDGES = [
   { id:'c2',  from:'file-context',     to:'mix-decision',  type:'consults', label:'domain definitions + DRI'  },
   { id:'c3',  from:'file-hypothesis',  to:'hypothesis',    type:'consults', label:'L0 map + first-pass branches' },
   { id:'c4',  from:'file-actions',     to:'html-report',   type:'consults', label:'action templates'          },
-  { id:'c5',  from:'file-report-struct',to:'html-report',  type:'consults', label:'HTML/CSS spec'             },
+  { id:'c5',  from:'file-report-struct',to:'findings',     type:'consults', label:'output spec — read before synthesis' },
+  { id:'c5b', from:'file-report-struct',to:'html-report',  type:'consults', label:'HTML/CSS spec'             },
   { id:'c6',  from:'file-evaluator',   to:'evaluation',    type:'consults', label:'7-theme rubric'            },
   { id:'c7',  from:'file-worked-example', to:'hypothesis',  type:'consults', label:'worked examples'           },
 ];
@@ -1059,8 +1071,9 @@ const SECTION_LABELS = [
   { text: '⑬ Query Results',       x: 30, y: 3562},
   { text: '⑭ Locus + Recordings',  x: 30, y: 3862},
   { text: '⑮ Transcript',          x: 30, y: 4432},
-  { text: '⑯ HTML Report',         x: 30, y: 4722},
-  { text: '⑰ Evaluation',          x: 30, y: 5012},
+  { text: '⑯ Step 2b — Findings', x: 30, y: 4592},
+  { text: '⑰ HTML Report',         x: 30, y: 4802},
+  { text: '⑱ Evaluation',          x: 30, y: 5062},
 ];
 
 // ── File contents (curated markdown rendered in the side panel) ───────────────
