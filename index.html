@@ -2873,11 +2873,11 @@ function ChangelogExplorer() {
 // ── EventsReference ───────────────────────────────────────────────────────────
 function EventsReference() {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+    <div style={{ position: 'absolute', inset: 0 }}>
       <iframe
         src="events/events-reference.html"
         title="Funnel Events Reference"
-        style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+        style={{ width: '100%', height: '100%', border: 'none', display: 'block' }}
         sandbox="allow-scripts allow-same-origin"
       />
     </div>
