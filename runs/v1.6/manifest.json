@@ -17,5 +17,38 @@
         "evaluation": "runs/v1.6/ce229_2026-03-05_2026-05-03/evaluation.md"
       }
     }
+    ,
+    {
+      "id": "ce189_2026-03-05_2026-05-03_run2",
+      "ce_id": "189",
+      "ce_name": "Vatican Museums",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 25,
+      "eval_max": 35,
+      "root_cause": "Vatican Museums CVR fell −0.63pp (4.47%→3.84%) because peak spring demand (+13% traffic) exceeded fixed timed-entry slot supply — shrinking available booking dates by 5.1 per 30-day window — while a secondary checkout failure on iOS (C2A) and Android (A2O) added a compounding −40% Shapley contribution. Second run under v1.6 rubric: identified fixed segment inconsistency (cascade declared Google Ads but queries ran at Paid level) and missing user counts in lead-time and device C2O tables.",
+      "files": {
+        "report": "runs/v1.6/ce189_2026-03-05_2026-05-03_run2/report.html",
+        "transcript": "runs/v1.6/ce189_2026-03-05_2026-05-03_run2/transcript.md",
+        "evaluation": "runs/v1.6/ce189_2026-03-05_2026-05-03_run2/evaluation.md"
+      }
+    },
+    {
+      "id": "ce6495_2026-03-05_2026-05-03_run2",
+      "ce_id": "6495",
+      "ce_name": "Kualoa Ranch",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-04",
+      "eval_score": 24,
+      "eval_max": 35,
+      "root_cause": "S2C fell from 31.8% to 25.2% (−6.65pp, 70% of ΔCVR) because the post period captured the wind-down of Hawaii's spring break season — US domestic (83% of traffic, S2C −6.8pp) and Canadian visitors were replaced by lower-intent off-peak tourists, while international non-spring-break visitors held flat. No supply, pricing, or UX change confirmed — purely demand quality decline.",
+      "files": {
+        "report": "runs/v1.6/ce6495_2026-03-05_2026-05-03_run2/report.html",
+        "transcript": "runs/v1.6/ce6495_2026-03-05_2026-05-03_run2/transcript.md",
+        "evaluation": "runs/v1.6/ce6495_2026-03-05_2026-05-03_run2/evaluation.md"
+      }
+    }
   ]
 }
