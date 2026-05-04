@@ -166,7 +166,7 @@ function DecisionTreeView() {
 
 // ── Root App — owns the top-level tab switcher ────────────────────────────────
 function App() {
-  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog'
+  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog' | 'events'
 
   return (
     <div className="app-shell">
@@ -190,6 +190,11 @@ function App() {
           onClick={() => setActiveTab('changelog')}>
           📋 Changelog
         </button>
+        <button
+          className={`tab-pill${activeTab === 'events' ? ' active' : ''}`}
+          onClick={() => setActiveTab('events')}>
+          ⚡ Funnel Events
+        </button>
 
         {activeTab === 'tree' && (
           <>
@@ -210,6 +215,7 @@ function App() {
         {activeTab === 'tree' && <DecisionTreeView />}
         {activeTab === 'runs' && <TestRunsExplorer />}
         {activeTab === 'changelog' && <ChangelogExplorer />}
+        {activeTab === 'events' && <EventsReference />}
       </div>
 
     </div>

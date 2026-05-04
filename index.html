@@ -2869,6 +2869,20 @@ function ChangelogExplorer() {
     </div>
   );
 }
+
+// ── EventsReference ───────────────────────────────────────────────────────────
+function EventsReference() {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <iframe
+        src="events/events-reference.html"
+        title="Funnel Events Reference"
+        style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+        sandbox="allow-scripts allow-same-origin"
+      />
+    </div>
+  );
+}
 // ── App (Decision Tree view) ──────────────────────────────────────────────────
 function DecisionTreeView() {
   // Compute initial zoom based on viewport — targets the ~1450px-wide main action column
@@ -3037,7 +3051,7 @@ function DecisionTreeView() {
 
 // ── Root App — owns the top-level tab switcher ────────────────────────────────
 function App() {
-  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog'
+  const [activeTab, setActiveTab] = useState('tree'); // 'tree' | 'runs' | 'changelog' | 'events'
 
   return (
     <div className="app-shell">
@@ -3061,6 +3075,11 @@ function App() {
           onClick={() => setActiveTab('changelog')}>
           📋 Changelog
         </button>
+        <button
+          className={`tab-pill${activeTab === 'events' ? ' active' : ''}`}
+          onClick={() => setActiveTab('events')}>
+          ⚡ Funnel Events
+        </button>
 
         {activeTab === 'tree' && (
           <>
@@ -3081,6 +3100,7 @@ function App() {
         {activeTab === 'tree' && <DecisionTreeView />}
         {activeTab === 'runs' && <TestRunsExplorer />}
         {activeTab === 'changelog' && <ChangelogExplorer />}
+        {activeTab === 'events' && <EventsReference />}
       </div>
 
     </div>

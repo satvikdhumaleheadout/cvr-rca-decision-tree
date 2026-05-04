@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Headout Funnel Events Reference</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #f0f4f8;
+      --surface:  #ffffff;
+      --border:   #e2e8f0;
+      --border2:  #cbd5e1;
+      --text:     #0f172a;
+      --text-sm:  #475569;
+      --text-xs:  #94a3b8;
+      --shadow:   0 1px 4px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-lg:0 8px 32px rgba(0,0,0,0.12);
+
+      --lp-color:  #1d4ed8;
+      --lp-bg:     rgba(219,234,254,0.5);
+      --lp-chip:   #eff6ff;
+      --lp-chip-t: #1e40af;
+      --lp-chip-b: #bfdbfe;
+
+      --s2c-color: #0f766e;
+      --s2c-bg:    rgba(204,251,241,0.5);
+      --s2c-chip:  #f0fdf4;
+      --s2c-chip-t:#065f46;
+      --s2c-chip-b:#6ee7b7;
+
+      --c2o-color: #6d28d9;
+      --c2o-bg:    rgba(237,233,254,0.5);
+      --c2o-chip:  #f5f3ff;
+      --c2o-chip-t:#4c1d95;
+      --c2o-chip-b:#ddd6fe;
+    }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: 100vh;
+    }
+
+    /* ── Topbar ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 100;
+      height: 50px;
+      background: rgba(255,255,255,0.95);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      display: flex; align-items: center; gap: 12px; padding: 0 20px;
+    }
+    .topbar-logo { font-size: 13px; font-weight: 800; color: var(--text); letter-spacing: -0.02em; }
+    .topbar-logo span { color: #4f46e5; }
+    .topbar-divider { width: 1px; height: 18px; background: var(--border); }
+    .topbar-pill {
+      font-size: 10px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase;
+      padding: 3px 10px; border-radius: 999px; cursor: pointer; text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    .topbar-pill:hover { opacity: 0.75; }
+    .pill-lp  { background: #eff6ff; color: var(--lp-color);  border: 1px solid #bfdbfe; }
+    .pill-s2c { background: #f0fdf4; color: var(--s2c-color); border: 1px solid #6ee7b7; }
+    .pill-c2o { background: #f5f3ff; color: var(--c2o-color); border: 1px solid #ddd6fe; }
+    .topbar-hint { margin-left: auto; font-size: 11px; color: var(--text-xs); }
+
+    /* ── Funnel bar ── */
+    .funnel-bar {
+      display: flex; align-items: stretch;
+      margin: 20px 20px 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    .funnel-step {
+      flex: 1; padding: 14px 18px;
+      border-right: 1px solid var(--border);
+    }
+    .funnel-step:last-child { border-right: none; }
+    .funnel-step-header {
+      display: flex; align-items: center; gap: 8px; margin-bottom: 5px;
+    }
+    .funnel-dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    }
+    .funnel-step-name { font-size: 12px; font-weight: 800; letter-spacing: -0.01em; }
+    .funnel-metric {
+      display: inline-block; font-size: 10px; font-weight: 700;
+      padding: 2px 8px; border-radius: 999px; margin-left: auto;
+    }
+    .funnel-step-desc { font-size: 10px; color: var(--text-sm); line-height: 1.5; }
+    .funnel-arrow {
+      display: flex; align-items: center; padding: 0 4px;
+      color: var(--text-xs); font-size: 18px; flex-shrink: 0;
+      background: #f8fafc;
+    }
+
+    /* ── Grid ── */
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      padding: 16px 20px 40px;
+      align-items: start;
+    }
+
+    /* ── Column ── */
+    .col-header {
+      border-radius: 10px 10px 0 0;
+      padding: 11px 14px 10px;
+      margin-bottom: 10px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .col-header-left { display: flex; align-items: center; gap: 8px; }
+    .col-header-icon {
+      width: 26px; height: 26px; border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; flex-shrink: 0;
+    }
+    .col-header-title { font-size: 13px; font-weight: 800; }
+    .col-header-count {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 999px; margin-left: auto;
+    }
+
+    .section-label {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--text-xs);
+      padding: 0 4px; margin: 14px 0 7px;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+
+    /* ── Event card ── */
+    .event-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 7px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .event-card:hover { box-shadow: var(--shadow-lg); }
+    .event-card.expanded { border-color: var(--border2); }
+
+    .card-top {
+      padding: 9px 11px 8px;
+      display: flex; align-items: flex-start; gap: 8px;
+    }
+    .card-num {
+      width: 20px; height: 20px; border-radius: 5px;
+      font-size: 9px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px;
+    }
+    .unstructured-dot {
+      width: 20px; height: 20px; border-radius: 5px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 1px; font-size: 11px;
+    }
+    .card-name-wrap { flex: 1; min-width: 0; }
+    .card-name {
+      font-size: 11.5px; font-weight: 700; line-height: 1.3;
+      color: var(--text); word-break: break-word;
+    }
+    .card-badges { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+    .badge {
+      font-size: 9px; font-weight: 700; letter-spacing: 0.05em;
+      text-transform: uppercase; padding: 2px 6px; border-radius: 4px;
+    }
+    .badge-denominator { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .badge-numerator   { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
+    .badge-c2a         { background: #fce7f3; color: #9d174d; border: 1px solid #f9a8d4; }
+    .badge-dedup       { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; }
+
+    .expand-icon {
+      font-size: 10px; color: var(--text-xs); flex-shrink: 0;
+      margin-top: 3px; transition: transform 0.2s;
+    }
+    .event-card.expanded .expand-icon { transform: rotate(180deg); }
+
+    .card-props {
+      padding: 0 11px 8px 39px;
+      display: flex; flex-wrap: wrap; gap: 3px;
+    }
+    .prop-chip {
+      font-size: 9.5px; font-weight: 500; padding: 2px 7px; border-radius: 999px;
+    }
+
+    .card-purpose {
+      padding: 8px 11px 10px;
+      border-top: 1px solid var(--border);
+      font-size: 11px; color: var(--text-sm); line-height: 1.6;
+      display: none;
+    }
+    .event-card.expanded .card-purpose { display: block; }
+
+    /* ── LP colours ── */
+    .col-lp .col-header       { background: var(--lp-bg); }
+    .col-lp .col-header-icon  { background: rgba(191,219,254,0.8); color: var(--lp-color); }
+    .col-lp .col-header-title { color: var(--lp-color); }
+    .col-lp .col-header-count { background: #eff6ff; color: var(--lp-color); border: 1px solid #bfdbfe; }
+    .col-lp .card-num         { background: var(--lp-chip); color: var(--lp-color); border: 1px solid var(--lp-chip-b); }
+    .col-lp .unstructured-dot { background: var(--lp-chip); color: var(--lp-color); }
+    .col-lp .prop-chip        { background: var(--lp-chip); color: var(--lp-chip-t); border: 1px solid var(--lp-chip-b); }
+    .col-lp .event-card:hover { border-color: #93c5fd; }
+
+    /* ── S2C colours ── */
+    .col-s2c .col-header       { background: var(--s2c-bg); }
+    .col-s2c .col-header-icon  { background: rgba(153,246,228,0.6); color: var(--s2c-color); }
+    .col-s2c .col-header-title { color: var(--s2c-color); }
+    .col-s2c .col-header-count { background: #f0fdf4; color: var(--s2c-color); border: 1px solid #6ee7b7; }
+    .col-s2c .card-num         { background: var(--s2c-chip); color: var(--s2c-color); border: 1px solid var(--s2c-chip-b); }
+    .col-s2c .unstructured-dot { background: var(--s2c-chip); color: var(--s2c-color); }
+    .col-s2c .prop-chip        { background: var(--s2c-chip); color: var(--s2c-chip-t); border: 1px solid var(--s2c-chip-b); }
+    .col-s2c .event-card:hover { border-color: #6ee7b7; }
+
+    /* ── C2O colours ── */
+    .col-c2o .col-header       { background: var(--c2o-bg); }
+    .col-c2o .col-header-icon  { background: rgba(221,214,254,0.6); color: var(--c2o-color); }
+    .col-c2o .col-header-title { color: var(--c2o-color); }
+    .col-c2o .col-header-count { background: #f5f3ff; color: var(--c2o-color); border: 1px solid #ddd6fe; }
+    .col-c2o .card-num         { background: var(--c2o-chip); color: var(--c2o-color); border: 1px solid var(--c2o-chip-b); }
+    .col-c2o .unstructured-dot { background: var(--c2o-chip); color: var(--c2o-color); }
+    .col-c2o .prop-chip        { background: var(--c2o-chip); color: var(--c2o-chip-t); border: 1px solid var(--c2o-chip-b); }
+    .col-c2o .event-card:hover { border-color: #c4b5fd; }
+
+    /* ── Notes ── */
+    .notes-section {
+      margin: 0 20px 40px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      box-shadow: var(--shadow);
+    }
+    .notes-title {
+      font-size: 11px; font-weight: 800; text-transform: uppercase;
+      letter-spacing: 0.08em; color: var(--text-xs); margin-bottom: 10px;
+    }
+    .notes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .note-item { font-size: 11px; color: var(--text-sm); line-height: 1.6; }
+    .note-item strong { color: var(--text); font-weight: 700; }
+    code {
+      background: #f1f5f9; color: #334155; padding: 1px 5px;
+      border-radius: 4px; font-size: 10.5px; font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+      .notes-grid { grid-template-columns: 1fr; }
+      .funnel-bar { flex-direction: column; }
+      .funnel-arrow { display: none; }
+      .funnel-step { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Topbar -->
+<div class="topbar">
+  <div class="topbar-logo">headout <span>events</span></div>
+  <div class="topbar-divider"></div>
+  <a class="topbar-pill pill-lp" href="#lp">LP → Select</a>
+  <a class="topbar-pill pill-s2c" href="#s2c">Select → Checkout</a>
+  <a class="topbar-pill pill-c2o" href="#c2o">Checkout → Order</a>
+  <div class="topbar-hint">Click any card to expand purpose · LP2S / S2C / C2O</div>
+</div>
+
+<!-- Funnel bar -->
+<div class="funnel-bar">
+  <div class="funnel-step">
+    <div class="funnel-step-header">
+      <div class="funnel-dot" style="background:var(--lp-color)"></div>
+      <div class="funnel-step-name" style="color:var(--lp-color)">Landing Page</div>
+      <span class="funnel-metric badge-denominator badge" style="margin-left:8px">LP2S</span>
+    </div>
+    <div class="funnel-step-desc"><code>Select Page Viewed</code> sessions ÷ <code>Microsite Page Viewed</code> sessions — no explicit CTA click event observed</div>
+  </div>
+  <div class="funnel-arrow">→</div>
+  <div class="funnel-step">
+    <div class="funnel-step-header">
+      <div class="funnel-dot" style="background:var(--s2c-color)"></div>
+      <div class="funnel-step-name" style="color:var(--s2c-color)">Select Page</div>
+      <span class="funnel-metric badge-numerator badge" style="margin-left:8px">S2C</span>
+    </div>
+    <div class="funnel-step-desc">Sessions that reached checkout ÷ <code>Select Page Viewed</code> sessions. Numerator: <code>Select Page CTA Clicked</code> label=Next</div>
+  </div>
+  <div class="funnel-arrow">→</div>
+  <div class="funnel-step">
+    <div class="funnel-step-header">
+      <div class="funnel-dot" style="background:var(--c2o-color)"></div>
+      <div class="funnel-step-name" style="color:var(--c2o-color)">Checkout</div>
+      <span class="funnel-metric badge-c2a badge" style="margin-left:8px">C2O</span>
+    </div>
+    <div class="funnel-step-desc">Completed orders ÷ <code>Checkout Page Viewed</code> sessions. Decomposes into C2A (<code>Confirm &amp; Pay Clicked</code> Details Valid=true) and A2O</div>
+  </div>
+</div>
+
+<!-- Three-column grid -->
+<div class="grid">
+  <div class="col-lp" id="lp"></div>
+  <div class="col-s2c" id="s2c"></div>
+  <div class="col-c2o" id="c2o"></div>
+</div>
+
+<!-- Notes -->
+<div class="notes-section">
+  <div class="notes-title">Notes</div>
+  <div class="notes-grid">
+    <div class="note-item"><strong>Session join key</strong><br><code>h-sid</code> on LP (thevaticantickets.com). <code>HSID</code> on select/checkout (book.thevaticantickets.com). Same value, different casing — align when joining across domains.</div>
+    <div class="note-item"><strong>Time on page</strong><br><code>MAX(event_time) - MIN(event_time)</code> per session ID, filtered to the relevant page's events. More reliable than timer-based proxies.</div>
+    <div class="note-item"><strong>Storage</strong><br>All event names match GTM dataLayer names, forwarded 1:1 to Mixpanel and stored in <code>mixpanel_events_partitioned</code> in BigQuery.</div>
+  </div>
+</div>
+
+<script>
+const DATA = {
+  lp: {
+    title: 'LP Events',
+    icon: '🏛',
+    subtitle: 'Landing Page → Select',
+    structured: [
+      { name: 'Microsite Page Viewed', props: ['h-sid','Language','Platform Name','Collection ID','Is Landing Page','Currency'], purpose: 'Page load — session denominator for LP2S. All dimension filters (language, platform, currency) live on this event.', badges: ['denominator'] },
+      { name: 'Page Load Time', props: ['h-sid','LoadTime (ms)'], purpose: 'Page load complete. Observed range: 2,300–3,600ms. Spike = performance regression on the landing page.' },
+      { name: 'Experience Card Visible', props: ['h-sid','Tour Group ID','Position'], purpose: 'Product cards scrolled into viewport — confirms user reached the product list. Drop = page not loading or users leaving before scrolling.' },
+      { name: 'Product Card Image Viewed', props: ['h-sid','Tour Group ID','Ranking'], purpose: 'Card image loaded and rendered. Use alongside Experience Card Visible to confirm visual content is rendering.' },
+      { name: 'gtm.scrollDepth', props: ['h-sid','gtm.scrollThreshold (10/25/40/50/75%)'], purpose: 'How far down the page the user scrolled. Five thresholds: 10/25/40/50/75%. Drop at a threshold = users not scrolling past that point — content below may be invisible to them.' },
+      { name: 'Microsite Page Section Viewed', props: ['h-sid','Section'], purpose: 'Content sections entered viewport (Trust Markers, Reviews, FAQ etc.). Drop in a section\'s rate = users not scrolling far enough to reach it.' },
+      { name: 'More Details Clicked', props: ['h-sid','Tour Group ID','Position','Action (Open/Close)'], purpose: 'User opened the inclusions drawer on a product card — strong engagement signal. Rise = users are researching before clicking through.' },
+      { name: 'More Details Viewed', props: ['h-sid','Tour Group ID','Position'], purpose: 'Drawer confirmed rendered. Pair with More Details Clicked to detect render failures.' },
+      { name: 'More Details Section Viewed', props: ['h-sid','Tour Group ID','Rank','Tab Name'], purpose: 'Which tab user read inside the drawer (Pinned Reviews, Inclusions, etc.). Tells you what information users are seeking before deciding.' },
+      { name: 'Page Section Viewed', props: ['h-sid','Tour Group ID','Section'], purpose: 'Content sections scrolled within the drawer (Aggregate Countries, Highlights, etc.).' },
+      { name: 'Review Card Clicked', props: ['h-sid','Tour Group ID','Section','Rating'], purpose: 'User expanded a full review — trust-seeking signal. Rise = users need more social proof before converting.' },
+      { name: 'Reviews Carousel Scrolled', props: ['h-sid','Tour Group ID','Section'], purpose: 'User browsed multiple reviews. Depth of trust-seeking behaviour.' },
+      { name: 'Image Gallery Opened', props: ['h-sid','Tour Group ID','Position'], purpose: 'User opened the photo gallery — strong purchase consideration signal. Drop = gallery feature broken or not visible.' },
+      { name: 'Image Viewed', props: ['h-sid','Tour Group ID','Ranking','Section'], purpose: 'Individual images viewed. Count per session = depth of visual engagement.' },
+      { name: 'More Details Swipesheet Closed', props: ['h-sid','Tour Group ID','action (Close Button / backdrop)'], purpose: 'Drawer closed. Sessions with this event but no subsequent click-through = "considered but didn\'t convert" cohort. action=backdrop vs Close Button tells you if user dismissed or explicitly closed.' },
+    ],
+    unstructured: [
+      { name: 'Locale Selector Clicked', props: ['h-sid','Page Type'], purpose: 'User opened locale selector — currency or language doesn\'t match their preference.' },
+      { name: 'Locale Popup Viewed', props: ['h-sid','Option Type (Language / Currency)'], purpose: 'Which tab they viewed — tells you if the mismatch is language or currency.' },
+      { name: 'Locale Option Selected', props: ['h-sid','Option Type','Option Name'], purpose: 'What they switched to (e.g. Currency: USD from EUR). Spike = currency mismatch in incoming traffic — often caused by geo-targeting misconfiguration.' },
+      { name: 'MB Currency Changed', props: ['h-sid','Currency'], purpose: 'Microbrand-specific currency switch confirmation.' },
+    ]
+  },
+  s2c: {
+    title: 'S2C Events',
+    icon: '📅',
+    subtitle: 'Select Page → Checkout',
+    structured: [
+      { name: 'Select Page Viewed', props: ['HSID','Tour Group ID','Language','Platform Name','Currency','Flow Type'], purpose: 'Page load — S2C denominator. Split by Flow Type (multi-tour etc.) as different flows have meaningfully different conversion rates.', badges: ['denominator'] },
+      { name: 'Page Load Time', props: ['HSID','LoadTime (ms)'], purpose: 'Select page load complete. Observed: 2,785–5,949ms. Spike = performance regression on the booking flow.', badges: ['dedup'] },
+      { name: 'Calendar Opened', props: ['HSID','Tour Group ID','Calendar Type'], purpose: 'User opened the date picker. Drop in rate = users not engaging with the date step at all — could indicate calendar not loading or date strip satisfying intent.' },
+      { name: 'Calendar Date Selected', props: ['HSID','Tour Group ID','Selected Date','Table Type'], purpose: 'User clicked a specific date inside the calendar — the intentional date selection signal. Cleaner than Experience Date Selected which also fires on auto-load.' },
+      { name: 'Calendar Closed', props: ['HSID','Tour Group ID','Calendar Type'], purpose: 'Calendar dismissed after date selection. Confirms date step completed.' },
+      { name: 'Experience Date Selected', props: ['HSID','Tour Group ID','Experience Date'], purpose: 'Date state pushed to page. Fires on both auto-load (URL param) and manual selection — Ranking and No of Tours are null in both cases. Keep alongside Calendar Date Selected; reconcile once LP-date-select flow is tested.' },
+      { name: 'Error Viewed', props: ['HSID','Error Message'], purpose: 'Validation error shown. Observed: "Please select a date to continue" fires when user attempts to proceed without a date. Spike = step sequence confusion or UX change.' },
+      { name: 'Tour Card Visible', props: ['HSID','Tour Group ID','Tour ID','Variant ID','Ranking','Inventory Type','Is BNPL','Is Cancellable','Cancellable Up To'], purpose: 'Variant cards rendered after date selection. Each fired event = one variant shown. Drop in a specific variant\'s rate = it was removed or became unavailable. Changes in Is BNPL, Is Cancellable, Inventory Type = product attribute changes that could drive S2C shifts.' },
+      { name: 'Variant Card Clicked', props: ['HSID','Tour ID','Variant ID','Ranking','Is Scarce','Is BNPL','Is Cancellable','Cancellable Up To','Inventory Type','Tour Entry Time'], purpose: 'User clicked Select on a variant. Tour Entry Time (Single Time vs Fixed Time) determines whether a time selection step follows — if a popular variant changes from Single to Fixed Time, users face an extra step that drives abandonment.' },
+      { name: 'Experience Tour Selected', props: ['HSID','Tour Group ID','Tour ID','Variant ID','Triggered By','MB Name','Seats Left'], purpose: 'Variant confirmed selected. Filter Triggered By = "User" to exclude system fires. Seats Left surfaces precise scarcity — combine with Is Scarce from Variant Card Clicked.' },
+      { name: 'Experience Time Dropdown Clicked', props: ['HSID','Tour Group ID','Tour ID','Flow Type'], purpose: 'User opened the time slot selector — only fires for Fixed Time variants. Drop in rate = users not completing the time step after selecting the variant.' },
+      { name: 'Experience Time Selected', props: ['HSID','Tour Group ID','Experience Time','Triggered By','Is Scarce','Ranking'], purpose: 'Time slot selected. First fire per session = user\'s choice; subsequent fires with Triggered By = "Automatic" are GTM multi-trigger artefacts — deduplicate on session. Is Scarce = true on the selected time = low inventory at that slot.', badges: ['dedup'] },
+      { name: 'Select Page CTA Clicked', props: ['HSID','label (Next)','Is Scarce','Is XTL','from'], purpose: 'S2C numerator — user clicked Next to proceed to checkout. "from" distinguishes entry points: "Tour Selection Bar" (bottom bar) vs "Booking Itinerary Card" (right panel). Is XTL = true marks cross-destination variants.', badges: ['numerator'] },
+      { name: 'gtm.scrollDepth', props: ['HSID','gtm.scrollThreshold (90% only)'], purpose: 'Scroll depth on select page. Only a single 90% threshold is configured here — "reached bottom" signal only, unlike LP\'s five thresholds.' },
+    ],
+    unstructured: [
+      { name: 'Select Page Section Viewed', props: ['HSID','Tour Group ID','Section','Ranking'], purpose: 'Content sections entered viewport (Highlights, Gallery, Need to know, Cancellation Policy, Ratings & Reviews). Drop in a section = users not scrolling far enough. Note: Gallery and Cancellation Policy appear with duplicate Rankings — GTM quirk, deduplicate.' },
+      { name: 'Experience Page Section Viewed', props: ['HSID','Tour Group ID','Section','Display Price'], purpose: 'Deeper content sections (Aggregate Countries etc.). Separate event from Select Page Section Viewed.' },
+      { name: 'Select Page CTA Clicked (non-Next)', props: ['HSID','label'], purpose: 'Content engagement clicks (e.g. "highlights read more", "faq read more"). Filter label != "Next" to distinguish from the S2C numerator.' },
+    ]
+  },
+  c2o: {
+    title: 'C2O Events',
+    icon: '💳',
+    subtitle: 'Checkout → Order',
+    structured: [
+      { name: 'Checkout Page Viewed', props: ['HSID','Tour Group ID','Is Group','Lead Time Days','Flow Type','Experience Name'], purpose: 'Page load — C2O denominator. Lead Time Days is critical: BNPL requires ≥4 days, scarcity messaging changes at low lead time. Segment by lead time bucket for availability-related hypotheses.', badges: ['denominator'] },
+      { name: 'Page Load Time', props: ['HSID','LoadTime (ms)'], purpose: 'Checkout page load complete. Observed: 5,532ms. Spike = performance regression on checkout.' },
+      { name: 'BNPL Status Toggled', props: ['HSID','Status (Available / Unavailable)','Is Lead Time Condition Met'], purpose: 'BNPL availability on checkout load. Status = Unavailable despite BNPL-eligible variant = lead time <4 days. If BNPL flips Available → Unavailable in post-period, users lose the deferred payment option — C2A drop. Fires 2–3 times per load (GTM race condition) — use the final fire after Checkout Started as authoritative.', badges: ['dedup'] },
+      { name: 'Payment Currency Changed', props: ['HSID','Original Price','Original Currency','New Price','New Currency'], purpose: 'Price auto-converted to user\'s local currency on load and on pax adjustment. Large shift (e.g. USD → EUR) = trust friction if the displayed price differs from what the user saw on the select page. Fires twice per trigger (GTM multi-trigger) — deduplicate on session.', badges: ['dedup'] },
+      { name: 'Checkout Started', props: ['HSID','Tour Group ID','Is Group','Lead Time Days','Is Hardcoded Combo Variant'], purpose: 'Checkout funnel confirmed started — fires after page load completes and payment SDKs are ready. Can fire more than once per session if user edits via pencil icon and returns — deduplicate by counting distinct sessions with at least one fire.', badges: ['dedup'] },
+      { name: 'Checkout Page Section Viewed', props: ['HSID','Section'], purpose: 'Checkout page sections visible to user (e.g. "BNPL Option Selection"). Drop in BNPL section view rate = BNPL option not rendering for eligible users.' },
+      { name: 'Experience Pax Updated', props: ['HSID','Tour Group ID','Flow Type','Is Group','Pax Type'], purpose: 'Pax count adjusted on the checkout page via +/- controls. Fires separately per pax type (ADULT, CHILD). Each fire triggers a price recalculation. Rise = users arriving at checkout with the wrong group composition — select page pax defaults may be misleading.' },
+      { name: 'Error Viewed', props: ['HSID','Error Message'], purpose: 'Validation error shown. Observed: "Only 1 ticket left" when pax adjustment exceeds inventory; "Error: please enter a valid full name" on incomplete form submission. GTM multi-trigger — deduplicate on session.' , badges: ['dedup'] },
+      { name: 'Itinerary Card Edit Button Clicked', props: ['HSID','Tour Group ID','Type'], purpose: 'User clicked pencil icon to edit their selection. Type = "Datetime" = editing time slot. Always fires immediately before Back Button Clicked On Checkout Page when pencil is used. Rise = users not satisfied with their selection after reaching checkout.' },
+      { name: 'Back Button Clicked On Checkout Page', props: ['HSID','Tour Group ID'], purpose: 'User navigated back from checkout. Fires for BOTH browser back button AND pencil icon edits. To isolate abandonment (back button only): filter sessions where Itinerary Card Edit Button Clicked did NOT precede it. Rise = checkout friction — combine with Lead Time Days, BNPL Status, and Error Viewed to diagnose.' },
+      { name: 'Checkout Customer Field Added', props: ['HSID','Field Name','Triggered By'], purpose: 'Form field completed by the user. Fires once per field on blur. Track completion rate per Field Name to find where the form loses users. For multi-pax bookings fires once per guest per field — use distinct sessions per Field Name, not raw count. Do not pull Field Value — contains PII (name, phone, email, DOB).' },
+      { name: 'Checkout Customer All Details Added', props: ['HSID','Tour Group ID','Flow Type','Cart Value','Is Primary Guest Only'], purpose: 'All required guest fields completed. Fires once per guest — deduplicate on session (GTM multi-trigger). Is Primary Guest Only: true = single guest booking. Drop in session rate = users abandoning before full form completion. Use alongside Checkout Customer Field Added to distinguish partial vs full completion.', badges: ['dedup'] },
+      { name: 'Checkout Payment Details Added', props: ['HSID','Tour Group ID','Flow Type','Cart Value','Payment Type','Selected Payment Time','Triggered By'], purpose: 'User engaged with a payment method. PayPal: fires on selection. Card: fires on valid card entry (invalid cards do not trigger it — SDK validates first). Payment Type = "CARD" or "PAYPAL_CHECKOUT". Selected Payment Time = "Pay now" or "BNPL". Re-fires on each payment config change — deduplicate by first fire per Payment Type per session.', badges: ['dedup'] },
+      { name: 'Confirm & Pay Clicked', props: ['HSID','Tour Group ID','Flow Type','Details Valid','User Subscribed'], purpose: 'User clicked the payment CTA. Details Valid: true = C2A numerator — valid attempt forwarded to payment gateway. Details Valid: false = incomplete form click, validation errors follow. Split by Details Valid to separate real attempts from friction clicks.', badges: ['c2a'] },
+      { name: 'Order Completed', props: ['HSID','Order ID','Order Value','Itinerary Id'], purpose: 'C2O numerator — fires on the confirmation page after successful payment. Order Value = cart value at time of purchase (0 for fully discounted orders).', badges: ['numerator'] },
+    ],
+    unstructured: [
+      { name: 'Tooltip Viewed', props: ['HSID','Tooltip Type'], purpose: 'User opened an informational tooltip. Tooltip Type: "billable currency" = checking the USD→EUR conversion. Spike = currency display creating confusion at checkout.' },
+      { name: 'BNPL Option Selected', props: ['HSID','Option'], purpose: 'User explicitly toggled payment timing. Option: "BNPL" or "Pay Now". Distinct from BNPL Status Toggled (load-time availability) — this only fires on explicit user action.' },
+      { name: 'Payment Option Selected', props: ['HSID','Payment Type','Payment Gateway Type','Payment Gateway','Ranking'], purpose: 'Payment gateway confirmed active. Ranking: 1 = card, 2 = PayPal. Changes in Payment Gateway across periods = infrastructure change (gateway migration) — relevant if C2A drops coincide.' },
+      { name: 'Listing Price Mismatch Found', props: ['HSID','Currency','Tour Group ID','Tour Id','Variant Id'], purpose: 'Fires when cart value doesn\'t match the expected listing price. A $0.01 discrepancy is a rounding artefact; a spike in session rate = a pricing bug creating trust friction at checkout.' },
+      { name: 'Save Card Checkbox Clicked', props: ['HSID','Action'], purpose: 'User clicked save card for future payments. Action: "Selected" or "Deselected". The sign-in dialog (Google/Apple) that follows has no GTM event. Drop = save card feature removed or sign-in flow broken.' },
+      { name: 'Checkout Have Promo Code Clicked', props: ['HSID','Tour Group ID','Flow Type'], purpose: 'User clicked the "Have a promo code?" link. Rise = price sensitivity or an active promo campaign driving coupon intent.' },
+      { name: 'Coupon Failed', props: ['HSID','Tour Group ID','Coupon Code','Flow Type','Error Code'], purpose: 'Coupon application failed. Error Code: "CAL-0408" = user not signed in; other codes = invalid or expired. Can fire multiple times per session. Rise = promo friction or a campaign sending traffic with broken codes.' },
+      { name: 'Coupon Applied', props: ['HSID','Tour Group ID','Coupon Code','Flow Type','Discount Value'], purpose: 'Coupon successfully applied. Discount Value = discount in cart currency. Spike in session rate = active promo campaign — flag when comparing C2O pre/post as coupon sessions have structurally higher conversion and can distort the comparison.' },
+    ]
+  }
+};
+
+const BADGE_LABELS = {
+  denominator: 'Denominator',
+  numerator:   'Numerator',
+  c2a:         'C2A Numerator',
+  dedup:       'Deduplicate'
+};
+
+function buildColumn(key, data) {
+  const col = document.getElementById(key);
+
+  // Header
+  const totalCount = data.structured.length + data.unstructured.length;
+  col.innerHTML = `
+    <div class="col-header">
+      <div class="col-header-left">
+        <div class="col-header-icon">${data.icon}</div>
+        <div>
+          <div class="col-header-title">${data.title}</div>
+        </div>
+      </div>
+      <div class="col-header-count">${totalCount} events</div>
+    </div>
+  `;
+
+  // Structured section
+  const sLabel = document.createElement('div');
+  sLabel.className = 'section-label';
+  sLabel.textContent = `Structured — ${data.structured.length} events · sequential`;
+  col.appendChild(sLabel);
+
+  data.structured.forEach((ev, i) => {
+    col.appendChild(buildCard(ev, i + 1, false));
+  });
+
+  // Unstructured section
+  const uLabel = document.createElement('div');
+  uLabel.className = 'section-label';
+  uLabel.textContent = `Unstructured — ${data.unstructured.length} events · any time`;
+  col.appendChild(uLabel);
+
+  data.unstructured.forEach(ev => {
+    col.appendChild(buildCard(ev, null, true));
+  });
+}
+
+function buildCard(ev, num, isUnstructured) {
+  const card = document.createElement('div');
+  card.className = 'event-card';
+
+  // Badges HTML
+  const badgesHtml = (ev.badges || []).map(b =>
+    `<span class="badge badge-${b}">${BADGE_LABELS[b]}</span>`
+  ).join('');
+
+  const numHtml = isUnstructured
+    ? `<div class="unstructured-dot">·</div>`
+    : `<div class="card-num">${num}</div>`;
+
+  const propsHtml = ev.props.map(p =>
+    `<span class="prop-chip">${p}</span>`
+  ).join('');
+
+  card.innerHTML = `
+    <div class="card-top">
+      ${numHtml}
+      <div class="card-name-wrap">
+        <div class="card-name">${ev.name}</div>
+        ${badgesHtml ? `<div class="card-badges">${badgesHtml}</div>` : ''}
+      </div>
+      <div class="expand-icon">▼</div>
+    </div>
+    <div class="card-props">${propsHtml}</div>
+    <div class="card-purpose">${ev.purpose}</div>
+  `;
+
+  card.addEventListener('click', () => {
+    card.classList.toggle('expanded');
+  });
+
+  return card;
+}
+
+// Render all columns
+Object.entries(DATA).forEach(([key, data]) => buildColumn(key, data));
+</script>
+</body>
+</html>

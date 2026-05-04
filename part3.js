@@ -1078,3 +1078,17 @@ function ChangelogExplorer() {
     </div>
   );
 }
+
+// ── EventsReference ───────────────────────────────────────────────────────────
+function EventsReference() {
+  return (
+    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      <iframe
+        src="events/events-reference.html"
+        title="Funnel Events Reference"
+        style={{ flex: 1, border: 'none', width: '100%', height: '100%' }}
+        sandbox="allow-scripts allow-same-origin"
+      />
+    </div>
+  );
+}
