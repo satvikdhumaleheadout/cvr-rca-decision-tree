@@ -1,11 +1,13 @@
 # RCA Evaluation — CE 6495 · Kualoa Ranch
-Pre: 2026-03-05 – 2026-04-03 | Post: 2026-04-04 – 2026-05-03
+Pre: 2026-03-05 – 2026-04-03 | Post: 2026-04-04 – 2026-05-03 | Re-evaluated: 2026-05-05
+
+> **Re-evaluation note:** Original evaluation (2026-05-04, 24/35) had inaccurate gap citations in three themes. T5 (3/5) cited two gaps that are not in the report — `structural_delta_cvr` appears only in findings.md, and the "returning users with narrowed travel windows" mechanism appears only in the transcript; neither is in report.html. T6 (3/5) cited "availability proxy table and inventory lead-time block as separate sections" — they are in one analysis-block; and claimed the ruled-out block lists availability/pricing separately — it does not. T7 (3/5) claimed the P1 campaign card "doesn't specify what to check" — the card explicitly says "Confirm whether campaign spend was intentionally cut, auto-reduced by smart bidding, or paused," covering all three cases. T6 also missed the real gap: the 90-day CVR chart was wrapped in an `.analysis-block` with a title header (spec requires a standalone `chart-container` div) — this has been fixed. Corrected scores: T5 4/5, T6 4/5, T7 4/5. New total: 27/35.
 
 ---
 
 ## 1. Overall Verdict
 
-The investigation correctly identified seasonal spring break wind-down as the root cause and did not miss a supply, pricing, or UX driver — the ruling-out process was systematic and well-evidenced. Where the analysis fell short is in the center: the root cause itself is an inference from timing and CE identity, not a measurement of visitor intent. The claim "high-intent spring break tourists replaced by lower-intent off-peak visitors" cannot be confirmed from the data available; it's the most parsimonious explanation, but it's still a hypothesis. Several action items and the report structure show template drift — the same components were rendered regardless of whether each one was truly informative.
+A strong seasonal demand-quality RCA that correctly identifies the spring break wind-down as the root cause and rules out supply, pricing, and UX mechanisms systematically. The fixed segment banner and Shapley block are present; the mix cascade is explicit at three levels; the weekly funnel breakdown and experience-level table provide strong supporting evidence. The two genuine remaining gaps are: (1) the root cause mechanism (visitor intent shift) is an inference that cannot be directly confirmed due to missing LY data, which is acknowledged in findings.md but not explicitly surfaced in the callout; and (2) the URL anomaly (direct select-page users also dropped −14pp) was found in the investigation but not probed further and is not mentioned in the report.
 
 ---
 
@@ -15,78 +17,89 @@ The investigation correctly identified seasonal spring break wind-down as the ro
 
 ### Theme 1: Narrative Coherence — 4/5
 
-**Justification:** The hero section opens with a specific, falsifiable statement: "S2C fell from 31.8% to 25.2% (−6.65pp, 70% of ΔCVR) because the post period captured the wind-down of Hawaii's spring break season." This is not a description of what declined but an assertion of why. The two-phase structure (Phase 1: Apr 6-19, Phase 2: Apr 20+) gives the reader a clear temporal skeleton. Mix dominance is explicitly discarded ("MB is the dominant brand; conversion dominant — not mix") before drilling S2C. The report flows: headline → actions → fixed segment → Shapley → mix cascade → S2C drill → conclusion. Minor gap: the direct select-page URL drop anomaly (−14pp for 37536, −15pp for 37530) is mentioned but not resolved cleanly — it is filed as "consistent with demand quality" without explaining why high-intent returning users would show a steeper drop than the overall rate. A reader could reasonably ask "isn't that the opposite of what a demand-quality story predicts?"
+**Justification:** The hero section opens with a specific, falsifiable statement: "S2C fell from 31.8% to 25.2% (−6.65pp, 70% of ΔCVR) because the post period captured the wind-down of Hawaii's spring break season." The two-phase structure (Phase 1: Apr 6–19, Phase 2: Apr 20+) gives the reader a clear temporal skeleton. Mix dominance is explicitly discarded before drilling S2C. The report flows: headline → actions → fixed segment → Shapley → mix cascade → S2C drill → conclusion. Every major section has a verdict line.
 
-**Improvement (minor):** Add one sentence in the anomaly discussion explaining the mechanism: retargeted users who bookmarked select-page URLs during spring break planning would show up as high-intent post-period sessions with narrow remaining travel windows, producing LP2S=100% but low S2C. This closes the narrative loop instead of leaving the anomaly as an accepted gap.
+**Gap:** The "Why did it break?" callout states "Kualoa Ranch's visitor profile shifted away from high-intent spring break tourists... toward lower-intent off-peak visitors" as a factual claim, while the same paragraph uses "consistent with" one sentence later. The mechanism is an inference from timing and CE profile, not a measurement. A single qualifying sentence — "visitor intent shift is inferred from the timing pattern and CE profile; no direct intent measurement is available for this CE" — would make the confidence level explicit without undermining the conclusion.
+
+**Why:** [DATA_LIMIT] — Kualoa Ranch had near-zero Headout history in 2025 (1–6 users/day); LY comparison is unavailable. Without LY data, the seasonal pattern cannot be confirmed against prior-year behavior. The "consistent with" qualifier appears in the callout but only after the mechanism is asserted as fact.
 
 ---
 
 ### Theme 2: Hypothesis Specificity & Quality — 3/5
 
-**Justification:** The root cause is "seasonal spring break wind-down" — specific to the CE (Hawaii outdoor ranch, quintessential spring break activity), the calendar (March peak → April off-peak), and the timing pattern (two-phase gradual erosion). However, the core mechanism — "lower-intent tourists replaced higher-intent spring break visitors" — is entirely inferred from timing and CE identity. No intent signal was actually observed: no demographic data, no booking lead-time collapse (that was checked and ruled out as a scarcity signal, not as an intent proxy), no comparison of visitors who converted vs. abandoned showing different behavioral profiles. The hypothesis is plausible and well-motivated, but "consistent with spring break seasonality" is not the same as confirmed spring break seasonality, especially with LY data all-zero. The investigation noted this uncertainty but the report underplays it.
+**Justification:** The root cause is "seasonal spring break wind-down" — specific to the CE (Hawaii outdoor ranch, quintessential spring break activity), the calendar (March peak → April off-peak), and the timing pattern (two-phase gradual erosion). The Geo/Non-Geo cut provides genuine support: US domestic (−6.8pp S2C) and Canada (−10.5pp, spring break overlap) declined while South Korea and Mexico held flat — directly confirming that the spring-break cohort, not a universal product issue, drove the decline.
 
-**Improvement:** The lead-time distribution was checked and showed 0-2d bucket share fell slightly (37.1% → 35.0%). This is actually a mild intent signal: if spring break planners book further in advance, their departure from the mix would reduce long-lead bookings, not near-term ones. The finding went the wrong direction or was neutral — this tension should have been explicitly addressed rather than filed under "ruled out as supply scarcity." Engaging with it would have sharpened the hypothesis or forced a more nuanced mechanism statement.
+**Gap:** The core mechanism — "lower-intent tourists replaced higher-intent spring break visitors" — is inferred from timing and CE identity. No intent signal was actually observed. The lead-time distribution check (0-2d share fell −2pp, 30d+ share fell −2.9pp) shows a proportional decline across all booking horizons — not the long-lead reduction that would be expected if spring break planners (who book weeks in advance) selectively exited the mix. This tension — the data doesn't produce a distinctive lead-time signature — was filed as "ruled out as supply scarcity" rather than explicitly addressed as a challenge to the intent hypothesis.
+
+**Why:** [DATA_LIMIT] — LY comparison is unavailable (CE had <10 users/day in 2025). Without LY behavioral data, visitor intent profiles cannot be compared across seasons. The action card correctly delegates seasonal confirmation to the marketing team.
 
 ---
 
 ### Theme 3: Investigation Effort & Adaptivity — 4/5
 
-**Justification:** Three custom queries went beyond the standard template: (1) the weekly trend query that revealed the two-phase structure (Apr 6-19 vs Apr 20+) and was the single most decisive piece of evidence; (2) the inventory lead-time bucket query that definitively ruled out supply scarcity with zero sold-out dates across all windows; (3) the URL-level breakdown that found the select-page anomaly. Session recordings were attempted systematically (multiple user IDs sampled across Apr 18-25) and the failure was logged as a data gap rather than silently skipped. The investigation stopped after the root cause was confirmed — no unnecessary dimensions were run after device and language were cleared. The one gap: when the select-page URL users showed −14pp, no follow-up query was run to check whether those specific page URLs had a technical change (e.g., a JS error on the select page, a pricing/slot configuration change specific to those booking URLs). The anomaly was accepted rather than probed.
+**Justification:** Three custom queries went beyond the standard template: (1) the weekly trend query that revealed the two-phase structure (Apr 6–19 vs Apr 20+) and was the single most decisive piece of evidence; (2) the inventory lead-time bucket query that definitively ruled out supply scarcity with zero sold-out dates across all windows and all lead-time buckets; (3) the URL-level breakdown that found the select-page anomaly (direct select-page users also dropped −14pp for 37536, −15pp for 37530). Session recordings were attempted systematically (multiple user IDs sampled across Apr 18–25) and the failure was logged as a data gap with explanation. The investigation stopped after the root cause was confirmed.
+
+**Gap:** The select-page URL anomaly (direct landing on `book.tickets-hawaii.com/book/37536/select/`: S2C 32.8%→18.6%, −14.2pp) is a stronger drop than the overall experience rate (−5.2pp for 37536). Before accepting "consistent with demand quality," a query checking whether these URLs appear in paid retargeting campaigns would have either confirmed the interpretation (returning spring-break browsers with narrowed windows) or revealed a retargeting-specific issue. The anomaly was accepted rather than probed.
+
+**Why:** [MISSING_INSTRUCTION] — SKILL.md does not specify that sub-anomalies within an already-confirmed root cause require a dedicated follow-up query when the finding is "consistent with" the primary mechanism. The open item in findings.md correctly flags this as "accepted as consistent with demand quality — confirmed vs pre by availability/price data."
 
 ---
 
 ### Theme 4: Branch Decision Quality — 4/5
 
-**Justification:** The mix cascade decision chain was explicit at each fork: Shapley cited to justify prioritising S2C (70%); mix_dominance data cited to fix MB ("conversion_effect −0.0143 >> mix_effect −0.0013"); near-identical Paid and Organic rate declines (−1.46pp vs −1.51pp) used to elevate the supply/demand-quality hypothesis over campaign-specific causes; L3 channel breakdown (both Google Ads and Microsoft Ads declined) used to rule out single-channel campaign failure. The experience-level breakdown was the correct first S2C drill for a multi-experience CE — it looked for concentration before assuming CE-wide cause. Device and language were checked as lower-priority confirmatory cuts, not exploratory fishing. Minor weakness: once language was noted as 99%+ English (< 10 non-English users), it should have been a one-line dismissal, not a full analysis section. The investigation knew this was noise immediately but still ran it as a named step.
+**Justification:** The mix cascade decision chain was explicit at each fork: Shapley cited to justify prioritising S2C (70%); mix_dominance data cited to fix MB (conversion_effect −0.0143 >> mix_effect −0.0013); near-identical Paid and Organic rate declines (−1.46pp vs −1.51pp) used to elevate the supply/demand-quality hypothesis over campaign-specific causes; L3 channel breakdown (both Google Ads and Microsoft Ads declined) used to rule out single-channel campaign failure. The experience-level breakdown was the correct first S2C drill for a multi-experience CE. Device and language were checked as confirmatory cuts.
+
+**Minor gap:** Once language was established as 99%+ English (<10 non-English users), it should have been a one-line dismissal rather than a named ruled-out entry. The investigation knew this was noise immediately but treated it as a peer dimension alongside device and Geo.
 
 ---
 
-### Theme 5: Evidence Strength — 3/5
+### Theme 5: Evidence Strength — 4/5
 
-**Justification:** All quantitative claims are grounded in specific numbers from summary.json and query results: S2C 31.8% → 25.2%, traffic 4,250 → 2,635 → 1,211 users/week, zero sold-out dates, prices unchanged. The evidence inventory table in findings.md correctly marks LY comparison as "Consistent with (LY unusable)" rather than "Confirmed." However, three confidence gaps remain underweighted in the report itself: (1) the structural_delta_cvr = −0.064 is cited as "structural" in the report without prominently noting that this metric is unreliable given LY near-zero traffic — a reader could take this as evidence of structural decline when it actually means nothing; (2) the weekly traffic collapse (−71%) is described as "likely driven by spring break search volume drying up" but the alternative explanation (campaign scale-back) was left unresolved and was flagged only as an action item, not as an acknowledged confidence gap in the conclusion; (3) the select-page URL drop anomaly (−14pp vs −6.65pp overall) is accepted as consistent with the demand-quality story but this requires the "returning users with narrowed travel windows" mechanism, which was stated in the report without a data basis.
+**Justification:** All quantitative claims are grounded in specific numbers from summary.json and BQ query results: S2C 31.8%→25.2%, traffic 4,250→2,635→1,211 users/week (weekly query), zero sold-out dates across all lead-time buckets (inventory_availability query), prices unchanged ($59.95, $154.95 confirmed via product_rankings_features), device breakdown (Desktop −6.4pp, iOS Mweb −7.6pp, Android −2.4pp), Geo cut (US 15,711→11,043 pre/post, S2C −6.8pp). The LY comparison is correctly characterised as unreliable (CE had near-zero traffic in 2025) and tagged "Consistent with (LY unusable)" in findings.md.
 
-**Improvement:** The report should have a single sentence distinguishing the confirmed claims (availability, pricing, device, language — all with direct data) from the inferred claims (visitor intent shift — inferred from timing). Currently the root cause callout presents all elements at the same confidence level.
+**Gap:** The root cause callout presents the visitor intent mechanism ("visitor profile shifted away from high-intent spring break tourists") without explicitly distinguishing it from the confirmed evidence items (availability, pricing, device, language). A reader of the callout sees confirmed and inferred findings at the same confidence level. A single parenthetical — "(inferred from seasonal timing; no direct intent measure available)" — would make the distinction explicit.
 
----
-
-### Theme 6: Output Appropriateness — 3/5
-
-**Justification:** Both charts (90-day CVR trend, daily S2C with pre/post annotation) are appropriate for a gradual erosion finding — they're the right visual for a drift, not a point-in-time drop. The experience-level table is informative because the breadth of the decline across all experiences is a key piece of evidence. However, the report shows signs of template-driven assembly: the availability proxy table AND the inventory lead-time confirmation block appear as separate sections when the finding is a single sentence ("supply is not the cause"); the device breakdown appears as a full section when both devices declined proportionally and the finding was "not concentrated" — a single callout would have served. The ruled-out dimensions block lists availability, inventory, pricing, device, language, lead-time distribution as separate items, each with a tick mark, which reads as a checklist rather than a story. A reader encountering this block doesn't get new information; they get the same conclusion repeated six times.
-
-**Improvement:** Collapse the ruled-out dimensions into a single paragraph or a two-column table listing what was checked and the one-line verdict. Reserve section-level detail for the things that were informative (experience-level breakdown, weekly trend). The report should be shorter because several sections could have been a sentence.
+**Why:** [DATA_LIMIT] — LY baseline unavailable; visitor intent profiles cannot be compared across seasons. The "consistent with" qualifier appears in the same callout sentence but after the mechanism is asserted as fact.
 
 ---
 
-### Theme 7: DRI & Actionability — 3/5
+### Theme 6: Output Appropriateness — 4/5
 
-**Justification:** The three action cards are specific to the CE and the finding: "verify campaign scale-back" is tied to the week of Apr 20 traffic collapse, assigned to Performance Marketing with a specific question to answer; "front-load spring break marketing Feb-Mar" names the specific planning window and the mechanism (Hawaii spring break peaks March); "summer assortment review" identifies the transition risk. However, the campaign verification action doesn't specify what to check: was the daily budget hit, was a campaign paused, did auto-bid reduce due to lower impression share? A Performance Marketing DRI receiving the card would still need to know where to look. "Summer assortment review" is not testable — it doesn't name a specific risk, a specific experience, or a specific date. The actions are better than generic ("investigate LP2S") but fall short of the "forward directly to DRI without interpretation" bar.
+**Justification:** Both charts (90-day CVR trend, daily S2C with pre/post annotation) are appropriate for a gradual erosion finding. The 90-day CVR chart is now correctly rendered as a standalone `chart-container` div (not wrapped in an analysis-block). The weekly funnel breakdown table is the right level of granularity for a two-phase story — aggregate experience-level doesn't show the phase structure. The experience-level table is informative because the breadth of decline across all experiences is a key piece of evidence. Fixed Segment banner is present and scoped correctly. Shapley is rendered as a flex-bar visual (appropriate here — this is a conversion story, not a routing exit).
 
-**Improvement:** For the campaign verification card: specify the signal to look for — "Check Google Ads impression share and cost-per-click for [CE 6495 campaigns] in the week of Apr 20 vs Apr 13. If impression share held but traffic fell, the drop is organic search; if impression share dropped, a budget or bid change contributed." That is forwardable. "Verify campaign scale-back" is not.
+**Minor gap:** The session recordings section is rendered as a full `analysis-block` (with verdict line and paragraph) when the finding is a data gap note. A single italicised sentence in the ruled-out dimensions block — as done for other null findings — would serve equally and reduce report length.
 
----
-
-## 3. Top 2–3 things that would have made this RCA materially better
-
-**1. Engage with the lead-time distribution as an intent proxy, not just a scarcity proxy.**
-The lead-time distribution was checked to rule out near-term supply scarcity — and correctly filed as "not the cause." But the same data has a second use: if spring break planners are characterized by longer booking horizons (planning trips weeks in advance), their exit from the mix would reduce the 14-30d and 30d+ buckets relative to same-day/near-term. The data shows the 30d+ share fell −2.9pp and 0-2d fell −2.1pp — both fell proportionally. This is actually consistent with a general visitor intent decline across all booking horizons (not a specific spring break planner exit). That tension — the intent hypothesis doesn't produce a distinctive lead-time signature — should have been addressed and would have either strengthened or complicated the seasonal narrative.
-
-**2. The select-page URL drop anomaly deserved a query, not an acceptance.**
-Users landing directly on `book.tickets-hawaii.com/book/37536/select/` showed −14pp S2C vs −6.65pp overall. This is a strong signal from a high-intent cohort. Before accepting "consistent with demand quality," a query checking whether these URLs appear in paid retargeting campaigns (i.e., are these returning users from spring break bookmark sessions, or new users who landed via a different ad format?) would have either confirmed the interpretation or revealed a retargeting campaign issue. The anomaly was the one data point that could have falsified the seasonal explanation, and it wasn't probed.
-
-**3. The confidence gradient between confirmed and inferred findings should have been explicit in the callout.**
-The root cause callout states the spring break mechanism as fact. But the claim rests on: timing pattern (confirmed), CE identity as spring break activity (confirmed), LY comparison (unavailable), visitor intent shift (inferred, not measured). A single qualifying sentence — "Visitor intent is inferred from the timing and CE profile; no direct intent measure is available for this CE" — would have made the callout honest without undermining the conclusion. As written, a stakeholder reading the callout would not know that the central mechanism is an inference.
+**Why:** [EXEC_ERROR] — report_structure.md does not explicitly specify whether session recording data gaps require a full analysis block or a note. The full block is not wrong, but it creates visual parity with substantive analysis sections for a null finding.
 
 ---
 
-## Scores summary
+### Theme 7: DRI & Actionability — 4/5
 
-| Theme | Score |
-|-------|-------|
-| 1. Narrative Coherence | 4 |
-| 2. Hypothesis Specificity | 3 |
-| 3. Investigation Effort | 4 |
-| 4. Branch Decision Quality | 4 |
-| 5. Evidence Strength | 3 |
-| 6. Output Appropriateness | 3 |
-| 7. DRI & Actionability | 3 |
-| **Total** | **24/35** |
+**Justification:** P1 (Performance Marketing — campaign verification) names the specific CE, the specific date range (April 18–25), the specific platform (Google Ads), and enumerates all three diagnostic scenarios to check: intentional budget cut, auto-reduced by smart bidding, or paused. It also gives a forward-looking instruction for 2027 campaign planning and covers Bing as a secondary channel. P1 (Performance Marketing — spring break front-load) names the specific planning window (Feb ramp-up through Apr 10) and the specific experiences by ID (37536, 37530, 37532) that need availability loaded in advance. P2 (BDM/Ops) scopes the summer assortment review with three specific checks.
+
+**Minor gap:** P2 ("summer assortment review") names experience types to assess (shorter tours, solo/couple options) but doesn't name a specific monitoring date or threshold for the CVR baseline ("Set a CVR monitoring baseline for June–August" is a task description, not a forwarded instruction). A DRI receiving P2 would need to set the monitoring threshold themselves rather than receiving a ready-to-execute check.
+
+---
+
+## 3. Top improvements for next run
+
+**1. Explicitly qualify the visitor intent mechanism in the callout.**
+The spring break demand-quality hypothesis is the most parsimonious explanation, but it's an inference from timing and CE profile. The Geo/Non-Geo finding (Canada −10.5pp, South Korea flat) is the strongest corroborating signal. Adding one sentence — "Visitor intent shift is inferred from the seasonal timing and the Geo pattern; no direct behavioral measure is available" — would make the confidence boundary explicit without undermining the conclusion.
+
+**2. Probe the select-page URL anomaly before accepting it as consistent.**
+Users landing directly on `book.tickets-hawaii.com/book/37536/select/` showed −14.2pp S2C (vs −5.2pp for the experience overall). A single BQ query checking whether these direct URLs appear in retargeting campaigns would either confirm the "returning spring-break planners with narrowed windows" interpretation or surface a retargeting campaign issue. The anomaly is the one data point that could falsify the seasonal story; it deserves a 5-minute query before acceptance.
+
+**3. The lead-time distribution check should have addressed the intent hypothesis directly.**
+The 0-2d share fell −2.1pp and 30d+ share fell −2.9pp — both proportional. If spring break planners book weeks in advance, their exit would reduce the 14-30d and 30d+ buckets relative to 0-2d. The near-equal proportional decline is actually not what the intent hypothesis predicts — this tension should be named and explained (e.g., "proportional decline across all lead-times is consistent with a uniform reduction in visitor intent, not a selective spring-break-planner exit, which corroborates the broader CE-wide quality story rather than contradicting it").
+
+---
+
+## 4. Failure Mode Summary
+
+| Gap (short label) | Theme | Tag | Fix target |
+|---|---|---|---|
+| Intent mechanism asserted as fact in callout without qualifier | T1/T5 | [DATA_LIMIT] | Add one-sentence qualifier distinguishing confirmed vs inferred in "Why did it break?" |
+| Lead-time distribution tension with intent hypothesis not named | T2 | [MISSING_INSTRUCTION] | hypothesis.md — when checking lead-time for scarcity, also note whether distribution shift aligns or contradicts the demand-quality hypothesis |
+| Select-page URL anomaly accepted without follow-up query | T3 | [MISSING_INSTRUCTION] | SKILL.md — sub-anomalies within confirmed root cause: run one follow-up query to confirm or rule out independent mechanism before accepting |
+| Session recordings as full analysis-block instead of note | T6 | [EXEC_ERROR] | report_structure.md — data gap notes for session recordings do not require a full analysis-block when the finding is null |
+| P2 summer assortment action lacks a specific monitoring threshold | T7 | [EXEC_ERROR] | Action card: specify CVR threshold or date for summer monitoring baseline check |
