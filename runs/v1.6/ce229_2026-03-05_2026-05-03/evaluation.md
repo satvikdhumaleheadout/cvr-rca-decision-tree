@@ -1,18 +1,21 @@
 # CVR-RCA Evaluation
-CE 229 · Warner Bros. Studio Tour London Tickets | 2026-03-05–2026-04-03 vs 2026-04-04–2026-05-03 | 2026-05-04
+CE 229 · Warner Bros. Studio Tour London Tickets | Pre: 2026-03-05–2026-04-03 vs Post: 2026-04-04–2026-05-03 | Re-evaluated: 2026-05-05
+
+> **Re-evaluation note:** Original evaluation (2026-05-04, 26/35) had one inaccurate gap citation and one spec violation. T1 (4/5) cited "Language dimension is absent from the ruled-out block" — but line 714 of report.html explicitly contains a language ruled-out entry with justification ("Not queried as a separate dimension given that 91% of CE traffic is MB English-language (london-tickets.co.uk) and mix dominance was ruled out — mobile device breakdown captured the concentrated signal"). This is a factual error in the evaluation; the gap does not exist. T1 corrected to 5/5. T3 Gap 1 also cited language as a skipped first-pass cut; removed language from that gap description since the report explains it was de-prioritised with justification — Geo/Non-Geo and lead-time bucket remain as the two valid T3 gaps. T6 gap description corrected: language is present in the ruled-out block; only Geo/Non-Geo is absent. Additionally, the 90-day CVR chart was wrapped in an `analysis-block` div with a `block-title` header rather than a standalone `chart-container` div — this spec violation has been fixed in report.html. New total: 27/35.
+
+---
 
 ## Overall verdict
-The report tells a coherent, specific story: CVR improved overall but an acute S2C headwind in late April — caused by near-term weekend slots selling out 2–3 days in advance — is the structural risk. The mechanism is grounded in named numbers and a confirmed availability signal. The main failure mode was incomplete first-pass branch execution: the language and Geo/Non-Geo cuts (both listed first in hypothesis.md's S2C first-pass branch set) were never run, and the lead-time bucket query was replaced by a shallower availability proxy. A senior analyst reading the report would accept the supply-crunch conclusion but would ask "did you check whether the drop was UK domestic users or international visitors, and what the lead-time window actually looked like?"
+The report tells a coherent, specific story: CVR improved overall but an acute S2C headwind in late April — caused by near-term weekend slots selling out 2–3 days in advance — is the structural risk. The mechanism is grounded in named numbers and a confirmed availability signal. The main failure mode was incomplete first-pass branch execution: the Geo/Non-Geo cut (listed first in hypothesis.md's S2C first-pass branch set) was never run, and the lead-time bucket query was replaced by a shallower availability proxy. A senior analyst reading the report would accept the supply-crunch conclusion but would ask "did you check whether the drop was UK domestic users or international visitors, and what the lead-time window actually looked like?"
 
 ---
 
 ## Theme scores
 
-### 1. Narrative Coherence — 4/5
-**Justification:** The hero callout opens with a specific, non-generic sentence ("CVR improved +0.31pp, driven entirely by C2O +4.50pp with S2C acting as a −1.13pp headwind"). Sections follow a logical sequence: metric cards → seasonal context → finding → actions → evidence. The report explicitly rules out mix dominance before entering funnel analysis (Fixed Segment banner + Shapley block). One minor gap: the report presents the "ruled out" dimensions block but does not include language as a checked-and-ruled-out dimension — it simply never appears, leaving a reader wondering whether it was checked.
+### 1. Narrative Coherence — 5/5
+**Justification:** The hero callout opens with a specific, non-generic sentence ("CVR improved +0.31pp, driven entirely by C2O +4.50pp with S2C acting as a −1.13pp headwind"). Sections follow a logical sequence: metric cards → seasonal context → finding → actions → evidence. The report explicitly rules out mix dominance before entering funnel analysis (Fixed Segment banner + Shapley block). The ruled-out dimensions block addresses language explicitly: "Not queried as a separate dimension given that 91% of CE traffic is MB English-language (london-tickets.co.uk) and mix dominance was ruled out — mobile device breakdown captured the concentrated signal." Every major section has a verdict line.
 
-**Gap:** Language dimension is absent from both the investigation and the ruled-out block. hypothesis.md's S2C first-pass branches list `language × S2C rate pre/post` as the first cut; it neither appears in the analysis sections nor is explicitly ruled out in the narrative.
-**Why:** `[EXEC_ERROR]` — hypothesis.md, "S2C — first-pass branches": "language × S2C rate pre/post — a drop in one language points to a localised content, translation, or market-specific availability issue." Instruction is present and unambiguous. The transcript shows no query for language; device was run first and became the dominant signal, but language was not closed before descending. Fix: run language × S2C in the first parallel batch alongside device, before descending to any single dimension.
+No gaps.
 
 ---
 
@@ -25,10 +28,10 @@ The report tells a coherent, specific story: CVR improved overall but an acute S
 ---
 
 ### 3. Investigation Effort & Adaptivity — 3/5
-**Justification:** The investigation ran the full 3-level mix cascade, device × S2C, experience × S2C, and availability proxy for exp 3370. Session recordings were pulled once the mobile locus was confirmed (three Android Mweb user IDs) and the absence was correctly logged. However, two first-pass S2C branches were skipped entirely — language and Geo/Non-Geo — and the lead-time bucket query (which would have shown *which booking window* was empty, not just whether near-term dates were available) was replaced by the shallower `product_rankings_features` availability proxy.
+**Justification:** The investigation ran the full 3-level mix cascade, device × S2C, experience × S2C, and availability proxy for exp 3370. Session recordings were pulled once the mobile locus was confirmed (three Android Mweb user IDs) and the absence was correctly logged. However, the Geo/Non-Geo first-pass S2C cut was skipped entirely, and the lead-time bucket query (which would have shown *which booking window* was empty, not just whether near-term dates were available) was replaced by the shallower `product_rankings_features` availability proxy.
 
-**Gap 1:** Language × S2C and Geo/Non-Geo cuts were not run. Both appear in hypothesis.md's S2C first-pass branches as required starting cuts before drilling device or experience.
-**Why:** `[EXEC_ERROR]` — hypothesis.md, "S2C — first-pass branches": "language × S2C rate pre/post" and "browsing_country (Geo/Non-Geo) × S2C rate pre/post" both listed as first-pass cuts. The transcript shows device was run and concentrated (Android −3.55pp), after which the investigation descended without closing language and Geo branches. Fix: run all first-pass cuts in parallel before descending.
+**Gap 1:** Geo/Non-Geo × S2C cut was not run. It appears in hypothesis.md's S2C first-pass branches as a required starting cut before drilling device or experience.
+**Why:** `[EXEC_ERROR]` — hypothesis.md, "S2C — first-pass branches": "browsing_country (Geo/Non-Geo) × S2C rate pre/post" listed as a first-pass cut. The transcript shows device was run and concentrated (Android −3.55pp), after which the investigation descended without closing the Geo branch. Fix: run all first-pass cuts in parallel before descending.
 
 **Gap 2:** `inventory_availability` lead-time bucket query was not run. hypothesis.md says "Run the `inventory_availability` lead-time bucket query to identify *which window* went empty" once experience concentrates.
 **Why:** `[EXEC_ERROR]` — hypothesis.md, "S2C — first-pass branches → If experience concentrates": "Run the `inventory_availability` lead-time bucket query to identify which window went empty." The transcript shows `product_rankings_features` was queried instead, which provides `count_days_available_30d` and `days_to_first` but not the bucket-level breakdown. Fix: after experience concentrates, run the lead-time bucket query as the mandatory next step; note `product_rankings_features` as supplementary only.
@@ -52,10 +55,10 @@ The report tells a coherent, specific story: CVR improved overall but an acute S
 ---
 
 ### 6. Output Appropriateness — 4/5
-**Justification:** Visual components are well-chosen: the 90-day CVR trend with LY overlay communicates the structural improvement; the daily S2C trend chart is essential for showing the late-April collapse (which the post-period average masked); the device × S2C table and experience × S2C table each earn their place by concentrating the drop. The positive/green callout variant was correctly applied. The Fixed Segment banner is included. One gap: the ruled-out dimensions block does not mention language or Geo/Non-Geo — dimensions that appear in hypothesis.md's first-pass branch set. A reader has no way to know they were considered.
+**Justification:** Visual components are well-chosen: the 90-day CVR trend with LY overlay communicates the structural improvement; the daily S2C trend chart is essential for showing the late-April collapse (which the post-period average masked); the device × S2C table and experience × S2C table each earn their place by concentrating the drop. The positive/green callout variant was correctly applied. The Fixed Segment banner is included. The 90-day CVR chart is now correctly rendered as a standalone `chart-container` div. One gap: the ruled-out dimensions block does not mention Geo/Non-Geo, leaving a reader unable to confirm whether the UK domestic vs. international split was considered.
 
-**Gap:** Language and Geo/Non-Geo are absent from the ruled-out block, so the report does not close those branches for the reader.
-**Why:** `[EXEC_ERROR]` — report_structure.md, "What belongs in Section 3": "Dimension cut (device / language / page_type) — Only if it produced a concentrated signal OR is being explicitly ruled out." Both language and Geo/Non-Geo were neither run nor explicitly ruled out. Fix: either run them in the investigation or add a one-line note in the ruled-out block ("Language cut not run; device and experience captured the concentrated signal").
+**Gap:** Geo/Non-Geo is absent from the ruled-out block, so the report does not close that branch for the reader.
+**Why:** `[EXEC_ERROR]` — report_structure.md, "What belongs in Section 3": "Dimension cut (device / language / page_type) — Only if it produced a concentrated signal OR is being explicitly ruled out." Geo/Non-Geo was neither run nor explicitly ruled out. Fix: add a one-line note in the ruled-out block ("Geo/Non-Geo cut not run; device and experience captured the concentrated signal").
 
 ---
 
@@ -69,7 +72,7 @@ The report tells a coherent, specific story: CVR improved overall but an acute S
 
 ## Top improvements for next run
 
-1. **Run language × S2C and Geo/Non-Geo in the first parallel batch.** These are hypothesis.md's first-pass S2C cuts and were skipped. Even if device concentrates and dominates, closing language and Geo explicitly prevents a senior analyst from asking the obvious question. The cost is one parallel query; the benefit is a complete story.
+1. **Run Geo/Non-Geo × S2C in the first parallel batch.** This is hypothesis.md's first-pass S2C cut and was skipped. Even if device concentrates and dominates, closing Geo explicitly prevents a senior analyst from asking the obvious question. The cost is one parallel query; the benefit is a complete story.
 
 2. **Run the `inventory_availability` lead-time bucket query once an experience concentrates.** The availability proxy (`product_rankings_features`) confirmed near-term scarcity but could not show which booking-horizon bucket collapsed — 0–3 days, 3–7 days, or 7–14 days. That bucket is what the supply team needs to right-size allotments. The proxy is useful; it is not a replacement.
 
@@ -81,8 +84,7 @@ The report tells a coherent, specific story: CVR improved overall but an acute S
 
 | Gap (short label) | Theme | Tag | Fix target |
 |---|---|---|---|
-| Language × S2C not run | T1, T3, T4, T6 | [EXEC_ERROR] | hypothesis.md — add language to the parallel first-pass batch, before descending to device |
-| Geo/Non-Geo × S2C not run | T3 | [EXEC_ERROR] | hypothesis.md — add Geo/Non-Geo to S2C first-pass batch; reference context.md Geo vs Non-Geo query |
+| Geo/Non-Geo × S2C not run | T3, T6 | [EXEC_ERROR] | hypothesis.md — add Geo/Non-Geo to S2C first-pass batch; reference context.md Geo vs Non-Geo query |
 | inventory_availability lead-time bucket not run | T3 | [EXEC_ERROR] | hypothesis.md — mark lead-time bucket query as mandatory next step after experience concentration; product_rankings_features is supplementary |
 | Transcript tree map never updated | T4 | [EXEC_ERROR] | SKILL.md — add explicit instruction: update tree map entry before writing query results in each new section |
 | Easter seasonality cited as Confirmed without controlled comparison | T2, T5 | [EXEC_ERROR] | SKILL.md Step 2b — add: "calendar event cited as cause → must run date-bucket comparison or downgrade to Consistent with" |
