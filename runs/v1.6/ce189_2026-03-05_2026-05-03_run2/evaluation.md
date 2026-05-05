@@ -1,102 +1,93 @@
-# CVR-RCA Evaluation — CE 189 Vatican Museums
-Run: 2026-03-05 to 2026-05-03 (pre) / 2026-04-04 to 2026-05-03 (post)
-Evaluated: 2026-05-04
+# CVR-RCA Evaluation
+CE 189 · Vatican Museums | Pre: 2026-03-05 to 2026-04-03 vs Post: 2026-04-04 to 2026-05-03 | Re-evaluated: 2026-05-05
+
+> **Re-evaluation note:** The original evaluation (2026-05-04, 25/35) was inaccurate on Themes 4 and 5. It cited three T5 gaps (missing user counts in lead-time and device C2O tables; approximate experience user counts) and a T4 gap (fixed segment declared Google Ads but queries ran at Paid level without justification) — all of which were already resolved in this run2 report. The original evaluator appears to have read run1 characteristics into the run2 folder without verifying the actual HTML. This re-evaluation is grounded in a direct read of report.html, transcript.md, and the current v1.6 skill files.
 
 ---
 
 ## 1. Overall Verdict
 
-This RCA correctly identified the dual-driver mechanism (S2C capacity pressure + C2O device-specific failures), ran a thorough investigation with appropriate custom queries, and produced a well-structured report with no boilerplate sections. The root cause is specific and actionable. The main failure is execution fidelity to the output spec: the transcript contained confirmed numbers (exact experience user counts, per-bucket user counts for lead-time, pre/post C2A/A2O rates per device, exact prices) that either didn't enter the report or entered as approximations. The report also declared a fixed segment (Google Ads) but ran all L2 queries at the Paid level — an inconsistency that was not resolved or called out. Theme 5 (Evidence Strength) is the primary failure, driven by multiple tables that violated the mandatory user-count requirement of report_structure.md.
+This is a strong dual-driver RCA that correctly identifies two distinct mechanisms (S2C supply exhaustion + device-specific C2O failure), confirms the primary mechanism with specific availability data (exp 6732: 5.1 fewer available dates, 0 remaining slots Apr 6–24), and produces highly actionable DRI cards with confirmed price figures. The fixed segment is properly declared with an equivalence note, user counts are present in all major tables, and the iOS C2A hypothesis is committed to the confirmed price data ($79.88→$85.76, +7.4%). The main remaining gaps are: the callout body mentions C2O secondary where the spec expects primary-only, the C2O sub-decomp table omits user counts, Level 3 of the cascade is not rendered as a table, and Experience 9379 availability was not independently confirmed despite its −6.7pp S2C drop.
 
 ---
 
 ## 2. Theme Scores
 
-### Theme 1: Narrative Coherence — Score: 4
+### 1. Narrative Coherence — 4/5
 
-**Justification:** The report tells a clean story: mix ruled out at three levels → supply constraint confirmed CE-wide → C2O decomposes into two device-specific failure modes → calendar distortion explains LY comparison. Every section earns its place and the ruled-out block correctly collects the null findings. The callout "What broke?" is specific and quantified ("S2C fell from 28.5% to 25.8% (−2.63pp, 64% of ΔCVR Shapley) across all three main Vatican experiences").
+**Justification:** The report tells a clean dual-driver story: mix ruled out at three levels → S2C supply constraint confirmed CE-wide (experience, device, language, country all proportional) → C2O decomposes into two device-specific modes (iOS C2A vs Android A2O). Every section earns its place. Verdict lines open every analysis block with a finding, not a description. The ruled-out block correctly collects null findings (language, device at S2C level, Geo/Non-Geo, LP2S, session recordings).
 
-**Gap:** The callout "What broke?" sentence names both S2C and C2O in the same answer, blurring the primary/secondary distinction. The spec says "If multiple root causes confirmed: callout names the primary driver. Secondary findings get action cards." C2O's presence in the root cause callout — and in an equally developed "Why did it break?" explanation — makes it harder to read at a glance which driver is the P1 story.
+**Gap:** The "What broke?" callout answer mentions C2O secondary alongside S2C primary: "S2C fell from 28.5% to 25.8% (−2.63pp) across all three main Vatican experiences. A secondary C2O failure (40% Shapley) is addressed in the action cards below." report_structure.md Section 1c states "If multiple root causes confirmed: callout names the primary driver. Secondary findings get action cards in Section 2." Even a brief parenthetical mention in the callout body pre-empts the clean primary-only framing.
 
-**Why:** [AMBIGUOUS_INSTRUCTION] — report_structure.md section "1c. Root cause callout": "If multiple root causes confirmed: callout names the primary driver. Secondary findings get action cards in Section 2." The instruction does not explicitly prohibit mentioning the secondary driver in the callout body text — only that the *naming* should emphasise the primary. Fix: add "do not name the secondary driver in the callout body — mention its Shapley weight only as a parenthetical in the 'What broke?' answer, then delegate all secondary detail to the action card."
-
----
-
-### Theme 2: Hypothesis Specificity & Quality — Score: 4
-
-**Justification:** The root cause names specific products (6732, 9379), a specific mechanism (fixed timed-entry capacity vs demand growth), specific magnitudes (−5.1 available dates/month, −6.0pp same-day CVR), and a specific device-level split (iOS C2A vs Android A2O). The investigation correctly distinguished the supply-side S2C hypothesis from the UX hypothesis by confirming CE-wide proportional drops across all devices and languages.
-
-**Gap:** The iOS C2A mechanism presents two hypotheses — "price shock" and "iOS checkout friction" — without committing to either, even though the investigation confirmed the price increase ($79.88→$85.76 for exp 7998, +7.4%) that directly supports the price shock hypothesis. The transcript (L2b) has this data. The report action card says "audit whether the Apr price increase on Experience 7998 is surfacing" as a task for the DRI, when the investigation already verified the price change occurred. The callout says "key products saw price increases" without citing the confirmed number.
-
-**Why:** [EXEC_ERROR] — SKILL.md Step 2b: "Any recommendation you plan to make → did you actually verify the claim that justifies it, or are you passing an unverified hypothesis to the DRI?" The investigation *did* verify the price increase (transcript L2b, availability proxy query). The confirmed number ($79.88→$85.76, +$5.88, +7.4%) should have entered the report as confirmed evidence and sharpened the hypothesis to "consistent with the confirmed +7.4% price increase on Experience 7998" rather than leaving both mechanisms open. Fix: write the iOS C2A hypothesis as "consistent with the confirmed price increase on exp 7998 ($85.76 vs $79.88)" in both the callout and the action card.
+**Why:** [AMBIGUOUS_INSTRUCTION] — report_structure.md Section 1c: "If multiple root causes confirmed: callout names the primary driver. Secondary findings get action cards in Section 2." The instruction does not explicitly prohibit a single-sentence redirect in the callout body ("addressed in action cards below"), only that the secondary should not be the named root cause. The boundary between "naming" and "redirecting" is unspecified. Fix: clarify in report_structure.md that the callout body should contain only the primary driver mechanism; the secondary driver should not appear until Section 2 — not even as a redirect pointer.
 
 ---
 
-### Theme 3: Investigation Effort & Adaptivity — Score: 4
+### 2. Hypothesis Specificity & Quality — 4/5
 
-**Justification:** Custom queries were written for availability proxy (product_rankings_features), lead-time CVR distribution (inventory_availability + funnel join with user counts per bucket), device × C2A/A2O breakdown, and experience-level S2C for 7 experiences. Session recordings were attempted and the absence correctly noted. The investigation stopped when evidence was conclusive — no unnecessary analyses were run.
+**Justification:** The root cause names specific products (6732, 7998, 9379), a specific mechanism (fixed Vatican timed-entry capacity vs +13% spring demand surge), specific magnitudes (−5.1 available dates/month, −6.0pp same-day CVR, 0 remaining slots Apr 6–24), and a specific device-level split. The iOS C2A hypothesis is now committed to the confirmed price data: the callout says "consistent with the confirmed price increase on Experience 7998 ($79.88→$85.76, +7.4%) surfacing at variant selection," and the action card cites the exact figures as the trigger for the DRI audit.
 
-**Gap:** Experience 9379 (Papal Apartments) showed the sharpest S2C drop in the CE (−6.7pp), but availability was only checked for experience 6732. Given the magnitude of 9379's drop, a separate availability query for its tour IDs would have confirmed whether it has an independent capacity constraint. Acknowledged as OI-4 in findings.md but not resolved.
+**Gap:** The Android A2O hypothesis (live inventory race condition) is presented at the same narrative level as the iOS price-shock hypothesis, despite having a different evidence tier. iOS C2A has a confirmed cause (price increase from confirmed BQ query); Android A2O has only an inferred mechanism. The callout and action card treat them as parallel findings when one is confirmed-data-supported and one is "consistent with" an unconfirmed race condition mechanism.
 
-**Why:** [MISSING_INSTRUCTION] — Searched SKILL.md, hypothesis.md, context.md, report_structure.md — no instruction found specifying that the experience with the largest S2C rate drop should receive a dedicated availability check even when a CE-wide mechanism is already confirmed. The investigation correctly identified 6732 as the dominant-volume product and stopped there. Fix: add guidance to hypothesis.md "S2C First-Pass Branches" section: "if one experience shows >2× the average S2C drop by rate, run a separate availability check for that experience even when the CE-wide mechanism is confirmed — it may have an independent constraint layered on top."
-
----
-
-### Theme 4: Branch Decision Quality — Score: 3
-
-**Justification:** Mix-vs-conversion was explicit and cited actual data (is_dominant=FALSE, conversion_effect >> mix_effect at MB/HO, Paid/Organic, and channel levels). Primary segment MB called out with reason. The dimension cuts chosen (experience, availability, lead-time, device) were the right sequence for a supply-constraint hypothesis.
-
-**Gap:** The mix cascade concluded with a fixed segment of MB · Paid · Google Ads (transcript L1c). The report's fixed segment banner reads "MB · Paid (Google Ads dominant channel within Paid)" and all L2 funnel analysis tables were computed at the MB · Paid level, not filtered further to Google Ads. The report does not explain that Google Ads = 93% of Paid (112k/120k post users) — a claim that would justify treating Paid-level tables as effectively equivalent to Google Ads-level tables.
-
-**Why:** [EXEC_ERROR] — hypothesis.md "Mix Cascade" section and SKILL.md L1 section both state that the fixed segment from the cascade "is applied to all subsequent funnel analysis." The transcript shows L2 queries were run at "MB · Paid" scope despite the cascade concluding "Fixed: Google Ads." No justification was written for treating Paid-level as a proxy. Fix: either re-run L2 queries filtered to Google Ads (or note explicitly in the fixed segment banner that Google Ads = 93% of Paid, so Paid-level tables are equivalent within rounding).
+**Why:** [DATA_LIMIT] — SKILL.md "Session recordings": recordings unavailable for thevaticantickets.com in Mixpanel project 2657627; payment gateway error logs not in BQ. Without these, the live inventory race condition vs gateway failure cannot be distinguished. The "consistent with" qualifier is correctly used in the transcript and action card text. The callout's parallel phrasing is the only framing issue — the evidence tier is clearly distinguishable in the body text. No skill file fix needed; this is an inherent data limitation.
 
 ---
 
-### Theme 5: Evidence Strength — Score: 2
+### 3. Investigation Effort & Adaptivity — 4/5
 
-**Justification:** CVR, LP2S, S2C, C2O, Shapley numbers are all cited correctly from summary.json. Availability proxy (29.7→24.6 days for exp 6732) is confirmed. "Consistent with" language is appropriately applied to unconfirmed mechanisms. The calendar Easter distortion claim is well-evidenced by the LY overlay data.
+**Justification:** Custom queries were written for: experience-level S2C (7 experiences), availability proxy (all 5 main experiences), lead-time CVR distribution (6 buckets with user counts), device × C2A/A2O breakdown, language × S2C, and Geo/Non-Geo country cut (5 countries with geo_segment labels). Session recordings were attempted and the absence correctly logged per SKILL.md data-pull failure format ("No replays available for multiple sampled user IDs"). The investigation stopped when evidence was conclusive.
 
-**Gap 1 (Lead-time table missing user counts):** The lead-time table in the report shows only Pre/Post CVR rates per bucket with no user counts. The transcript (L2d) shows confirmed user counts: same-day 2,775/2,466, 1-2d 1,287/1,785, 3-6d 1,663/1,903, 7-13d 2,154/2,504, 14-29d 3,451/4,049, 30d+ 3,855/3,779. These were available and not used.
+**Gap:** Experience 9379 (Papal Apartments) showed the largest S2C rate drop in the CE (−6.7pp) but availability was confirmed in `inventory_availability` only for exp 6732. The availability proxy (product_rankings_features) shows 9379 lost 2.0 available days (26.9→24.9), and the transcript notes it "may have a separate capacity ceiling layered on top of CE-wide tightening." A dedicated `inventory_availability` lead-time bucket query for 9379's tour IDs would confirm or rule out this separate constraint — the investigation accepted the CE-wide 6732 confirmation without this check.
 
-**Why (Gap 1):** [EXEC_ERROR] — report_structure.md, "Table with highlight rows": "Raw user counts are mandatory in every table. Any table that shows rates, shares, or percentages must also show the raw user count." The instruction was present. The data was available in the transcript. It was not included. Fix: pass through confirmed user counts from BQ query into the lead-time table.
-
-**Gap 2 (Device C2O table missing pre/post rates and user counts):** The report's device C2O table shows only Δ rate and a text interpretation column — no Pre Rate, Post Rate, Pre Users, or Post Users. The transcript (L3) has complete data: iOS Mweb pre checkout 4,832/post 5,676, pre C2A 50.5%/post 47.2%, pre A2O 87.1%/post 84.9%, etc.
-
-**Why (Gap 2):** [EXEC_ERROR] — Same report_structure.md instruction: "Raw user counts are mandatory in every table." and "The minimum columns for a rate table are: Segment · Pre Users · Post Users · Pre Rate · Post Rate · Δ Rate." The instruction was present and the data was in the transcript. Fix: rebuild the C2O device table using full pre/post users and rates from the transcript L3 query results.
-
-**Gap 3 (Experience S2C table used approximations when exact numbers were available):** The experience table shows "~52,000" pre users and "~59,000" post for exp 6732. The transcript (L2a) shows exact figures: 47,683 pre / 59,027 post. Similarly, exp 7998 shows "~6,000" in the report but the transcript has 9,540 pre / 13,693 post; exp 9379 shows "~2,500" but transcript has 3,432 pre / 4,958 post.
-
-**Why (Gap 3):** [EXEC_ERROR] — SKILL.md Step 2b: "Every count or computed metric cited anywhere in findings.md — it must have a named Source in the Evidence inventory." The transcript contained confirmed numbers from BQ queries. Choosing to approximate rather than use confirmed figures introduced preventable inaccuracy. Fix: copy exact figures from the transcript L2a table into the report — do not approximate when exact values are available.
+**Why:** [MISSING_INSTRUCTION] — Searched SKILL.md, hypothesis.md, context.md, report_structure.md — no instruction found specifying that the experience with the largest S2C rate drop should receive a dedicated availability confirmation even when the CE-wide mechanism is already confirmed. Fix: add to hypothesis.md "S2C First-Pass Branches" section: "if one experience shows >2× the average CE S2C drop by rate, run a dedicated availability check for that experience even when the CE-wide mechanism is confirmed — it may have an independent constraint layered on top."
 
 ---
 
-### Theme 6: Output Appropriateness — Score: 4
+### 4. Branch Decision Quality — 4/5
 
-**Justification:** Visual choices are well-matched to the story: 90-day CVR trend with LY overlay makes the Easter 2025 distortion immediately visible; daily S2C/C2O trends illustrate the gradual onset; Shapley flex bar is appropriate (not a Plotly waterfall); mix cascade and dimension breakdowns use tables. The report is long (11 Section 3 blocks) but all blocks are earned.
+**Justification:** Mix-vs-conversion was explicit and quantified at all three levels: Level 1 conversion_effect −0.00582 >> mix_effect −0.00043; Level 2 conversion_effect −0.00359 >> mix_effect −0.00091; Level 3 confirmed both Google Ads (+21% traffic) and Microsoft Ads (+32% traffic) grew while CVR declined — conversion story at channel level. Fixed segment declared as MB · Paid · Google Ads with an explicit equivalence note: "Google Ads accounts for 93% of Paid traffic (112,128/120,911 post LP users) — Paid-level analysis below is equivalent to Google Ads within rounding." All L2 queries are filtered to MB · Paid as required. Geo/Non-Geo was run (L2e) and correctly ruled out with the US booking-lead-time explanation noted.
 
-**Gap:** The availability proxy table shows only exp 6732. The investigation confirmed availability data for all 5 main experiences (6732, 7998, 9379, 42091, 42093 — see transcript L2b). Showing all experiences would have: (a) provided CE-wide supply evidence in a single block rather than relying on the verbal "CE-wide" assertion, and (b) surfaced the 9379 availability data (26.9→24.9 days, −2.0d) that the investigation didn't follow up on.
+**Gap:** Level 3 of the mix cascade is not rendered as a table in the report. The Level 3 results (Google Ads 93,081→112,128 users; Microsoft Ads 6,646→8,783 users; both channels' CVR declined) appear only as a footnote in the Fixed Segment banner. The spec requires "Mix cascade (three levels) — Always" and the transcript has the Level 3 data from a confirmed BQ query.
 
-**Why:** [EXEC_ERROR] — report_structure.md, "Availability proxy table" entry in "What belongs in Section 3": "count_days_available_30d and days_to_first_available_date per experience." The instruction says "per experience" (plural). Showing only the dominant experience is a narrowing choice that was not justified. Fix: show all experiences for which availability was queried in the availability proxy table.
-
----
-
-### Theme 7: DRI & Actionability — Score: 4
-
-**Justification:** P1 action card (Supply/BDM) names specific experiences (6732, 9379), specific configuration checks (API cut-off period, release windows), a specific metric threshold (inventory alert at <20 days), and a specific concern about near-term slot exhaustion confirmed by the data. P2 (Product/Engineering + BDM) names distinct diagnostic paths for iOS and Android with specific data pulls to request.
-
-**Gap:** The iOS C2A action item says "audit whether the Apr price increase on Experience 7998 is surfacing" without citing the confirmed price change ($79.88→$85.76). Since the investigation verified this, the DRI card should cite the confirmed number — "Experience 7998 price increased from $79.88 to $85.76 (+$5.88/+7.4%) in the post period — audit whether this price level is surfacing at variant selection in the iOS checkout flow." Without the number, the DRI needs to re-look up what the DRI could have been told directly.
-
-**Why:** [EXEC_ERROR] — actions.md, Root Cause 1 (Pricing): "identify exact price gap from price_analysis." The exact price gap was confirmed in L2b (transcript: "$79.88 to $85.76"). It entered findings.md as "Consistent with" rather than "Confirmed" because price query results were labeled as "Consistent with" there (OI-1 in findings.md). But the transcript L2b table clearly shows confirmed pre/post prices from a BQ query. The downgrade to "Consistent with" in findings.md was wrong — these are confirmed query results. Fix: update findings.md OI-1 to "Confirmed" with source "transcript L2b, availability proxy query" and add the exact prices to the P2 action card.
+**Why:** [EXEC_ERROR] — report_structure.md "What belongs in Section 3": "Mix cascade (three levels) — Always — MB/HO → paid/organic → channel breakdown." Level 3 data was confirmed in transcript L1c. It was not rendered as a table despite the explicit "Always" instruction and available data. Fix: add a Level 3 analysis block between Level 2 and the Fixed Segment banner showing Google Ads vs Microsoft Ads pre/post users, CVR, and conversion_effect verdict, with a neutral verdict line confirming conversion at both channels.
 
 ---
 
-## 3. Top 3 things that would have made this RCA materially better
+### 5. Evidence Strength — 4/5
 
-**1. Use confirmed numbers from the transcript in all tables.** The transcript L2a, L2d (lead-time), and L3 tables contain exact pre/post user counts and rates that were computed from BQ queries during the investigation. The report used approximations for experience user counts and omitted user counts entirely from the lead-time and device C2O tables. These numbers were available — they just weren't passed through to the report. This is the single largest gap: it violates the mandatory user-count spec and makes it harder for a stakeholder to judge whether findings are substantial.
+**Justification:** All major claims are grounded in exact BQ query results: experience user counts are exact (47,683 pre / 59,027 post for exp 6732), lead-time table has confirmed Pre Users and Post Users (2,775/2,466 same-day, 1,287/1,785 for 1–2d, etc.), device C2O table has Pre Checkout and Post Checkout user counts alongside all pre/post rates. Availability proxy shows all 5 main experiences with exact prices. Confidence qualifiers are appropriately applied — "consistent with" for both C2O device mechanisms.
 
-**2. Commit to the price shock hypothesis using the confirmed price data.** Experience 7998's price increase ($79.88→$85.76, +7.4%) was confirmed by a BQ query in L2b. This evidence is strong enough to move from "consistent with price shock or checkout friction" to "consistent with the confirmed +7.4% price increase on Experience 7998 — price shock is the leading iOS C2A hypothesis." The action card should cite the specific price change, and the P2 DRI should be asked to check whether the $85.76 price point is causing abandonment at variant selection specifically.
+**Gap:** The standalone C2O sub-decomposition table (showing C2A and A2O rates only — Pre C2A 44.6%, Post 42.8%, Pre A2O 86.5%, Post A2O 84.7%) has no Pre Users or Post Users columns. report_structure.md c010 states: "Raw user counts are mandatory in every table. Any table that shows rates, shares, or percentages must also show the raw user count." Pre checkout users (4,832 + 6,875 + 3,166 = 14,873 pre; 5,676 + 7,657 + 3,375 = 16,708 post) are directly derivable from the device table already in the report.
 
-**3. Resolve the fixed segment inconsistency before writing the report.** The mix cascade concluded "Fixed: MB · Paid · Google Ads." The L2 investigation queries ran at "MB · Paid" scope. Before writing the report, either: (a) re-run the L2 tables filtered to Google Ads, or (b) add a sentence to the fixed segment banner explaining "Google Ads accounts for 93% of Paid traffic (112k/120k post LP users) — Paid-level analysis is equivalent to Google Ads within rounding." Without this note, the fixed segment banner makes a claim that the analysis doesn't support.
+**Why:** [EXEC_ERROR] — report_structure.md c010 (2026-04-28): "Raw user counts are mandatory in every table. Any table that shows rates, shares, or percentages must also show the raw user count." The instruction was present. The data was available from the device breakdown query already run. Fix: add Pre Checkout Users and Post Checkout Users columns to the C2O sub-decomp table, summed from the device table rows.
+
+---
+
+### 6. Output Appropriateness — 4/5
+
+**Justification:** Visual choices are well-matched to the story. The 90-day CVR trend with LY overlay makes the Easter 2025 distortion (Apr 20-26 LY near-zero CVR) directly visible. Daily S2C and C2O trend charts show gradual onset beginning in late March — consistent with the "seasonal / gradual" timing classification. The Shapley flex bar is appropriate for a conversion story (not a routing exit anti-pattern). The availability proxy covers all 5 main experiences, not just the dominant one. Report length (11 Section 3 blocks) is proportional to the dual-driver complexity.
+
+**Gap:** The 90-day CVR chart is wrapped in an `.analysis-block` div with a title header ("90-Day CVR Trend — Vatican Museums CE 189"). The spec (report_structure.md Section 1b) describes the chart as a standalone element placed "immediately after the metric cards, before the callout." Section 1's hard constraint is "only the metric cards, the 90-day chart, and the callout." Wrapping the chart in an analysis-block card gives it a Section 3 visual treatment — bordered white card with a bold title — when it should be a lightweight contextual baseline.
+
+**Why:** [EXEC_ERROR] — report_structure.md Section 1b: "Place this immediately after the metric cards, before the callout." The spec HTML examples for Section 1 do not wrap the chart in an analysis-block. The analysis-block style (border, background, block-title) is specified only for Section 3 components. Fix: remove the `.analysis-block` wrapper from the 90-day chart; render only a `<div id="trend-90day" class="chart-container">` in the section flow.
+
+---
+
+### 7. DRI & Actionability — 5/5
+
+**Justification:** P1 (Supply/BDM + Ops) names Experience 6732 specifically, cites confirmed dates (Apr 6–24, 0 remaining slots), sets a monitoring threshold (count_days_available_30d < 20 days), addresses Experience 9379 independently, and cites the confirmed same-day delta (−6.0pp, 49.2%→43.2%). P2 (Product/Engineering + BDM) separates iOS and Android into distinct action items with distinct diagnostics. The iOS action cites the confirmed price change ($79.88→$85.76, +$5.88, +7.4%) and specifies the exact diagnostic step (audit price surfacing at variant selection in iOS Mweb checkout). The Android action specifies pulling payment gateway error logs and adding a real-time availability check before payment submission. The BDM item asks for a price renegotiation assessment with the exact confirmed figures. A GM could forward either card directly to the named DRI without re-interpretation.
+
+No gaps.
+
+---
+
+## 3. Top improvements for next run
+
+**1. Add Level 3 cascade table.** The transcript has the Level 3 data (Google Ads 93k→112k +21%, CVR declined; Microsoft Ads 7k→9k +32%, CVR declined) confirming conversion at channel level. This should appear as a Level 3 analysis block before the Fixed Segment banner, not only as a footnote in the banner. Level 3 is the final decision step of the cascade and its data supports the conversion conclusion independently — it earns a table.
+
+**2. Add user counts to the C2O sub-decomposition table.** The standalone C2A/A2O table shows rates without user counts. The pre/post checkout user totals are already computed in the device breakdown table (sum: 14,873 pre / 16,708 post checkout users). Adding these to the sub-decomp table satisfies the mandatory spec and lets the reader judge scale without cross-referencing another table.
+
+**3. Run an independent availability check for Experience 9379.** Its −6.7pp S2C rate drop (the largest in the CE) and −2.0d availability decline suggest a separate capacity constraint layered on top of the CE-wide tightening. An `inventory_availability` lead-time bucket query for 9379's tour IDs would either confirm a separate constraint (supply team should audit 9379 independently of 6732) or show the same pattern (CE-wide story holds with higher confidence). Currently flagged in the P1 action card as a hypothesis without a confirmed data point.
 
 ---
 
@@ -104,12 +95,8 @@ This RCA correctly identified the dual-driver mechanism (S2C capacity pressure +
 
 | Gap (short label) | Theme | Tag | Fix target |
 |-------------------|-------|-----|------------|
-| Callout names both primary and secondary driver in "What broke?" | T1 | [AMBIGUOUS_INSTRUCTION] | report_structure.md — clarify that the callout body should contain only primary driver, secondary driver gets action card only |
-| iOS C2A mechanism uncommitted despite confirmed price data | T2, T7 | [EXEC_ERROR] | SKILL.md Step 2b — confirmed query results (L2b prices) must enter report; findings.md OI-1 price label was wrongly downgraded to "Consistent with" |
-| Experience 9379 availability not checked despite largest rate drop | T3 | [MISSING_INSTRUCTION] | hypothesis.md "S2C First-Pass Branches" — add: check availability separately for any experience with >2× average rate drop |
-| Fixed segment declared Google Ads but queries ran at Paid level | T4 | [EXEC_ERROR] | SKILL.md L1/hypothesis.md — fixed segment must be applied to all subsequent queries, or equivalence must be stated explicitly |
-| Lead-time table missing user counts | T5 | [EXEC_ERROR] | report_structure.md — mandatory user count spec; confirmed counts were in transcript L2d, not passed through |
-| Device C2O table missing pre/post rates and user counts | T5 | [EXEC_ERROR] | report_structure.md — mandatory user count spec; full data was in transcript L3, not passed through |
-| Experience S2C table used approximations when exact numbers were available | T5 | [EXEC_ERROR] | SKILL.md Step 2b — use confirmed BQ numbers, not estimates, when exact figures are in the transcript |
-| Availability proxy table shows only exp 6732 despite CE-wide data queried | T6 | [EXEC_ERROR] | report_structure.md — "availability proxy per experience"; show all experiences for which data was confirmed |
-| iOS C2A action card did not cite confirmed price change | T7 | [EXEC_ERROR] | actions.md Root Cause 1 — "identify exact price gap"; confirmed gap was in transcript L2b and should be in action card |
+| Callout body mentions secondary driver (C2O) | T1 | [AMBIGUOUS_INSTRUCTION] | report_structure.md Section 1c — clarify that no secondary driver should appear in callout body, even as a redirect pointer |
+| Exp 9379 availability not independently confirmed | T3 | [MISSING_INSTRUCTION] | hypothesis.md "S2C First-Pass Branches" — add: check availability separately for any experience with >2× average CE S2C rate drop |
+| Level 3 cascade missing from report tables | T4 | [EXEC_ERROR] | report_structure.md "Mix cascade (three levels) — Always"; Level 3 data available in transcript L1c, not rendered as table |
+| C2O sub-decomp table missing user counts | T5 | [EXEC_ERROR] | report_structure.md c010 mandatory user count rule; pre/post checkout user totals derivable from device table |
+| 90-day chart wrapped in analysis-block instead of bare chart-container | T6 | [EXEC_ERROR] | report_structure.md Section 1b — chart is a standalone div, not an analysis-block card with title header |

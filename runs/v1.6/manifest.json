@@ -25,9 +25,9 @@
       "pre_start": "2026-03-05",
       "post_end": "2026-05-03",
       "run_date": "2026-05-04",
-      "eval_score": 25,
+      "eval_score": 29,
       "eval_max": 35,
-      "root_cause": "Vatican Museums CVR fell −0.63pp (4.47%→3.84%) because peak spring demand (+13% traffic) exceeded fixed timed-entry slot supply — shrinking available booking dates by 5.1 per 30-day window — while a secondary checkout failure on iOS (C2A) and Android (A2O) added a compounding −40% Shapley contribution. Second run under v1.6 rubric: identified fixed segment inconsistency (cascade declared Google Ads but queries ran at Paid level) and missing user counts in lead-time and device C2O tables.",
+      "root_cause": "Vatican Museums CVR fell −0.63pp (4.47%→3.84%) because peak spring demand (+13% traffic) exceeded fixed timed-entry slot supply — shrinking available booking dates by 5.1 per 30-day window — while a secondary checkout failure on iOS (C2A, consistent with confirmed +7.4% price increase on exp 7998) and Android (A2O, consistent with live inventory race condition) added a compounding −40% Shapley contribution. Re-evaluated 2026-05-05: original 25/35 was wrong on T4 and T5 (those gaps were already resolved in run2 report); revised to 29/35.",
       "files": {
         "report": "runs/v1.6/ce189_2026-03-05_2026-05-03_run2/report.html",
         "transcript": "runs/v1.6/ce189_2026-03-05_2026-05-03_run2/transcript.md",
