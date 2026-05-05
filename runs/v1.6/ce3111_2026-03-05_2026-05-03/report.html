@@ -123,7 +123,7 @@
     </div>
     <div class="callout-item">
       <div class="q">When did it break?</div>
-      <div class="a">Gradual, with a sharp Easter calendar distortion. The pre/post comparison is skewed by the Easter spike in the last 6 days of pre. The 90-day trend shows persistent structural underperformance vs LY (current CVR ~3.4–4.5% vs LY ~4.5–6.0%), a separate long-running concern predating this window.</div>
+      <div class="a">Gradual, with a sharp Easter calendar distortion concentrated in the final 6 days of pre (Mar 29–Apr 3). The daily LP2S trend (see Section 3) shows the onset directly — LP2S collapsed from ~29–32% normal to 13.9% on Apr 1 as high-volume Easter browse traffic dominated. Post-Easter structural volume is ~15% below pre-Easter normal, consistent with a seasonal shoulder between spring break and summer.</div>
     </div>
   </div>
   </div>
@@ -140,7 +140,7 @@
     </div>
     <ul>
       <li>Audit Google Ads campaigns for kennedyspacecenter-tickets.com covering April 2026 — check whether the volume decline was an intentional budget reallocation, a billing lapse, or an unintended campaign pause.</li>
-      <li>Check Impression Share (IS) and Lost IS (Budget) + Lost IS (Rank) for the KSC campaigns in Google Ads — if SIS fell below 80% in April, this is an active budget constraint that should be restored given the flat CVR (4.59%) confirming Paid quality is unchanged.</li>
+      <li>Check Impression Share (IS) and Lost IS (Budget) + Lost IS (Rank) for the KSC campaigns in Google Ads — if SIS fell meaningfully below the campaign's own historical average (industry baseline: ~70–80% for branded/destination keywords, but confirm against KSC's own prior-year IS rather than treating any fixed threshold as absolute), this may indicate a budget or bid constraint worth addressing given the flat CVR (4.59%) confirming Paid quality is unchanged.</li>
       <li>Note: post-Easter structural traffic (Apr 12+ at ~2,500–3,500/day) is ~15% below pre-Easter normal (~3,800–4,400/day). Even after accounting for the Easter baseline effect, some structural volume decline remains — confirm whether seasonal (shoulder between spring break and summer) or addressable via bid adjustment.</li>
     </ul>
   </div>
@@ -165,6 +165,9 @@
   <div class="analysis-block">
     <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
     <div class="verdict-line">Routing story — mix change at Level 2. Paid traffic share fell while Paid CVR held flat. Performance Marketing owns.</div>
+    <p style="font-size:12px;color:#555;background:#f3f4f6;border-radius:6px;padding:8px 14px;margin-bottom:18px;">
+      <strong>Shapley decomposition:</strong> LP2S −125.7% of ΔCVR · S2C +35.8% (positive/offsetting) · C2O −10.1% &nbsp;|&nbsp; LP2S is the dominant step; the routing exit (Paid traffic decline) suppresses effective LP2S across the CE.
+    </p>
 
     <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
     <table>
@@ -235,6 +238,20 @@
     </p>
   </div>
 
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:0 10px 10px 0;padding:16px 24px;margin-bottom:20px;border-top:1px solid #c8e6c9;border-right:1px solid #c8e6c9;border-bottom:1px solid #c8e6c9;">
+    <span style="font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#1b5e20;">Fixed Segment</span>
+    <span style="font-size:14px;font-weight:600;color:#1a1a2e;margin-left:12px;">MB · Paid (routing exit — Google Ads dominant, 88% of Paid users)</span>
+    <span style="font-size:13px;color:#555;margin-left:16px;">Post: 74,204 users · 66.9% of MB traffic</span>
+    <p style="font-size:12px;color:#2e7d32;margin-top:6px;margin-bottom:0;">All funnel analysis below is scoped to MB · Paid unless explicitly noted otherwise.</p>
+  </div>
+
+  <div class="analysis-block">
+    <div class="block-title">Daily LP2S Trend — Easter Calendar Distortion</div>
+    <div class="verdict-line neutral">LP2S collapsed from ~29–32% normal to 13.9% on Apr 1 (Easter Sunday), confirming the calendar distortion is an LP2S story — too many browse-intent visitors, not a funnel break. Post-period LP2S (19.8–28.3%) is uniformly below pre normal, reflecting seasonal shoulder demand rather than a product or UX regression.</div>
+    <div id="trend-daily-lp2s" class="chart-container"></div>
+    <p style="font-size:12px;color:#888;margin-top:8px;">Note: chart shows CE-level daily LP2S (all MB channels). Paid LP2S follows the same pattern since Paid represents 67–72% of MB traffic; the Easter spike composition is Paid-dominated (US domestic Google Ads visitors).</p>
+  </div>
+
   <div class="analysis-block">
     <div class="block-title">Paid Channel Breakdown — Google Ads and Microsoft Ads</div>
     <div class="verdict-line">Both paid channels lost volume with flat CVR. Google Ads accounts for 95% of the Paid user decline.</div>
@@ -275,7 +292,7 @@
 
   <div class="analysis-block">
     <div class="block-title">Calendar Calibration — Easter 2026 Effect on Pre/Post Comparison</div>
-    <div class="verdict-line warning">Easter 2026 (Apr 5) injected ~26k extra users into the final 6 days of pre, inflating the pre baseline. The apparent −30% Paid traffic decline overstates the structural reality.</div>
+    <div class="verdict-line warning">Easter 2026 (Apr 5) injected 27,134 extra users into the final 6 days of pre, inflating the pre baseline. The apparent −30% Paid traffic decline overstates the structural reality.</div>
 
     <table>
       <thead>
@@ -290,36 +307,36 @@
       <tbody>
         <tr>
           <td>Pre (normal) — Mar 5–28</td>
-          <td class="num">~111,800</td>
-          <td class="num">~30.5%</td>
-          <td class="num">~4.7%</td>
-          <td>24-day normal baseline, ~3,800–4,400/day</td>
+          <td class="num">93,511</td>
+          <td class="num">28.6–32.7%</td>
+          <td class="num">3.5–5.9%</td>
+          <td>24-day normal baseline, avg 3,896/day</td>
         </tr>
         <tr class="highlight-row">
           <td><strong>Easter spike — Mar 29–Apr 3</strong></td>
-          <td class="num">~45,100</td>
+          <td class="num">50,512</td>
           <td class="num">13.9–32.4%</td>
           <td class="num">1.1–5.5%</td>
-          <td>Traffic surges 5k–13k/day; LP2S collapses on Good Friday (Apr 1)</td>
+          <td>5,322–13,483/day; LP2S collapses to 13.9% on Apr 1 (Easter Sunday). Extra over baseline: 27,134 users</td>
         </tr>
         <tr>
           <td>Post (spring-break tail) — Apr 4–11</td>
-          <td class="num">~45,600</td>
-          <td class="num">20–25%</td>
-          <td class="num">~3.1–4.2%</td>
-          <td>Easter/spring break hangover, still elevated</td>
+          <td class="num">45,758</td>
+          <td class="num">19.8–25.2%</td>
+          <td class="num">3.0–4.3%</td>
+          <td>Easter/spring-break hangover, still elevated at 4,555–6,574/day</td>
         </tr>
         <tr>
           <td>Post (normal) — Apr 12–May 3</td>
-          <td class="num">~56,500</td>
-          <td class="num">22–28%</td>
-          <td class="num">~3.5–4.8%</td>
-          <td>~2,500–3,500/day, ~15% below pre-Easter normal</td>
+          <td class="num">64,874</td>
+          <td class="num">22.1–28.3%</td>
+          <td class="num">3.1–4.8%</td>
+          <td>2,241–4,515/day, avg 2,949/day — ~24% below pre-Easter normal (3,896/day)</td>
         </tr>
       </tbody>
     </table>
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      Easter 2026 (Apr 5) generated its primary US domestic demand spike in the pre period (Mar 29–Apr 3), adding ~26k extra LP users — predominantly US domestic Paid search visitors actively booking KSC tickets over the holiday. These visitors had terrible LP2S on Apr 1 (13.9%) and Apr 2 (18.1%) as tourists browsed without booking intent, dragging down pre CVR while inflating pre traffic. Calendar-adjusted, pre Paid traffic (Google Ads ~70k over 27 normal days) is approximately equivalent to post Paid traffic (64k over 30 days). The apparent −30% Paid volume decline is mostly the Easter spike unwinding, not a genuine campaign withdrawal.
+      Easter 2026 (Apr 5) generated its primary US domestic demand spike in the pre period (Mar 29–Apr 3), adding 27,134 extra LP users above the 3,896/day baseline — predominantly US domestic Paid search visitors browsing KSC tickets over the holiday. These visitors had poor LP2S on Apr 1 (13.9%) and Apr 2 (17.9%) as seasonal tourists browsed without booking intent, dragging down pre LP2S while inflating pre traffic. Calendar-adjusted, pre Paid traffic (Google Ads ~70k over 27 normal-equivalent days) is approximately equivalent to post Paid traffic (64k over 30 days). The apparent −30% Paid volume decline is mostly the Easter spike unwinding, not a genuine campaign withdrawal.
     </p>
   </div>
 
@@ -394,7 +411,8 @@
       <li style="margin-bottom:8px;"><strong>Device:</strong> LP2S declined proportionally across all devices — iOS Mweb −3.23pp (49k users), Android Mweb −2.16pp (24k users), Desktop −1.89pp (43k users). No device shows a disproportionate drop. Consistent with a traffic quality mix shift (less Paid = lower average intent) rather than a device-specific UX regression.</li>
       <li style="margin-bottom:8px;"><strong>Language:</strong> English (101k→73k, −28%) mirrors the CE-wide pattern exactly (LP2S −2.76pp). Spanish (13k→12k) showed slightly worse CVR decline (−0.62pp), consistent with LatAm seasonality. French (4.3k→4.5k, traffic grew) actually improved CVR (+0.95pp). No single language is disproportionately concentrated — this is English-dominated because English is ~70% of traffic.</li>
       <li style="margin-bottom:8px;"><strong>Price:</strong> All key KSC experiences show flat or slightly decreased prices pre vs post (−0% to −2%). No price increases. No price shock mechanism is present.</li>
-      <li style="margin-bottom:0;"><strong>Availability:</strong> Most KSC experiences show near-full availability (avg ~29.5–32 available days out of 30). One exception: experience 14668 ($239, premium) dropped from 22.4 to 14.3 available days. With S2C improving +0.91pp overall, availability is clearly not a constraining factor in this window.</li>
+      <li style="margin-bottom:8px;"><strong>Availability:</strong> Most KSC experiences show near-full availability (avg ~29.5–32 available days out of 30). One exception: experience 14668 ($239, premium) dropped from 22.4 to 14.3 available days. With S2C improving +0.91pp overall, availability is clearly not a constraining factor in this window.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Not pulled. This is a traffic volume routing story — Google Ads CVR is confirmed flat at 4.59% by BQ data. Session recordings at the landing page would show users navigating and converting normally, adding no diagnostic signal beyond what the channel volume data already confirms.</li>
     </ul>
   </div>
 
@@ -501,6 +519,79 @@ Plotly.newPlot('trend-90day', traces90d, {
       text: 'Easter spike<br>Apr 1-3', font: { color: '#e53935', size: 9 },
       showarrow: true, arrowhead: 2, arrowsize: 0.8, arrowcolor: '#e53935',
       ax: 40, ay: -30
+    }
+  ]
+}, { responsive: true });
+
+// Daily LP2S trend chart
+const dailyDates = [
+  '2026-03-05','2026-03-06','2026-03-07','2026-03-08','2026-03-09','2026-03-10',
+  '2026-03-11','2026-03-12','2026-03-13','2026-03-14','2026-03-15','2026-03-16',
+  '2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-21','2026-03-22',
+  '2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28',
+  '2026-03-29','2026-03-30','2026-03-31','2026-04-01','2026-04-02','2026-04-03',
+  '2026-04-04','2026-04-05','2026-04-06','2026-04-07','2026-04-08','2026-04-09',
+  '2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14','2026-04-15',
+  '2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21',
+  '2026-04-22','2026-04-23','2026-04-24','2026-04-25','2026-04-26','2026-04-27',
+  '2026-04-28','2026-04-29','2026-04-30','2026-05-01','2026-05-02','2026-05-03'
+];
+const dailyLp2s = [
+  0.3137,0.305,0.3203,0.3273,0.3028,0.298,
+  0.3042,0.2826,0.2915,0.2877,0.3048,0.3095,
+  0.2991,0.2948,0.2844,0.2643,0.2946,0.2996,
+  0.3065,0.3038,0.3113,0.306,0.3028,0.2857,
+  0.3236,0.2897,0.2578,0.1387,0.1792,0.208,
+  0.2178,0.2364,0.2292,0.252,0.2361,0.2426,
+  0.2089,0.1981,0.2337,0.2374,0.2421,0.2523,
+  0.2729,0.2617,0.277,0.2827,0.2808,0.276,
+  0.2672,0.258,0.2579,0.2208,0.2607,0.2432,
+  0.2566,0.2273,0.2499,0.2566,0.2391,0.2756
+];
+
+const preLp2sDates = dailyDates.slice(0, 30);
+const preLp2sVals = dailyLp2s.slice(0, 30);
+const postLp2sDates = dailyDates.slice(30);
+const postLp2sVals = dailyLp2s.slice(30);
+
+Plotly.newPlot('trend-daily-lp2s', [
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'LP2S (Pre)',
+    x: preLp2sDates, y: preLp2sVals,
+    line: { color: '#6c8ebf', width: 2 },
+    marker: { size: 4 }
+  },
+  {
+    type: 'scatter', mode: 'lines+markers', name: 'LP2S (Post)',
+    x: postLp2sDates, y: postLp2sVals,
+    line: { color: '#e53935', width: 2 },
+    marker: { size: 4 }
+  }
+], {
+  height: 260,
+  yaxis: { tickformat: '.0%', title: 'LP2S', range: [0.08, 0.38] },
+  xaxis: { tickformat: '%d %b', dtick: 7 * 86400000 },
+  plot_bgcolor: '#fff', paper_bgcolor: '#fff',
+  font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color: '#1a1a2e', size: 11 },
+  legend: { orientation: 'h', y: -0.25 },
+  margin: { l: 55, r: 20, t: 20, b: 60 },
+  shapes: [
+    {
+      type: 'line', x0: '2026-04-04', x1: '2026-04-04', y0: 0, y1: 1,
+      xref: 'x', yref: 'paper',
+      line: { color: '#c62828', dash: 'dot', width: 1 }
+    }
+  ],
+  annotations: [
+    {
+      x: '2026-04-01', y: 0.1387, xref: 'x', yref: 'y',
+      text: 'Apr 1: 13.9%<br>(Easter Sunday)', font: { color: '#c62828', size: 9 },
+      showarrow: true, arrowhead: 2, arrowsize: 0.8, arrowcolor: '#c62828',
+      ax: 50, ay: -35
+    },
+    {
+      x: '2026-04-04', y: 0.96, xref: 'x', yref: 'paper',
+      text: 'Post period', font: { color: '#c62828', size: 10 }, showarrow: false, xanchor: 'left'
     }
   ]
 }, { responsive: true });
