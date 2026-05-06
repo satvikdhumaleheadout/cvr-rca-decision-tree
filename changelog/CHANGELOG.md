@@ -246,4 +246,60 @@ Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured
 
 ---
 
+## [v1.7] — 2026-05-06 — Inventory analysis overhaul (TID-level queries, Path A/B, supply gate)
+
+**Summary:** The S2C inventory analysis methodology was comprehensively rewritten. The old `count_days_available_30d` proxy from `product_rankings_features` is removed entirely; all inventory investigation now uses direct TID-level queries against `inventory_availability`. Two query bugs were fixed first (CE-wide scope; sold-out overcounting). The rewrite introduces a structured 3-step path: locus identification via `lost_checkouts_delta`, a TID snapshot table (Step 2), and a daily time-series (Step 3). A Path A / Path B determination gate handles the 30-day rolling window limitation. A supply gate prevents unnecessary deep-dives when inventory is not depleted.
+
+### Changes by file
+
+**`references/context.md`** — c014 / c015
+
+- **c014 — Inventory query bug fixes:** Fixed two bugs in the existing lead-time bucket query. (1) CE-wide scope bug: the query fetched all `tour_id`s for the CE instead of filtering to the confirmed TGID (`experience_id = '<tgid>'`). (2) Sold-out overcounting: `COUNTIF(total_remaining = 0)` operated at TID × date grain — a date where one TID was sold out but others held capacity was incorrectly counted as zero-inventory. Fixed by adding a `tgid_daily_inventory` CTE that sums remaining across all TIDs per date before bucketing; a date is only zero-inventory when the sum across all TIDs is zero.
+- **c015 — Inventory analysis complete rewrite:** Removed `count_days_available_30d` as the inventory signal across the entire inventory section. Restructured as a **3-step path**:
+  - **Step 1 — Locus identification:** Compute `lost_checkouts_delta = users_select_post × (s2c_rate_pre − s2c_rate_post)` per TGID from Q4 results. Three cases: Case A (top TGID ≥60% of total delta → single locus), Case B (2–3 TGIDs each ≥10% → multiple loci, run Step 2 for each), Case C (no TGID ≥10% → uniform drop, broad-drop path: Step 2 for top 3 TGIDs by `users_select`).
+  - **Step 2 — TID snapshot:** Run against latest `extracted_date`. One row per TID. Ticket counts (sum of `total_remaining`) in four buckets: 0–2d, 3–7d, 8–13d, 14–30d. `is_fully_unlimited_capacity` flag identifies TIDs where `total_remaining = 1` is a system constant — these must be excluded from scarcity analysis.
+  - **Step 3 — Daily time-series:** `extracted_date` trend per bucket. Path B: pre+post overlaid. Path A: post only. Scope to single TID if one TID is the locus, or whole TGID if all TIDs depleted equally.
+  - **Path A vs Path B:** Determined by `pre_start >= CURRENT_DATE - 30`. Path B = full pre/post comparison available. Path A = pre-period outside 30-day window; post-only snapshot with explicit data-limitation note.
+  - **Supply gate:** If Step 2 shows no depletion across limited-capacity TIDs, do not run Step 3 — pivot to pricing or UX investigation instead.
+  - **Broad-drop path (Case C):** Run Step 2 for top 3 TGIDs by `users_select`. Same bucket depleted across all three → CE-wide supply constraint. All full → supply is not the mechanism.
+
+**`references/hypothesis.md`** — c016
+
+- All references to `count_days_available_30d` as the availability signal replaced with `inventory_availability` TID summary table (Step 2 results).
+- **Gradual S2C decline (Pattern 4):** `days_to_first_available_date` added as a fast directional check before running inventory queries — increasing trend confirms supply scarcity direction.
+- **CE-wide S2C drop (no concentration):** Updated to point to the broad-drop inventory path (top 3 TGIDs by volume, Step 2 for each).
+- **Vendor throttling pattern:** Signal updated from `count_days_available_30d` to `days_to_first_available_date` increasing + 0–2d bucket near zero in TID snapshot.
+- **S2C Tier 1 (experience concentrates):** Updated to reference `lost_checkouts_delta` locus computation → Case A/B/C → 3-step inventory path.
+
+**`references/actions.md`** — c017
+
+- RC2 (Inventory/availability constraint): removed `count_days_available_30d` reference; replaced with `inventory_availability` TID summary table (near-zero ticket counts in one or more lead-time buckets) as primary signal.
+
+**`references/report_structure.md`** — c018
+
+- Inventory section format renamed (from "Inventory lead-time bucket table format").
+- "What belongs in Section 3" table rows updated: "Availability proxy table" and "Inventory lead-time bucket table" replaced with "Inventory TID summary table" (Step 2) and "Inventory daily time-series charts" (Step 3).
+- **Supply gate outcome:** if Step 2 finds no depleted limited-capacity TIDs, write a ruled-out callout and skip the table/charts entirely.
+- **Path B spec:** one row per TID, Pre/Post column pairs per bucket, `Capacity type` column, `highlight-row` on TID rows where affected bucket pair shows material drop; unlimited-capacity TIDs excluded with subtext note.
+- **Path A spec:** post-only columns, amber note stating pre-period unavailability.
+- **Daily time-series spec:** four charts (one per bucket); Path B overlays pre/post; Path A post only.
+- HTML pattern replaced: old format (rows per bucket, aggregate columns) replaced with separate Path A and Path B patterns.
+
+**`references/q1_base.sql`** — c019
+
+- Removed `MAX(CASE WHEN page_type IN (...) THEN 1 ELSE 0 END) AS visited_lp` from SELECT (condition already in WHERE clause). Fixed `GROUP BY 1, 2, 3, 9` → `GROUP BY 1, 2, 3, 8` to reflect the column count change.
+
+**`references/worked_example.md`** — c020
+
+- Removed `count_days_available_30d` from the S2C locus identification section (Example 2). Added TID summary table query result showing `tickets_8_13d` and `tickets_14_30d` → 0 for all TIDs of TGID 8821, confirming the 8+ day window as the affected bucket.
+
+### Test runs
+
+Three new runs added (`v1.7`):
+- **ce6495_2026-03-05_2026-05-03_run3** (Kualoa Ranch) — 31/35. Third run on the same CE/window; methodological improvements over run2: Geo/Non-Geo first-pass S2C cut correctly executed, TGID-scoped TID snapshot with corrected COUNTIF, Path A correctly applied. Confirms spring break demand quality decline with supply definitively ruled out (TGID 37530 fully stocked across all buckets).
+- **ce234_2026-04-21_2026-05-04** (Empire State Building) — 27/35. Routing story: Google Ads traffic collapsed 58%, shifting paid/organic mix from 80/20 to 51/49. Product funnel intact (Google Ads CVR stable at 5.8%). Gaps: organic LP2S drop (26%→10%) not investigated, URL traffic comparison omitted, Level 2 cascade used all-traffic summary.json data instead of MB-filtered query.
+- **ce144_2026-04-08_2026-05-05** (Alcatraz Tours) — 32/35. CVR improvement case: +3.78pp above prior year driven by April 15 launch of exp 36426 ($47.95 ferry+audio) displacing $87.30 self-guided tour. S2C +7.0pp, C2A +9.9pp. International markets benefited most. Only residual gap: A2O −2.24pp from increased international visitor share.
+
+---
+
 *Each future entry in this changelog corresponds to one GitHub push. Format: `[vX.Y] — YYYY-MM-DD — Short title` followed by a summary of what changed and why.*

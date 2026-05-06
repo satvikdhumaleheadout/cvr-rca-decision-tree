@@ -798,7 +798,7 @@ const NODES = [
     inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "S2C" in significant_steps.',
-    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: language × S2C, device × S2C, experience × S2C + count_days_available_30d, browsing_country (Geo/Non-Geo) × S2C. For Geo/Non-Geo use the dedicated context.md query. Language/device concentrating → localised or UX issue; drill to intersection then page_url. Experience concentrating + availability drop → run inventory_availability lead-time bucket query. Geo drop → cross-cut with local language + experience_id; Non-Geo drop → check experience_id for international inventory gaps and language variants. Tier 2: if no concentration (CE-wide drop), check for platform-wide availability config change or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
+    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: language × S2C, device × S2C, experience × S2C, browsing_country (Geo/Non-Geo) × S2C. If experience concentrates: compute lost_checkouts_delta per TGID (users_select_post × Δs2c_rate) to identify locus — Case A (top TGID ≥60%), Case B (2–3 TGIDs ≥10% each), Case C (uniform drop). 3-step inventory path: Step 1 locus → Step 2 TID snapshot (Path A: pre >30d ago, post-only; Path B: pre within 30d, pre+post comparison) → Step 3 daily time-series (4 charts, one per bucket). Supply gate: if Step 2 shows no depleted limited-capacity TIDs, skip Step 3 and pivot to pricing/UX. Tier 2: if no concentration — check platform-wide availability config or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
   },
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
@@ -948,7 +948,7 @@ const NODES = [
     x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
-    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'mix/conv effect arithmetic', 'Geo vs Non-Geo query (c013)', 'canonical L2+ template', 'inventory_availability schema', 'PERF_MAX filter (c012)'],
+    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'mix/conv effect arithmetic', 'Geo vs Non-Geo query (c013)', 'canonical L2+ template', 'inventory 3-step path (c015)', 'Path A vs Path B', 'supply gate', 'PERF_MAX filter (c012)'],
   },
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
@@ -1285,15 +1285,27 @@ WHERE combined_entity_id = '<ce_id>'
 
 ---
 
-## inventory_availability Table (NEW in c004)
+## inventory_availability Table (c004, overhauled c015)
 
 \`analytics_reporting.inventory_availability\` — daily inventory snapshots. **30-day rolling window** (both \`experience_date\` and \`extracted_date\` within 30 days). For older periods use \`analytics_intermediate.inventory_changes\`.
 
-**Key columns:** \`tour_id\`, \`experience_date\`, \`extracted_date\`, \`total_remaining\`, \`count_time_slots\`
+**Key columns:** \`tour_id\`, \`experience_date\`, \`extracted_date\`, \`total_remaining\`, \`count_unlimited_time_slots\`, \`count_limited_time_slots\`
 
-**Bridge path:** \`dim_experiences\` has no \`tour_id\`; \`inventory_availability\` has no \`experience_id\`. Use \`dim_tours\` as two-hop bridge: \`dim_experiences → dim_tours → inventory_availability\`.
+**Bridge path:** \`dim_experiences → dim_tours → inventory_availability\` (two-hop; neither table has both \`experience_id\` and \`tour_id\`).
 
-Lead-time bucket query: bucket \`DATE_DIFF(experience_date, extracted_date, DAY)\` into 0-2d / 3-6d / 7-13d / 14-29d / 30d+. Compare \`count_dates_zero_inventory\` and \`avg_remaining\` per bucket across pre vs post.
+**Unlimited capacity note:** \`total_remaining = 1\` for unlimited-capacity TIDs — this is a system constant, not actual count. Zero reliably signals sold-out; non-zero from an unlimited TID does not mean scarce supply. Use \`is_fully_unlimited_capacity\` flag from Step 2 query to exclude these TIDs from scarcity analysis.
+
+**Path A vs Path B — determine before running any query:**
+- **Path B** (\`pre_start >= CURRENT_DATE - 30\`): pre-period rows available — run full pre/post comparison.
+- **Path A** (\`pre_start < CURRENT_DATE - 30\`): pre-period rows unavailable — post-only snapshot with explicit data-limitation note in report.
+
+**3-step inventory analysis (c015):**
+
+**Step 1 — Locus:** From Q4 results, compute \`lost_checkouts_delta = users_select_post × (s2c_pre − s2c_post)\` per TGID. Three cases: **Case A** (top TGID ≥60% → single locus), **Case B** (2–3 TGIDs ≥10% each → multiple loci, run Step 2 for each), **Case C** (no TGID ≥10% → uniform drop, broad-drop path: run Step 2 for top 3 TGIDs by \`users_select\`).
+
+**Step 2 — TID snapshot:** Latest \`extracted_date\` only. One row per TID. Ticket counts (sum of \`total_remaining\`) in four buckets: 0–2d, 3–7d, 8–13d, 14–30d. TIDs with \`is_fully_unlimited_capacity = TRUE\` excluded from supply scarcity analysis. **Supply gate:** if no limited-capacity TID shows depletion → supply is not the mechanism; pivot to pricing/UX.
+
+**Step 3 — Daily time-series:** \`extracted_date\` trend per bucket. Path B: pre+post overlaid. Path A: post only. Scope to single TID (if one TID is the locus) or whole TGID (if all TIDs depleted equally). Feeds four line charts in report.
 
 ---
 
@@ -1359,8 +1371,10 @@ Use \`COUNT(DISTINCT CASE WHEN ... END)\` not COUNTIF — the funnel table fans 
 | c004 | 2026-04-28 | inventory_availability + inventory_changes schemas; lead-time bucket query |
 | c006 | 2026-04-29 | Mix Cascade section added (3-level cascade, decision rule, fixed-segment declaration) |
 | c009 | 2026-04-29 | Investigation patterns moved to hypothesis.md |
-| c012 | 2026-05-04 | Fixed COUNTIF → COUNT(DISTINCT CASE WHEN) in cascade Level 2/3 and L2+ queries; added PERFORMANCE_MAX filter to Level 2/3 cascade queries; added mix_effect/conversion_effect arithmetic guide with worked example |
-| c013 | 2026-05-04 | Added Geo vs Non-Geo dimension: CE country pre-step, country-level query with top-5 CTE + home country always included, interpretation guide for Geo/Non-Geo signals |
+| c012 | 2026-05-04 | Fixed COUNTIF → COUNT(DISTINCT CASE WHEN) in cascade Level 2/3 and L2+ queries; added PERFORMANCE_MAX filter; added mix_effect/conversion_effect arithmetic guide |
+| c013 | 2026-05-04 | Added Geo vs Non-Geo dimension: CE country pre-step, country-level query, interpretation guide |
+| c014 | 2026-05-05 | Fixed inventory query: TGID scope bug (was CE-wide); fixed sold-out overcounting (tgid_daily_inventory CTE) |
+| c015 | 2026-05-06 | Inventory overhaul: removed count_days_available_30d proxy; 3-step path (locus → TID snapshot → time-series); Path A/B; supply gate; Case A/B/C locus logic; unlimited capacity guard |
 `,
 
 hypothesis: `# hypothesis.md — Central Branch Reference (v1.4, two-level)
@@ -1429,12 +1443,12 @@ If a dimension concentrates: run intersection (e.g., French × mobile), drill to
 **Tier 1 — Dimension cuts in parallel:**
 - \`language\` × S2C — single language → localised select-page issue
 - \`device_type\` × S2C — mobile → select-page UX/rendering
-- \`experience_id\` × S2C — specific experiences → supply/pricing. Confirm with \`count_days_available_30d\`; run \`inventory_availability\` lead-time bucket query.
+- \`experience_id\` × S2C — specific experiences → supply/pricing. If concentrates: compute \`lost_checkouts_delta\` per TGID → locus (Case A/B/C) → 3-step inventory path (context.md).
 - \`browsing_country\` (Geo/Non-Geo) × S2C — use dedicated context.md query. Geo S2C drop → local supply scarcity or pricing shock at variant selection; Non-Geo drop → language/UX friction or international inventory gaps.
 
 If language/device concentrates: drill to intersection, then \`page_url\`. If Geo concentrates: cross-cut with local language + experience_id. If Non-Geo concentrates: cross-cut with experience_id and language.
 
-If experience concentrates: demand-side (\`lead_time_days\`) + supply-side (\`inventory_availability\` bucket) — both shifting = supply-caused.
+If experience concentrates: compute \`lost_checkouts_delta\` per TGID, identify Case A/B/C locus, then run Step 2 TID snapshot. Supply gate applies: no depleted limited-capacity TIDs → pivot to pricing/UX, do not run Step 3.
 
 **Tier 2 — If no concentration:** Did checkout flow or variant selection UI change? Did availability drop uniformly (platform-wide config)?
 
@@ -1494,7 +1508,7 @@ Volume filter applies: long-tail URLs (small CE traffic share) produce high-vari
 ### Pattern 4: S2C — Gradual Decline
 1. Inventory thinning — SP progressively reducing slots or shortening booking window
 2. Variant complexity / decision paralysis (Vienna concerts: venue × composer × price combinations)
-3. Vendor throttling — SP quietly reduces slots; \`count_days_available_30d\` and \`days_to_first_available_date\` both worsen
+3. Vendor throttling — SP quietly reduces slots; \`days_to_first_available_date\` increasing + 0–2d bucket near zero in TID snapshot
 4. Seasonal availability pattern — compare to prior-year
 
 ### Pattern 5: C2O — C2A Drop

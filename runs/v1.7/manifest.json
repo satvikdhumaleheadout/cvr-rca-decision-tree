@@ -1,0 +1,52 @@
+{
+  "version": "v1.7",
+  "runs": [
+    {
+      "id": "ce6495_2026-03-05_2026-05-03_run3",
+      "ce_id": "6495",
+      "ce_name": "Kualoa Ranch",
+      "pre_start": "2026-03-05",
+      "post_end": "2026-05-03",
+      "run_date": "2026-05-06",
+      "eval_score": 31,
+      "eval_max": 35,
+      "root_cause": "S2C fell from 31.6% to 25.1% (−6.5pp, 70% of ΔCVR) — US domestic (−6.7pp, 15,711 pre select users) and Canadian (−10.6pp, 1,053 pre select users) visitors exited as North American schools returned in early April; non-spring-break international markets held flat. Supply definitively ruled out: TGID 37530 (Movie Sites) fully stocked across all lead-time buckets despite −9pp S2C drop; booking window distribution barely shifted (−2.2pp near-term). Run3 methodological improvements: Geo/Non-Geo first-pass S2C cut; TGID-scoped TID snapshot with corrected COUNTIF; Path A correctly applied (pre period >30 days ago).",
+      "files": {
+        "report": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/report.html",
+        "evaluation": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/evaluation.md"
+      }
+    },
+    {
+      "id": "ce234_2026-04-21_2026-05-04",
+      "ce_id": "234",
+      "ce_name": "Empire State Building",
+      "pre_start": "2026-04-21",
+      "post_end": "2026-05-04",
+      "run_date": "2026-05-06",
+      "eval_score": 27,
+      "eval_max": 35,
+      "root_cause": "CVR fell −2.07pp (4.65%→2.59%) because Google Ads traffic to newyorktickets.com/empire-state-building collapsed 58% (1,186→499 users), shifting the paid/organic mix from 80/20 to 51/49. Google Ads users have ~8× higher CVR than organic; the mix shift mechanically pushed blended CVR down. Product funnel was intact — Google Ads CVR held at 5.6–5.8%, S2C flat. Sharp break from April 26. A Google Ads budget reduction or campaign pause is the proximate cause.",
+      "files": {
+        "report": "runs/v1.7/ce234_2026-04-21_2026-05-04/report.html",
+        "transcript": "runs/v1.7/ce234_2026-04-21_2026-05-04/transcript.md",
+        "evaluation": "runs/v1.7/ce234_2026-04-21_2026-05-04/evaluation.md"
+      }
+    },
+    {
+      "id": "ce144_2026-04-08_2026-05-05",
+      "ce_id": "144",
+      "ce_name": "Alcatraz Tours",
+      "pre_start": "2026-04-08",
+      "post_end": "2026-05-05",
+      "run_date": "2026-05-06",
+      "eval_score": 32,
+      "eval_max": 35,
+      "root_cause": "CVR improved +3.78pp — S2C +7.0pp and C2O +7.5pp driven by the April 15 launch of exp 36426 (Alcatraz with Ferry & Audio Guide, $47.95) displacing the $87.30 Self-Guided Tour App as dominant listing. The 46% price reduction removed friction at variant selection (S2C) and checkout (C2A +9.9pp). International visitors benefited most: Canada +25pp, Australia +22pp, UK +8pp S2C. Only residual gap: A2O slipped −2.24pp, likely reflecting higher payment friction from the increased share of international visitors.",
+      "files": {
+        "report": "runs/v1.7/ce144_2026-04-08_2026-05-05/report.html",
+        "transcript": "runs/v1.7/ce144_2026-04-08_2026-05-05/transcript.md",
+        "evaluation": "runs/v1.7/ce144_2026-04-08_2026-05-05/evaluation.md"
+      }
+    }
+  ]
+}

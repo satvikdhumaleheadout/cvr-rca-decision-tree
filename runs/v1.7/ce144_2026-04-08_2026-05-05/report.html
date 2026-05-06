@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Alcatraz Tours (CE 144)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f6fa;
+      color: #1a1a2e;
+      line-height: 1.55;
+    }
+
+    header {
+      background: #1a1a2e;
+      color: #fff;
+      padding: 28px 40px 24px;
+    }
+    header .eyebrow {
+      font-size: 11px;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 6px;
+    }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+
+    .section-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin: 40px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #e0e4ef;
+    }
+
+    .metric-cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card {
+      background: #fff;
+      border-radius: 10px;
+      padding: 18px 16px 16px;
+      border: 1px solid #e8ebf4;
+    }
+    .metric-card .label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: #8892a4;
+      margin-bottom: 8px;
+    }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre  { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 12px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+    .delta-neg  { background: #fdecea; color: #c62828; }
+    .delta-pos  { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+
+    .callout {
+      background: #fff;
+      border-left: 4px solid #2e7d32;
+      border-radius: 0 10px 10px 0;
+      padding: 24px 28px;
+      margin-bottom: 8px;
+      border-top: 1px solid #e8ebf4;
+      border-right: 1px solid #e8ebf4;
+      border-bottom: 1px solid #e8ebf4;
+    }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #2e7d32; margin-bottom: 16px; letter-spacing: 0.2px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #8892a4;
+      margin-bottom: 4px;
+    }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+
+    .action-card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 16px;
+    }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 16px;
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .dri-badge {
+      background: #e8edf7;
+      color: #3a4a8a;
+      font-weight: 600;
+      font-size: 12px;
+      padding: 2px 9px;
+      border-radius: 8px;
+    }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+
+    .analysis-block {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e8ebf4;
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+
+    .verdict-line {
+      font-size: 14px;
+      font-weight: 600;
+      color: #c62828;
+      background: #fdecea;
+      border-radius: 6px;
+      padding: 8px 14px;
+      margin-bottom: 18px;
+    }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    .verdict-line.positive { color: #2e7d32; background: #e8f5e9; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.7px;
+      text-transform: uppercase;
+      color: #8892a4;
+      padding: 8px 12px;
+      border-bottom: 2px solid #e8ebf4;
+    }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #f0f7ff !important; }
+
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c  { background: #2e7d32; }
+    .shapley-c2o  { background: #d6a832; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+
+    .ruled-out { font-size: 13px; color: #777; font-style: italic; padding: 6px 0 0; }
+    .chart-container { margin-top: 16px; }
+
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Alcatraz Tours — CE 144</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-04-08–2026-04-21</span>
+    <span>📅 Post: 2026-04-22–2026-05-05</span>
+    <span>🌍 North America · United States</span>
+    <span>🔗 <a href="https://alcatraz-tours.san-francisco-tours.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">alcatraz-tours.san-francisco-tours.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ─── SECTION 1: EXECUTIVE SUMMARY ─── -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <!-- 1a. Metric cards -->
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values">
+        <span class="pre">2.99%</span>
+        <span class="post">5.06%</span>
+      </div>
+      <div class="delta delta-pos">Δ +2.07pp / +69.3%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values">
+        <span class="pre">33.2%</span>
+        <span class="post">36.3%</span>
+      </div>
+      <div class="delta delta-pos">Δ +3.04pp / +9.1%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values">
+        <span class="pre">22.9%</span>
+        <span class="post">29.9%</span>
+      </div>
+      <div class="delta delta-pos">Δ +6.96pp / +30.4%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values">
+        <span class="pre">39.3%</span>
+        <span class="post">46.7%</span>
+      </div>
+      <div class="delta delta-pos">Δ +7.47pp / +19.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP Traffic</div>
+      <div class="values">
+        <span class="pre">2,443</span>
+        <span class="post">2,252</span>
+      </div>
+      <div class="delta delta-neg">Δ −191 / −7.8%</div>
+    </div>
+  </div>
+
+  <!-- 1b. 90-day CVR trend chart -->
+  <div id="trend-90day" style="background:#fff;border-radius:10px;border:1px solid #e8ebf4;padding:20px 20px 8px;margin-bottom:20px;"></div>
+
+  <!-- 1c. Root cause callout (positive CVR) -->
+  <div class="callout">
+    <h2>CVR Improved — What's Driving It &amp; What's Holding It Back</h2>
+    <div class="callout-item">
+      <div class="q">What drove the improvement?</div>
+      <div class="a">S2C improved from 22.9% to 29.9% (+7.0pp, 50% of ΔCVR) and C2O from 39.3% to 46.7% (+7.5pp, 33% of ΔCVR), driven by the April 15 launch of exp 36426 "Alcatraz Tickets with Ferry Ride &amp; Audio Guide" at $47.95 — a $40 lower-priced alternative that displaced the $87.30 Self-Guided Tour App as the dominant Alcatraz listing. The lower price reduced friction at variant selection (S2C +7pp) and at checkout completion (C2A +9.9pp). International visitors benefited most: Canada +25pp, Australia +22pp, UK +8pp S2C — markets that had been deterred by the $87.30 price point. The structural CVR improvement is +3.78pp above last year's same-period performance, confirming this is a genuine product assortment gain.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">What's holding it back?</div>
+      <div class="a">Payment success (A2O) slipped from 88.0% to 85.7% (−2.24pp), slightly limiting the C2O gain. This likely reflects the shift toward more international visitors, who face marginally higher payment friction. All other funnel steps improved.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did improvement begin?</div>
+      <div class="a">Gradual step-up beginning April 22 (post-period start), one week after exp 36426 first appeared in the catalog on April 15. CVR remained elevated consistently across the full 14-day post window — this is a structural shift, not a one-day spike.</div>
+    </div>
+  </div>
+
+  <!-- ─── SECTION 2: ACTIONS ─── -->
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p1">P1</div>
+      <div class="cause">New lower-priced product (exp 36426, $47.95 Audio Guide) is the primary CVR driver — protect its assortment position through peak summer season.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Revenue Management</span>
+      <span>+ Catalog / Merchandising</span>
+    </div>
+    <ul>
+      <li>Confirm exp 36426 "Alcatraz Tickets with Ferry Ride &amp; Audio Guide" ($47.95) is pinned as the lead listing on the Alcatraz select page — do not let algorithmic ranking de-prioritise it as volume normalises.</li>
+      <li>Monitor weekly S2C for exp 36426 through May–August; if S2C drops below 22% (pre-period baseline of exp 31709), it signals assortment or supply issue that needs rapid diagnosis.</li>
+      <li>Verify supply continuity for TID 77352 — currently 9,669 / 17,214 / 21,865 / 62,461 tickets across lead-time buckets. Flag to supply team if any bucket falls below 2,000 tickets heading into Memorial Day weekend.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">CVR improved +2.07pp structurally — Google Ads bid targets are now calibrated to a 2.99% CVR baseline that is 69% below current reality.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Paid Marketing</span>
+      <span>+ Revenue Management</span>
+    </div>
+    <ul>
+      <li>Recalibrate Google Ads and Microsoft Ads target CPA / ROAS for Alcatraz to reflect the new CVR baseline of ~5.1% (vs the 3.0% that informed current bids) — underbidding at the old baseline leaves incremental traffic on the table.</li>
+      <li>Microsoft Ads showed nearly equivalent conversion uplift (+4.40pp on 587 users) and grew share from 26% to 36% of Paid — evaluate whether to increase Microsoft Ads budget allocation to capture the additional demand signal.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p3">P3</div>
+      <div class="cause">Exp 31709 "Alcatraz Island Tickets w/ Ferry &amp; Self-Guided Tour App" ($87.30) lost 69% of select-page volume (440→137 users) — assess whether to reposition or reprice.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Catalog / Merchandising</span>
+    </div>
+    <ul>
+      <li>Review exp 31709's strategic role: its S2C held flat at 18.98% (vs 19.55% pre) — the product still converts US domestic visitors who specifically want the app-guided tour format. It has not degraded; it has been out-trafficked.</li>
+      <li>Determine whether exp 31709 should be retained as a premium upsell alongside exp 36426 (price anchor strategy), repriced to close the gap, or repositioned as a niche tour-type rather than a lead offering.</li>
+      <li>Ensure exp 31709 supply (TID 66558: 41,958 / 69,930 / 83,916 / 237,762 tickets) is not being wasted on low-traffic position — if the product is retained, ensure the vendor allocation is right-sized for its new lower volume.</li>
+    </ul>
+  </div>
+
+  <!-- ─── SECTION 3: SUPPORTING ANALYSIS ─── -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <!-- Mix Cascade -->
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
+    <div class="verdict-line neutral">Conversion change at all levels — no routing story. Fixed segment: MB · Paid · Google Ads (1,037 post users, ~46% of CE post traffic).</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">2,260</td><td class="num">2,095</td>
+          <td class="num">90.7%</td><td class="num">90.9%</td>
+          <td class="num">3.14%</td><td class="num">5.49%</td>
+          <td class="num pos">+0.006pp</td><td class="num pos">+2.13pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>HO</td>
+          <td class="num">231</td><td class="num">209</td>
+          <td class="num">9.3%</td><td class="num">9.1%</td>
+          <td class="num">2.60%</td><td class="num">2.39%</td>
+          <td class="num neg">−0.005pp</td><td class="num neg">−0.020pp</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 2 — Paid vs Organic (within MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong></td>
+          <td class="num">1,886</td><td class="num">1,623</td>
+          <td class="num">83.5%</td><td class="num">77.5%</td>
+          <td class="num">3.23%</td><td class="num">6.41%</td>
+          <td class="num neg">−0.19pp</td><td class="num pos">+2.65pp</td>
+          <td>Fixed — conversion dominates</td>
+        </tr>
+        <tr>
+          <td>Organic</td>
+          <td class="num">374</td><td class="num">472</td>
+          <td class="num">16.6%</td><td class="num">22.5%</td>
+          <td class="num">2.67%</td><td class="num">2.33%</td>
+          <td class="num pos">+0.16pp</td><td class="num neg">−0.06pp</td>
+          <td>Mix dominant (grew share, lower CVR)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 3 — Channel breakdown within MB · Paid</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre Users</th><th class="num">Post Users</th>
+          <th class="num">Pre Share</th><th class="num">Post Share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix effect</th><th class="num">Conv. effect</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">1,395</td><td class="num">1,037</td>
+          <td class="num">73.7%</td><td class="num">63.9%</td>
+          <td class="num">3.51%</td><td class="num">6.17%</td>
+          <td class="num neg">−0.34pp</td><td class="num pos">+1.96pp</td>
+          <td>Fixed — largest post volume</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num">498</td><td class="num">587</td>
+          <td class="num">26.3%</td><td class="num">36.1%</td>
+          <td class="num">2.41%</td><td class="num">6.81%</td>
+          <td class="num pos">+0.24pp</td><td class="num pos">+1.16pp</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Conversion improved across all three cascade levels — this is not a routing story. Both Google Ads (+2.66pp) and Microsoft Ads (+4.40pp) show strong conversion improvement; neither channel is the sole driver (checkout impact: Google Ads 1,037 × 2.66% ≈ 27.6 units vs Microsoft Ads 587 × 4.40% ≈ 25.8 units). Google Ads is fixed as the segment due to largest post-period volume (1,037 users). All funnel analysis below is scoped to MB · Paid · Google Ads.
+    </p>
+  </div>
+
+  <!-- Fixed Segment Banner -->
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:10px 14px;margin-bottom:20px;font-size:13px;color:#1b5e20;">
+    <strong>Fixed segment for all funnel analysis:</strong> MB · Paid · Google Ads<br>
+    <span style="color:#555;font-size:12px;">
+      Post-period users: 1,037 &nbsp;|&nbsp; Share of CE post traffic: ~46%
+      &nbsp;|&nbsp; Checkout impact: +58 vs pre period (pre 49, post 107 — CE-level approximation)
+    </span>
+  </div>
+
+  <!-- Shapley -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line positive">S2C drives 50.2% of ΔCVR (+1.04pp); C2O contributes 33.1% (+0.69pp). LP2S is a supporting driver (16.7%).</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex: 16.7">LP2S 16.7%</div>
+      <div class="shapley-bar shapley-s2c"  style="flex: 50.2">S2C 50.2%</div>
+      <div class="shapley-bar shapley-c2o"  style="flex: 33.1">C2O 33.1%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S +0.35pp</span>
+      <span><span class="legend-dot" style="background:#2e7d32"></span>S2C +1.04pp</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O +0.69pp</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = +2.07pp. S2C (+1.04pp) and C2O (+0.69pp) together account for 83% of the improvement. LP2S also improved (+0.35pp), suggesting the new lower-priced product may have also reduced bounce on the landing page — but LP2S is not the primary focus.
+    </p>
+  </div>
+
+  <!-- Daily S2C Trend Chart -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C Trend — CE-level</div>
+    <div class="verdict-line positive">S2C elevated consistently across the entire post period. No single-day spike — a sustained structural improvement from April 22 onward.</div>
+    <div id="trend-s2c" class="chart-container"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      S2C stepped up from the first day of the post period (April 22) and remained above the pre-period range (~12–29%) for most of the post window. The pattern is consistent with a catalog change that took effect once exp 36426 gained prominence in the assortment. Note: chart uses CE-level daily S2C from pipeline data; fixed-segment (MB·Paid·Google Ads) aggregate rates are shown in the analysis blocks above.
+    </p>
+  </div>
+
+  <!-- Experience-level S2C breakdown -->
+  <div class="analysis-block">
+    <div class="block-title">Experience-level S2C breakdown — MB · Paid · Google Ads</div>
+    <div class="verdict-line">Exp 36426 ($47.95 Audio Guide) emerged from 7 to 255 select users with 29.0% S2C. Exp 31709 ($87.30 Tour App) lost 69% of its select-page volume (440→137 users) with S2C unchanged at 18.98%. The assortment shift — not a rate change in existing products — is the mechanism.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Experience</th>
+          <th>Price</th>
+          <th class="num">Pre Select</th>
+          <th class="num">Post Select</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+          <th>Note</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>36426 — Alcatraz Tickets w/ Ferry &amp; Audio Guide</strong></td>
+          <td>$47.95</td>
+          <td class="num">7</td>
+          <td class="num">255</td>
+          <td class="num">—</td>
+          <td class="num pos">29.02%</td>
+          <td class="num pos">Emerged</td>
+          <td>First listed Apr 15</td>
+        </tr>
+        <tr>
+          <td>31709 — Alcatraz Island Tickets w/ Ferry &amp; Self-Guided Tour App</td>
+          <td>$87.30</td>
+          <td class="num">440</td>
+          <td class="num">137</td>
+          <td class="num">19.55%</td>
+          <td class="num">18.98%</td>
+          <td class="num">−0.57pp</td>
+          <td>Volume collapsed −69%</td>
+        </tr>
+        <tr>
+          <td>43313 — Alcatraz Night Tour</td>
+          <td>$59.65</td>
+          <td class="num">14</td>
+          <td class="num">44</td>
+          <td class="num">—</td>
+          <td class="num pos">31.82%</td>
+          <td class="num pos">Emerged</td>
+          <td>First listed Apr 17</td>
+        </tr>
+        <tr>
+          <td>37030 — Combo: Alcatraz + Golden Gate Bay Cruise</td>
+          <td>$86.95</td>
+          <td class="num">93</td>
+          <td class="num">46</td>
+          <td class="num">18.28%</td>
+          <td class="num">17.39%</td>
+          <td class="num">−0.89pp</td>
+          <td>Volume fell with assortment shift</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Exp 36426 ($47.95) first appeared in product_rankings_features on April 15, 2026 — one week before the post period. By the post period it had accumulated 255 select-page users with a 29.0% S2C (vs 19.0% for the $87.30 dominant product). Exp 31709's S2C held flat at 18.98% — it did not degrade; it simply lost traffic to the newer, cheaper alternative. The mechanism is product substitution, not product failure.
+    </p>
+  </div>
+
+  <!-- Geo/Non-Geo S2C -->
+  <div class="analysis-block">
+    <div class="block-title">Geo / Non-Geo S2C — MB · Paid · Google Ads</div>
+    <div class="verdict-line">US domestic S2C held flat (−0.35pp). All major international markets improved substantially: Canada +25pp, Australia +22pp, UK +8pp. The improvement is concentrated in price-sensitive international visitors who respond to the lower-priced listing.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th class="num">Pre Select Users</th>
+          <th class="num">Post Select Users</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>United States</td>
+          <td class="num">562</td>
+          <td class="num">279</td>
+          <td class="num">23.74%</td>
+          <td class="num">23.39%</td>
+          <td class="num">−0.35pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Canada</strong></td>
+          <td class="num">86</td>
+          <td class="num">76</td>
+          <td class="num">13.89%</td>
+          <td class="num pos">38.89%</td>
+          <td class="num pos">+25.00pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Australia</strong></td>
+          <td class="num">78</td>
+          <td class="num">65</td>
+          <td class="num">27.78%</td>
+          <td class="num pos">50.00%</td>
+          <td class="num pos">+22.22pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>United Kingdom</strong></td>
+          <td class="num">84</td>
+          <td class="num">59</td>
+          <td class="num">19.35%</td>
+          <td class="num pos">27.27%</td>
+          <td class="num pos">+7.92pp</td>
+        </tr>
+        <tr>
+          <td>Poland</td>
+          <td class="num">51</td>
+          <td class="num">35</td>
+          <td class="num">35.00%</td>
+          <td class="num neg">11.11%</td>
+          <td class="num neg">−23.89pp</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      US domestic visitors (Geo) held flat, consistent with the interpretation that they seek a specific tour type (app-guided, self-guided) and continued selecting exp 31709 at similar rates. International visitors (Non-Geo), who are typically more price-sensitive and less tour-format-specific, responded strongly to the new $47.95 option. Poland's decline (35%→11%) is based on very small samples (51→35 users) and is not statistically meaningful.
+    </p>
+  </div>
+
+  <!-- C2O Sub-decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">C2O Sub-decomposition — Checkout-to-Attempt (C2A) and Attempt-to-Order (A2O)</div>
+    <div class="verdict-line positive">C2A improved +9.89pp — fewer users abandoned checkout after seeing the price. A2O declined slightly (−2.24pp) — minor payment friction headwind, likely from international customer mix shift.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Step</th>
+          <th class="num">Pre Rate</th>
+          <th class="num">Post Rate</th>
+          <th class="num">Δ</th>
+          <th>Interpretation</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>C2A — Checkout to Attempt</strong></td>
+          <td class="num">44.62%</td>
+          <td class="num pos">54.51%</td>
+          <td class="num pos">+9.89pp</td>
+          <td>Lower price ($47.95) reduces checkout abandonment</td>
+        </tr>
+        <tr>
+          <td>A2O — Attempt to Order (payment)</td>
+          <td class="num">87.95%</td>
+          <td class="num">85.71%</td>
+          <td class="num neg">−2.24pp</td>
+          <td>Minor headwind — international payment friction</td>
+        </tr>
+        <tr>
+          <td><strong>C2O (combined)</strong></td>
+          <td class="num">39.25%</td>
+          <td class="num pos">46.72%</td>
+          <td class="num pos">+7.47pp</td>
+          <td>Net gain; C2A improvement more than offsets A2O slip</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The C2A improvement is the dominant mechanism: at $47.95 vs $87.30, users who reach the checkout page are less likely to abandon after seeing the final price. The A2O decline (−2.24pp) is minor — absolute change is ~4 fewer completions per 100 attempts — and is consistent with a shift toward international visitors who may use non-US payment methods with slightly lower success rates. No action warranted on A2O at this volume.
+    </p>
+  </div>
+
+  <!-- Inventory - ruled out -->
+  <div class="analysis-block">
+    <div class="block-title">Inventory — exp 31709 and exp 36426</div>
+    <div class="verdict-line neutral">Inventory checked and ruled out — all limited-capacity TIDs have available tickets across all lead-time windows. Supply is not the mechanism for either the exp 31709 volume decline or the exp 36426 volume gain.</div>
+    <p style="font-size:13px;color:#555;margin-top:8px;">
+      Path B applies (pre_start April 8 is within the 30-day inventory window). Exp 31709 TID 66558 carries 41,958 / 69,930 / 83,916 / 237,762 tickets in the 0–2d / 3–7d / 8–13d / 14–30d buckets (is_fully_unlimited_capacity = false). Exp 36426 TID 77352 carries 9,669 / 17,214 / 21,865 / 62,461 tickets. Both are abundantly stocked. The assortment shift is entirely demand-side: exp 36426 attracts more users at its lower price point; exp 31709 is not being suppressed by supply constraints.
+    </p>
+    <p style="font-size:13px;color:#555;margin-top:8px;">
+      Lead-time distribution corroborates: near-term checkouts (0–2d) surged +109% (11→23) in the post period — the opposite of a supply-scarcity pattern, which would suppress near-term bookings. This surge is consistent with impulse buyers attracted by the $47.95 price point.
+    </p>
+  </div>
+
+  <!-- Ruled-out dimensions -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These dimensions were checked and do not add independent signal beyond what the product assortment change already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Language:</strong> 99.9% of select-page users are English-language in both periods. No language concentration exists.</li>
+      <li style="margin-bottom:8px;"><strong>Device:</strong> iOS Mweb S2C +9.65pp, Desktop +5.30pp, Android +0.07pp (flat). Broad improvement across devices — no device-specific regression. The pattern is consistent with a product-level change affecting users across device types rather than a device-specific UX issue.</li>
+      <li style="margin-bottom:0;"><strong>Session recordings:</strong> Not pulled. No device-concentrated locus was identified — improvement is broad across iOS, Desktop, and international markets, consistent with a product assortment change rather than a UX regression requiring recording-level diagnosis.</li>
+    </ul>
+  </div>
+
+</div>
+
+<footer>Generated 2026-05-06 · CVR-RCA · CE 144 Alcatraz Tours</footer>
+
+<script>
+// ─── 90-day CVR trend chart ───
+const summaryTrendSeries = [
+  {"date":"2026-02-05","series":"current","cvr":0.0},{"date":"2026-02-05","series":"ly","cvr":0.0},
+  {"date":"2026-02-06","series":"current","cvr":0.0},{"date":"2026-02-06","series":"ly","cvr":0.083333},
+  {"date":"2026-02-07","series":"current","cvr":0.055556},{"date":"2026-02-07","series":"ly","cvr":0.0},
+  {"date":"2026-02-08","series":"current","cvr":0.0},{"date":"2026-02-08","series":"ly","cvr":0.0},
+  {"date":"2026-02-09","series":"current","cvr":0.038462},{"date":"2026-02-09","series":"ly","cvr":0.0},
+  {"date":"2026-02-10","series":"current","cvr":0.037037},{"date":"2026-02-10","series":"ly","cvr":0.0},
+  {"date":"2026-02-11","series":"current","cvr":0.036145},{"date":"2026-02-11","series":"ly","cvr":0.0},
+  {"date":"2026-02-12","series":"current","cvr":0.012987},{"date":"2026-02-12","series":"ly","cvr":0.111111},
+  {"date":"2026-02-13","series":"current","cvr":0.0},{"date":"2026-02-13","series":"ly","cvr":0.0},
+  {"date":"2026-02-14","series":"current","cvr":0.030612},{"date":"2026-02-14","series":"ly","cvr":0.0},
+  {"date":"2026-02-15","series":"current","cvr":0.063158},{"date":"2026-02-15","series":"ly","cvr":0.0},
+  {"date":"2026-02-16","series":"current","cvr":0.03},{"date":"2026-02-16","series":"ly","cvr":0.0},
+  {"date":"2026-02-17","series":"current","cvr":0.026316},{"date":"2026-02-17","series":"ly","cvr":0.0},
+  {"date":"2026-02-18","series":"current","cvr":0.047619},{"date":"2026-02-18","series":"ly","cvr":0.0},
+  {"date":"2026-02-19","series":"current","cvr":0.030534},{"date":"2026-02-19","series":"ly","cvr":0.0},
+  {"date":"2026-02-20","series":"current","cvr":0.035088},{"date":"2026-02-20","series":"ly","cvr":0.0},
+  {"date":"2026-02-21","series":"current","cvr":0.0},{"date":"2026-02-21","series":"ly","cvr":0.0},
+  {"date":"2026-02-22","series":"current","cvr":0.02381},{"date":"2026-02-22","series":"ly","cvr":0.083333},
+  {"date":"2026-02-23","series":"current","cvr":0.020408},{"date":"2026-02-23","series":"ly","cvr":0.0},
+  {"date":"2026-02-24","series":"current","cvr":0.016393},{"date":"2026-02-24","series":"ly","cvr":0.058824},
+  {"date":"2026-02-25","series":"current","cvr":0.035714},{"date":"2026-02-25","series":"ly","cvr":0.1},
+  {"date":"2026-02-26","series":"current","cvr":0.021978},{"date":"2026-02-26","series":"ly","cvr":0.0},
+  {"date":"2026-02-27","series":"current","cvr":0.021053},{"date":"2026-02-27","series":"ly","cvr":0.25},
+  {"date":"2026-02-28","series":"current","cvr":0.0},{"date":"2026-02-28","series":"ly","cvr":0.058824},
+  {"date":"2026-03-01","series":"current","cvr":0.036232},{"date":"2026-03-01","series":"ly","cvr":0.0},
+  {"date":"2026-03-02","series":"current","cvr":0.03},{"date":"2026-03-02","series":"ly","cvr":0.0},
+  {"date":"2026-03-03","series":"current","cvr":0.022222},{"date":"2026-03-03","series":"ly","cvr":0.0},
+  {"date":"2026-03-04","series":"current","cvr":0.041096},{"date":"2026-03-04","series":"ly","cvr":0.1},
+  {"date":"2026-03-05","series":"current","cvr":0.033784},{"date":"2026-03-05","series":"ly","cvr":0.058824},
+  {"date":"2026-03-06","series":"current","cvr":0.026667},{"date":"2026-03-06","series":"ly","cvr":0.055556},
+  {"date":"2026-03-07","series":"current","cvr":0.019802},{"date":"2026-03-07","series":"ly","cvr":0.0},
+  {"date":"2026-03-08","series":"current","cvr":0.023364},{"date":"2026-03-08","series":"ly","cvr":0.04},
+  {"date":"2026-03-09","series":"current","cvr":0.036585},{"date":"2026-03-09","series":"ly","cvr":0.0},
+  {"date":"2026-03-10","series":"current","cvr":0.023438},{"date":"2026-03-10","series":"ly","cvr":0.08},
+  {"date":"2026-03-11","series":"current","cvr":0.036697},{"date":"2026-03-11","series":"ly","cvr":0.0625},
+  {"date":"2026-03-12","series":"current","cvr":0.060345},{"date":"2026-03-12","series":"ly","cvr":0.043478},
+  {"date":"2026-03-13","series":"current","cvr":0.039062},{"date":"2026-03-13","series":"ly","cvr":0.026549},
+  {"date":"2026-03-14","series":"current","cvr":0.039216},{"date":"2026-03-14","series":"ly","cvr":0.009009},
+  {"date":"2026-03-15","series":"current","cvr":0.045685},{"date":"2026-03-15","series":"ly","cvr":0.025},
+  {"date":"2026-03-16","series":"current","cvr":0.039106},{"date":"2026-03-16","series":"ly","cvr":0.038168},
+  {"date":"2026-03-17","series":"current","cvr":0.018349},{"date":"2026-03-17","series":"ly","cvr":0.021127},
+  {"date":"2026-03-18","series":"current","cvr":0.019048},{"date":"2026-03-18","series":"ly","cvr":0.008},
+  {"date":"2026-03-19","series":"current","cvr":0.015707},{"date":"2026-03-19","series":"ly","cvr":0.007576},
+  {"date":"2026-03-20","series":"current","cvr":0.037559},{"date":"2026-03-20","series":"ly","cvr":0.030769},
+  {"date":"2026-03-21","series":"current","cvr":0.009709},{"date":"2026-03-21","series":"ly","cvr":0.019048},
+  {"date":"2026-03-22","series":"current","cvr":0.025974},{"date":"2026-03-22","series":"ly","cvr":0.040816},
+  {"date":"2026-03-23","series":"current","cvr":0.016129},{"date":"2026-03-23","series":"ly","cvr":0.053763},
+  {"date":"2026-03-24","series":"current","cvr":0.029703},{"date":"2026-03-24","series":"ly","cvr":0.040816},
+  {"date":"2026-03-25","series":"current","cvr":0.022222},{"date":"2026-03-25","series":"ly","cvr":0.020408},
+  {"date":"2026-03-26","series":"current","cvr":0.048077},{"date":"2026-03-26","series":"ly","cvr":0.061728},
+  {"date":"2026-03-27","series":"current","cvr":0.009615},{"date":"2026-03-27","series":"ly","cvr":0.0625},
+  {"date":"2026-03-28","series":"current","cvr":0.016129},{"date":"2026-03-28","series":"ly","cvr":0.018018},
+  {"date":"2026-03-29","series":"current","cvr":0.027397},{"date":"2026-03-29","series":"ly","cvr":0.013889},
+  {"date":"2026-03-30","series":"current","cvr":0.017094},{"date":"2026-03-30","series":"ly","cvr":0.036036},
+  {"date":"2026-03-31","series":"current","cvr":0.018519},{"date":"2026-03-31","series":"ly","cvr":0.015385},
+  {"date":"2026-04-01","series":"current","cvr":0.028037},{"date":"2026-04-01","series":"ly","cvr":0.02459},
+  {"date":"2026-04-02","series":"current","cvr":0.031414},{"date":"2026-04-02","series":"ly","cvr":0.032967},
+  {"date":"2026-04-03","series":"current","cvr":0.049383},{"date":"2026-04-03","series":"ly","cvr":0.014925},
+  {"date":"2026-04-04","series":"current","cvr":0.015625},{"date":"2026-04-04","series":"ly","cvr":0.012048},
+  {"date":"2026-04-05","series":"current","cvr":0.032},{"date":"2026-04-05","series":"ly","cvr":0.015748},
+  {"date":"2026-04-06","series":"current","cvr":0.044068},{"date":"2026-04-06","series":"ly","cvr":0.013333},
+  {"date":"2026-04-07","series":"current","cvr":0.035433},{"date":"2026-04-07","series":"ly","cvr":0.053333},
+  {"date":"2026-04-08","series":"current","cvr":0.026316},{"date":"2026-04-08","series":"ly","cvr":0.016129},
+  {"date":"2026-04-09","series":"current","cvr":0.031088},{"date":"2026-04-09","series":"ly","cvr":0.04878},
+  {"date":"2026-04-10","series":"current","cvr":0.008772},{"date":"2026-04-10","series":"ly","cvr":0.036145},
+  {"date":"2026-04-11","series":"current","cvr":0.05303},{"date":"2026-04-11","series":"ly","cvr":0.035211},
+  {"date":"2026-04-12","series":"current","cvr":0.045714},{"date":"2026-04-12","series":"ly","cvr":0.02027},
+  {"date":"2026-04-13","series":"current","cvr":0.017647},{"date":"2026-04-13","series":"ly","cvr":0.015267},
+  {"date":"2026-04-14","series":"current","cvr":0.038462},{"date":"2026-04-14","series":"ly","cvr":0.02963},
+  {"date":"2026-04-15","series":"current","cvr":0.039773},{"date":"2026-04-15","series":"ly","cvr":0.029412},
+  {"date":"2026-04-16","series":"current","cvr":0.071429},{"date":"2026-04-16","series":"ly","cvr":0.018349},
+  {"date":"2026-04-17","series":"current","cvr":0.027907},{"date":"2026-04-17","series":"ly","cvr":0.117647},
+  {"date":"2026-04-18","series":"current","cvr":0.019417},{"date":"2026-04-18","series":"ly","cvr":0.142857},
+  {"date":"2026-04-19","series":"current","cvr":0.03125},{"date":"2026-04-19","series":"ly","cvr":0.166667},
+  {"date":"2026-04-20","series":"current","cvr":0.02439},{"date":"2026-04-20","series":"ly","cvr":0.0},
+  {"date":"2026-04-21","series":"current","cvr":0.029703},{"date":"2026-04-21","series":"ly","cvr":0.07},
+  {"date":"2026-04-22","series":"current","cvr":0.040609},{"date":"2026-04-22","series":"ly","cvr":0.068627},
+  {"date":"2026-04-23","series":"current","cvr":0.047337},{"date":"2026-04-23","series":"ly","cvr":0.028571},
+  {"date":"2026-04-24","series":"current","cvr":0.054054},{"date":"2026-04-24","series":"ly","cvr":0.012821},
+  {"date":"2026-04-25","series":"current","cvr":0.051587},{"date":"2026-04-25","series":"ly","cvr":0.010638},
+  {"date":"2026-04-26","series":"current","cvr":0.074257},{"date":"2026-04-26","series":"ly","cvr":0.029703},
+  {"date":"2026-04-27","series":"current","cvr":0.036866},{"date":"2026-04-27","series":"ly","cvr":0.072289},
+  {"date":"2026-04-28","series":"current","cvr":0.059701},{"date":"2026-04-28","series":"ly","cvr":0.028571},
+  {"date":"2026-04-29","series":"current","cvr":0.029851},{"date":"2026-04-29","series":"ly","cvr":0.036585},
+  {"date":"2026-04-30","series":"current","cvr":0.057851},{"date":"2026-04-30","series":"ly","cvr":0.031915},
+  {"date":"2026-05-01","series":"current","cvr":0.037037},{"date":"2026-05-01","series":"ly","cvr":0.061856},
+  {"date":"2026-05-02","series":"current","cvr":0.072165},{"date":"2026-05-02","series":"ly","cvr":0.054545},
+  {"date":"2026-05-03","series":"current","cvr":0.05},{"date":"2026-05-03","series":"ly","cvr":0.033333},
+  {"date":"2026-05-04","series":"current","cvr":0.074627},{"date":"2026-05-04","series":"ly","cvr":0.00994},
+  {"date":"2026-05-05","series":"current","cvr":0.054645},{"date":"2026-05-05","series":"ly","cvr":0.013201}
+];
+
+const currentSeries = summaryTrendSeries.filter(e => e.series === 'current');
+const currentDates = currentSeries.map(e => e.date);
+const currentCvr   = currentSeries.map(e => e.cvr);
+
+const lyMap = {};
+summaryTrendSeries.filter(e => e.series === 'ly').forEach(e => { lyMap[e.date] = e.cvr; });
+const lyCvr = currentDates.map(d => lyMap[d] ?? null);
+
+const hasLyData = lyCvr.some(v => v !== null && v !== undefined && v > 0);
+
+const POST_START = '2026-04-22';
+const POST_END   = '2026-05-05';
+const postDates  = currentDates.filter(d => d >= POST_START && d <= POST_END);
+
+const postShadeColor = 'rgba(46,125,50,0.05)';
+const postLineColor  = '#2e7d32';
+const midPostDate = postDates[Math.floor(postDates.length / 2)];
+
+const traces90d = [
+  {type:'scatter', mode:'lines', name:'CVR 2026',
+   x: currentDates, y: currentCvr, line:{color:'#6c8ebf', width:2}}
+];
+if (hasLyData) {
+  traces90d.push(
+    {type:'scatter', mode:'lines', name:'CVR 2025 (LY)',
+     x: currentDates, y: lyCvr, line:{color:'#9e9e9e', dash:'dash', width:1.5}}
+  );
+}
+
+Plotly.newPlot('trend-90day', traces90d, {
+  height: 280,
+  yaxis: {tickformat:'.1%', title:'CVR'},
+  xaxis: {tickformat:'%d %b', dtick: 7 * 86400000, title:''},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+  font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+  legend: {orientation:'h', y:-0.2},
+  margin: {l:55, r:20, t:30, b:60},
+  shapes: [
+    {type:'rect', x0:POST_START, x1:POST_END, y0:0, y1:1,
+     xref:'x', yref:'paper', fillcolor: postShadeColor, line:{width:0}},
+    {type:'line', x0:POST_START, x1:POST_START, y0:0, y1:1,
+     xref:'x', yref:'paper', line:{color: postLineColor, dash:'dot', width:1}}
+  ],
+  annotations: [
+    {x: midPostDate, y: 0.92, xref:'x', yref:'paper',
+     text:'Post period', font:{color: postLineColor, size:10}, showarrow:false},
+    {x: '2026-04-15', y: 0.98, xref:'x', yref:'paper',
+     text:'Exp 36426 launched', font:{color:'#2e7d32', size:9}, showarrow:true,
+     ax:0, ay:-20, arrowhead:2, arrowcolor:'#2e7d32', arrowsize:0.7}
+  ]
+}, {responsive:true});
+
+// ─── Daily S2C Trend Chart (CE-level) ───
+const preTrendData = [
+  {date:"2026-04-08",s2c:0.2329},{date:"2026-04-09",s2c:0.254},{date:"2026-04-10",s2c:0.1364},
+  {date:"2026-04-11",s2c:0.25},{date:"2026-04-12",s2c:0.2321},{date:"2026-04-13",s2c:0.2075},
+  {date:"2026-04-14",s2c:0.2059},{date:"2026-04-15",s2c:0.2453},{date:"2026-04-16",s2c:0.2375},
+  {date:"2026-04-17",s2c:0.2273},{date:"2026-04-18",s2c:0.125},{date:"2026-04-19",s2c:0.24},
+  {date:"2026-04-20",s2c:0.1556},{date:"2026-04-21",s2c:0.2909}
+];
+const postTrendData = [
+  {date:"2026-04-22",s2c:0.1429},{date:"2026-04-23",s2c:0.2034},{date:"2026-04-24",s2c:0.2419},
+  {date:"2026-04-25",s2c:0.3373},{date:"2026-04-26",s2c:0.3919},{date:"2026-04-27",s2c:0.2329},
+  {date:"2026-04-28",s2c:0.2651},{date:"2026-04-29",s2c:0.2051},{date:"2026-04-30",s2c:0.3409},
+  {date:"2026-05-01",s2c:0.3478},{date:"2026-05-02",s2c:0.4359},{date:"2026-05-03",s2c:0.3455},
+  {date:"2026-05-04",s2c:0.3265},{date:"2026-05-05",s2c:0.3651}
+];
+const preMeanS2C = preTrendData.reduce((s,d)=>s+d.s2c,0)/preTrendData.length;
+const postMeanS2C = postTrendData.reduce((s,d)=>s+d.s2c,0)/postTrendData.length;
+
+Plotly.newPlot('trend-s2c', [
+  {type:'scatter', mode:'lines+markers', name:'Pre period (Apr 8–21)',
+   x: preTrendData.map(d=>d.date), y: preTrendData.map(d=>d.s2c),
+   line:{color:'#6c8ebf', width:2.5}, marker:{size:4, color:'#6c8ebf'}},
+  {type:'scatter', mode:'lines+markers', name:'Post period (Apr 22–May 5)',
+   x: postTrendData.map(d=>d.date), y: postTrendData.map(d=>d.s2c),
+   line:{color:'#2e7d32', width:2.5}, marker:{size:4, color:'#2e7d32'}}
+], {
+  height: 280,
+  yaxis: {tickformat:'.1%', title:'S2C rate'},
+  xaxis: {title:''},
+  plot_bgcolor:'#fff', paper_bgcolor:'#fff',
+  font: {family:'-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color:'#1a1a2e', size:11},
+  legend: {orientation:'h', y:-0.3},
+  margin: {l:55, r:20, t:30, b:50},
+  shapes: [
+    {type:'line', x0:preTrendData[0].date, x1:preTrendData[preTrendData.length-1].date,
+     y0:preMeanS2C, y1:preMeanS2C, line:{color:'#6c8ebf', dash:'dot', width:1.5}},
+    {type:'line', x0:postTrendData[0].date, x1:postTrendData[postTrendData.length-1].date,
+     y0:postMeanS2C, y1:postMeanS2C, line:{color:'#2e7d32', dash:'dot', width:1.5}}
+  ],
+  annotations: [
+    {x: preTrendData[Math.floor(preTrendData.length/2)].date, y: preMeanS2C,
+     text: 'Pre avg ' + (preMeanS2C*100).toFixed(1) + '%',
+     font:{color:'#6c8ebf', size:11}, showarrow:false, yshift:12},
+    {x: postTrendData[Math.floor(postTrendData.length/2)].date, y: postMeanS2C,
+     text: 'Post avg ' + (postMeanS2C*100).toFixed(1) + '%',
+     font:{color:'#2e7d32', size:11}, showarrow:false, yshift:-16}
+  ]
+}, {responsive:true});
+</script>
+</body>
+</html>

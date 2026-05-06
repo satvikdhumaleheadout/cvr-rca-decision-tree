@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CVR-RCA · Kualoa Ranch (CE 6495)</title>
+  <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f6fa; color: #1a1a2e; line-height: 1.55; }
+    header { background: #1a1a2e; color: #fff; padding: 28px 40px 24px; }
+    header .eyebrow { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: #8892a4; margin-bottom: 6px; }
+    header h1 { font-size: 24px; font-weight: 700; }
+    header .meta { margin-top: 8px; font-size: 13px; color: #b0bec5; }
+    header .meta span { margin-right: 20px; }
+    .container { max-width: 1050px; margin: 0 auto; padding: 0 24px 60px; }
+    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: #8892a4; margin: 40px 0 16px; padding-bottom: 8px; border-bottom: 1px solid #e0e4ef; }
+    .metric-cards { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+    @media (max-width: 800px) { .metric-cards { grid-template-columns: repeat(3, 1fr); } }
+    .metric-card { background: #fff; border-radius: 10px; padding: 18px 16px 16px; border: 1px solid #e8ebf4; }
+    .metric-card .label { font-size: 11px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: #8892a4; margin-bottom: 8px; }
+    .metric-card .values { display: flex; align-items: baseline; gap: 8px; }
+    .metric-card .pre { font-size: 14px; color: #8892a4; }
+    .metric-card .post { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+    .metric-card .delta { font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 12px; margin-top: 6px; display: inline-block; }
+    .delta-neg { background: #fdecea; color: #c62828; }
+    .delta-pos { background: #e8f5e9; color: #2e7d32; }
+    .delta-flat { background: #f3f4f6; color: #555; }
+    .callout { background: #fff; border-left: 4px solid #e53935; border-radius: 0 10px 10px 0; padding: 24px 28px; margin-bottom: 8px; border-top: 1px solid #e8ebf4; border-right: 1px solid #e8ebf4; border-bottom: 1px solid #e8ebf4; }
+    .callout h2 { font-size: 16px; font-weight: 700; color: #c62828; margin-bottom: 16px; }
+    .callout-item { margin-bottom: 14px; }
+    .callout-item:last-child { margin-bottom: 0; }
+    .callout-item .q { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #8892a4; margin-bottom: 4px; }
+    .callout-item .a { font-size: 15px; color: #1a1a2e; font-weight: 500; }
+    .action-card { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 16px; }
+    .action-card .ac-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+    .priority-badge { font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 12px; white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+    .p1 { background: #fdecea; color: #c62828; }
+    .p2 { background: #fff8e1; color: #f57c00; }
+    .p3 { background: #e8f5e9; color: #2e7d32; }
+    .action-card .cause { font-size: 15px; font-weight: 600; color: #1a1a2e; }
+    .action-card .dri-row { font-size: 13px; color: #555; margin-bottom: 16px; display: flex; gap: 6px; align-items: center; }
+    .dri-badge { background: #e8edf7; color: #3a4a8a; font-weight: 600; font-size: 12px; padding: 2px 9px; border-radius: 8px; }
+    .action-card ul { padding-left: 18px; font-size: 14px; color: #333; }
+    .action-card ul li { margin-bottom: 7px; }
+    .analysis-block { background: #fff; border-radius: 10px; border: 1px solid #e8ebf4; padding: 24px 28px; margin-bottom: 20px; }
+    .analysis-block .block-title { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+    .verdict-line { font-size: 14px; font-weight: 600; color: #c62828; background: #fdecea; border-radius: 6px; padding: 8px 14px; margin-bottom: 18px; }
+    .verdict-line.neutral { color: #3a4a8a; background: #e8edf7; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; color: #8892a4; padding: 8px 12px; border-bottom: 2px solid #e8ebf4; }
+    td { padding: 9px 12px; border-bottom: 1px solid #f0f2f8; color: #1a1a2e; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f8f9ff; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .neg { color: #c62828; font-weight: 600; }
+    .pos { color: #2e7d32; font-weight: 600; }
+    .highlight-row td { background: #fff8f8 !important; }
+    .shapley-bars { display: flex; gap: 0; border-radius: 8px; overflow: hidden; height: 32px; margin: 16px 0 8px; }
+    .shapley-bar { display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; color: #fff; }
+    .shapley-lp2s { background: #6c8ebf; }
+    .shapley-s2c { background: #c62828; }
+    .shapley-c2o { background: #d6a832; }
+    .shapley-legend { display: flex; gap: 20px; font-size: 12px; color: #555; }
+    .legend-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .chart-container { margin-top: 16px; }
+    footer { text-align: center; font-size: 12px; color: #aaa; padding: 24px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow">CVR Root Cause Analysis</div>
+  <h1>Kualoa Ranch — CE 6495</h1>
+  <div class="meta">
+    <span>📅 Pre: 2026-03-05 – 2026-04-03</span>
+    <span>📅 Post: 2026-04-04 – 2026-05-03</span>
+    <span>🌍 North America · United States</span>
+    <span>🔗 <a href="https://kualoa-ranch.tickets-hawaii.com/" target="_blank" style="color:#b0bec5;text-decoration:underline;">kualoa-ranch.tickets-hawaii.com</a></span>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 1 — EXECUTIVE SUMMARY                                  -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section-label">Section 1 — Executive Summary</div>
+
+  <!-- 1a. Metric Cards -->
+  <div class="metric-cards">
+    <div class="metric-card">
+      <div class="label">CVR</div>
+      <div class="values">
+        <span class="pre">5.22%</span>
+        <span class="post">3.76%</span>
+      </div>
+      <div class="delta delta-neg">Δ −1.46pp / −28.1%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">LP2S</div>
+      <div class="values">
+        <span class="pre">36.9%</span>
+        <span class="post">35.1%</span>
+      </div>
+      <div class="delta delta-neg">Δ −1.84pp / −5.0%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">S2C</div>
+      <div class="values">
+        <span class="pre">31.6%</span>
+        <span class="post">25.1%</span>
+      </div>
+      <div class="delta delta-neg">Δ −6.50pp / −20.6%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">C2O</div>
+      <div class="values">
+        <span class="pre">44.7%</span>
+        <span class="post">42.6%</span>
+      </div>
+      <div class="delta delta-neg">Δ −2.11pp / −4.7%</div>
+    </div>
+    <div class="metric-card">
+      <div class="label">Traffic (LP Users)</div>
+      <div class="values">
+        <span class="pre">22,506</span>
+        <span class="post">17,012</span>
+      </div>
+      <div class="delta delta-neg">Δ −5,494 / −24.4%</div>
+    </div>
+  </div>
+
+  <!-- 1b. 90-day CVR Trend Chart -->
+  <div id="trend-90day" class="chart-container"></div>
+
+  <!-- 1c. Root Cause Callout -->
+  <div class="callout" style="margin-top:24px;">
+    <h2>Root Cause</h2>
+    <div class="callout-item">
+      <div class="q">What broke?</div>
+      <div class="a">S2C fell from 31.6% to 25.1% (−6.5pp), concentrated in US domestic visitors (−6.7pp on 15,711 pre select-page users) and Canadian visitors (−10.6pp on 1,053 pre users) — together the primary spring break markets for this Hawaii destination. Non-spring-break international markets held flat or improved.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">Why did it break?</div>
+      <div class="a">Spring break season ended. The pre-period (Mar 5 – Apr 3) captured peak US and Canadian spring break travel — high-intent families and students planning Hawaii trips book with strong select-to-checkout conversion. The post-period (Apr 4 – May 3) began as North American schools returned, this intent cohort exited, and the remaining visitor mix shifted to non-spring-break international travelers who book at lower but stable rates. Supply analysis confirmed no inventory collapse — TGID 37530 (Movie Sites, −9pp S2C) is fully stocked across all lead-time buckets, and the booking window distribution barely shifted.</div>
+    </div>
+    <div class="callout-item">
+      <div class="q">When did it break?</div>
+      <div class="a">Gradual decline beginning April 4 (start of post-period). S2C held near 28–34% in the first post week, declined to 19–27% in mid-April as spring break fully wound down, and troughed in the 14–22% range in late April. Pattern is consistent with North American schools returning on a rolling schedule across states and provinces — not a sudden product or supply event.</div>
+    </div>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 2 — ACTIONS                                            -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section-label">Section 2 — Actions</div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p2">P2</div>
+      <div class="cause">S2C decline is a confirmed annual seasonal pattern — spring break wind-down in early April creates a structural CVR trough that will recur in Q2 each year.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Revenue Management</span>
+      <span>+ Marketing (Paid Search)</span>
+    </div>
+    <ul>
+      <li>Set a Kualoa Ranch (CE 6495) seasonal CVR baseline using Q2 data (Apr–May) as a distinct benchmark — do not flag Q2 CVR against the Q1 spring break window as an alert.</li>
+      <li>Adjust Google Ads bidding targets for the April–May period to reflect the structural ~6pp S2C contraction; maintaining Q1-era CPA targets through Q2 will waste budget on a lower-intent audience.</li>
+      <li>Plan incremental spring break budget for Q1 2027 (March–early April) anticipating the same spike in US/Canadian high-intent visitors — Kualoa Ranch should be positioned to capture this demand window before it ends.</li>
+    </ul>
+  </div>
+
+  <div class="action-card">
+    <div class="ac-header">
+      <div class="priority-badge p3">P3</div>
+      <div class="cause">TID 80074 (UTV Raptor Tour) shows zero near-term availability in the current snapshot while the peer variant TID 80075 has 232 near-term tickets — worth a quick supply check.</div>
+    </div>
+    <div class="dri-row">
+      <span class="dri-badge">Supply / Ops</span>
+    </div>
+    <ul>
+      <li>Check availability configuration for TID 80074 (UTV Raptor Tour, TGID 37536): confirm whether the 0-2 day availability gap is intentional capacity restriction or a misconfigured cut-off period / release window setting.</li>
+      <li>If unintentional, restoring near-term availability for TID 80074 would recover near-term bookings that are currently being captured only by TID 80075 — minor incremental impact since the overall root cause is seasonal.</li>
+    </ul>
+  </div>
+
+
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <!-- SECTION 3 — SUPPORTING ANALYSIS                                -->
+  <!-- ═══════════════════════════════════════════════════════════════ -->
+  <div class="section-label">Section 3 — Supporting Analysis</div>
+
+  <!-- Mix Cascade -->
+  <div class="analysis-block">
+    <div class="block-title">Mix Cascade — Routing vs Conversion Determination</div>
+    <div class="verdict-line neutral">Conversion change at all three levels — no routing story. Fixed segment: MB · Paid · Google Ads.</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 1 — MB vs HO</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Segment</th>
+          <th class="num">Pre LP</th><th class="num">Post LP</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix eff</th><th class="num">Conv eff</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>MB</strong></td>
+          <td class="num">21,941</td><td class="num">16,064</td>
+          <td class="num">94.4%</td><td class="num">91.8%</td>
+          <td class="num">5.40%</td><td class="num">3.93%</td>
+          <td class="num">−0.00143</td><td class="num neg">−0.01388</td>
+          <td>Conv dominates → fix</td>
+        </tr>
+        <tr>
+          <td>HO</td>
+          <td class="num">1,297</td><td class="num">1,439</td>
+          <td class="num">5.6%</td><td class="num">8.2%</td>
+          <td class="num">4.32%</td><td class="num">2.92%</td>
+          <td class="num">+0.00114</td><td class="num">−0.00078</td>
+          <td>Mix dom, negligible</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 2 — Paid vs Organic (within MB)</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre LP</th><th class="num">Post LP</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix eff</th><th class="num">Conv eff</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Paid</strong></td>
+          <td class="num">18,289</td><td class="num">13,074</td>
+          <td class="num">83.4%</td><td class="num">81.4%</td>
+          <td class="num">5.78%</td><td class="num">4.34%</td>
+          <td class="num">−0.00127</td><td class="num neg">−0.01192</td>
+          <td>Conv dominates → fix</td>
+        </tr>
+        <tr>
+          <td>Organic</td>
+          <td class="num">3,652</td><td class="num">2,990</td>
+          <td class="num">16.6%</td><td class="num">18.6%</td>
+          <td class="num">3.50%</td><td class="num">2.11%</td>
+          <td class="num">+0.00085</td><td class="num">−0.00247</td>
+          <td>Conv dom</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">Level 3 — Channel within MB · Paid</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Channel</th>
+          <th class="num">Pre LP</th><th class="num">Post LP</th>
+          <th class="num">Pre share</th><th class="num">Post share</th>
+          <th class="num">Pre CVR</th><th class="num">Post CVR</th>
+          <th class="num">Mix eff</th><th class="num">Conv eff</th>
+          <th>Verdict</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>Google Ads</strong></td>
+          <td class="num">16,913</td><td class="num">11,414</td>
+          <td class="num">90.6%</td><td class="num">85.8%</td>
+          <td class="num">5.99%</td><td class="num">4.68%</td>
+          <td class="num">−0.00288</td><td class="num neg">−0.01187</td>
+          <td>Conv dominates → fix</td>
+        </tr>
+        <tr>
+          <td>Microsoft Ads</td>
+          <td class="num">1,756</td><td class="num">1,895</td>
+          <td class="num">9.4%</td><td class="num">14.2%</td>
+          <td class="num">3.59%</td><td class="num">2.27%</td>
+          <td class="num">+0.00172</td><td class="num">−0.00124</td>
+          <td>Conv dom</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      At every cascade level, conversion effects dominate mix effects by 8–12×. The routing story is absent — the audience composition did not shift in a meaningful way. Google Ads lost some share to Microsoft Ads (85.8% vs 90.6%) but both channels show equivalent rate drops (−1.31pp and −1.32pp respectively), confirming this is a conversion problem visible across all paid search channels, not a channel allocation issue.
+    </p>
+  </div>
+
+  <!-- Fixed Segment Banner -->
+  <div style="background:#e8f5e9;border-left:4px solid #2e7d32;border-radius:4px;padding:10px 14px;margin-bottom:20px;font-size:13px;color:#1b5e20;">
+    <strong>Fixed segment for all funnel analysis:</strong> MB · Paid · Google Ads<br>
+    <span style="color:#555;font-size:12px;">
+      Post-period users: 11,414 &nbsp;|&nbsp; Share of CE post traffic: 67.1%
+      &nbsp;|&nbsp; Note: L2+ dimension cuts run on MB · Paid scope (Google Ads = 86–91% of MB · Paid, results are equivalent)
+    </span>
+  </div>
+
+  <!-- Shapley Decomposition -->
+  <div class="analysis-block">
+    <div class="block-title">Shapley Decomposition — funnel step attribution</div>
+    <div class="verdict-line">S2C carries 69.7% of ΔCVR. LP2S and C2O are secondary (15.6% and 14.7%).</div>
+
+    <div class="shapley-bars">
+      <div class="shapley-bar shapley-lp2s" style="flex:15.6">LP2S 15.6%</div>
+      <div class="shapley-bar shapley-s2c" style="flex:69.7">S2C 69.7%</div>
+      <div class="shapley-bar shapley-c2o" style="flex:14.7">C2O 14.7%</div>
+    </div>
+    <div class="shapley-legend">
+      <span><span class="legend-dot" style="background:#6c8ebf"></span>LP2S −0.23pp</span>
+      <span><span class="legend-dot" style="background:#c62828"></span>S2C −1.02pp</span>
+      <span><span class="legend-dot" style="background:#d6a832"></span>C2O −0.22pp</span>
+    </div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      Total ΔCVR = −1.46pp. S2C accounts for −1.02pp of the decline. LP2S (−0.23pp) and C2O (−0.22pp) are too small to act on independently — their modest declines are consistent with the same seasonal demand reduction, not independent funnel problems. C2O sub-metrics (C2A −0.88pp, A2O −2.67pp) both declined modestly, suggesting a softer checkout audience rather than a payment or checkout flow failure.
+    </p>
+  </div>
+
+  <!-- Daily S2C Trend -->
+  <div class="analysis-block">
+    <div class="block-title">Daily S2C trend — CE level (pre vs post)</div>
+    <div class="verdict-line">S2C eroded gradually from April 4 — consistent with a rolling seasonal demand exit, not a sudden product event.</div>
+    <div id="trend-s2c" class="chart-container"></div>
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The pre-period shows S2C oscillating in a 29–40% range with a mean of ~33%. From the first day of the post-period (Apr 4), S2C begins trending lower — briefly recovering to 34% on Apr 13 (possibly Easter weekend visitors) before declining more steeply in mid-April. By late April (Apr 22–25), S2C troughed at 14–21% before partially recovering. This pattern — gradual onset, deepening through mid-April, partial recovery at end of month — is exactly what spring break wind-down would look like as schools return on rolling schedules across US states and Canadian provinces.
+    </p>
+  </div>
+
+  <!-- Geo / Non-Geo S2C -->
+  <div class="analysis-block">
+    <div class="block-title">Geo / Non-Geo × S2C — primary evidence for seasonal mechanism</div>
+    <div class="verdict-line">US domestic (−6.7pp) and Canadian (−10.6pp) visitors drove the S2C decline. South Korea and Mexico held flat or improved. US + Canada are the primary North American spring break markets for Hawaii destinations.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Country</th>
+          <th>Label</th>
+          <th class="num">Pre Select</th>
+          <th class="num">Post Select</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td><strong>United States</strong></td>
+          <td>Geo</td>
+          <td class="num">15,711</td>
+          <td class="num">11,043</td>
+          <td class="num">30.60%</td>
+          <td class="num">23.87%</td>
+          <td class="num neg">−6.73pp</td>
+        </tr>
+        <tr class="highlight-row">
+          <td><strong>Canada</strong></td>
+          <td>Non-Geo</td>
+          <td class="num">1,053</td>
+          <td class="num">647</td>
+          <td class="num">36.93%</td>
+          <td class="num">26.37%</td>
+          <td class="num neg">−10.56pp</td>
+        </tr>
+        <tr>
+          <td>South Korea</td>
+          <td>Non-Geo</td>
+          <td class="num">210</td>
+          <td class="num">209</td>
+          <td class="num">36.73%</td>
+          <td class="num">34.26%</td>
+          <td class="num">−2.47pp</td>
+        </tr>
+        <tr>
+          <td>Mexico</td>
+          <td>Non-Geo</td>
+          <td class="num">117</td>
+          <td class="num">115</td>
+          <td class="num">36.17%</td>
+          <td class="num">41.18%</td>
+          <td class="num pos">+5.01pp</td>
+        </tr>
+        <tr>
+          <td>Australia</td>
+          <td>Non-Geo</td>
+          <td class="num">413</td>
+          <td class="num">326</td>
+          <td class="num">28.00%</td>
+          <td class="num">24.17%</td>
+          <td class="num">−3.83pp</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The US and Canadian visitor volume also declined (15,711 → 11,043 for US; 1,053 → 647 for Canada) alongside their rate drops — confirming demand exit, not just a conversion problem within a stable audience. South Korea and Mexico maintained nearly identical select-page volumes while their rates held or improved. Australia also declined modestly (−3.83pp) but is smaller volume. The US dominates the CE (15,711 pre select users vs 1,053 Canada), so the US seasonal exit drives the majority of the overall S2C decline.
+    </p>
+  </div>
+
+  <!-- Experience × S2C -->
+  <div class="analysis-block">
+    <div class="block-title">Experience × S2C — CE-wide drop, no single-TGID collapse</div>
+    <div class="verdict-line">S2C declined across all major experiences (4 of 5 TGIDs), ruling out a single-product supply failure or misconfiguration. TGID 37531 (Zipline) improved.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>TGID</th>
+          <th>Experience</th>
+          <th class="num">Pre Select</th>
+          <th class="num">Post Select</th>
+          <th class="num">Pre S2C</th>
+          <th class="num">Post S2C</th>
+          <th class="num">Δ S2C</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>37536</td>
+          <td>UTV Raptor Tour</td>
+          <td class="num">4,277</td>
+          <td class="num">2,997</td>
+          <td class="num">24.48%</td>
+          <td class="num">19.29%</td>
+          <td class="num neg">−5.19pp</td>
+        </tr>
+        <tr>
+          <td>37530</td>
+          <td>Movie Sites and Ranch Tour</td>
+          <td class="num">2,084</td>
+          <td class="num">1,518</td>
+          <td class="num">32.82%</td>
+          <td class="num">23.78%</td>
+          <td class="num neg">−9.04pp</td>
+        </tr>
+        <tr>
+          <td>37532</td>
+          <td>Jungle Expedition Tour</td>
+          <td class="num">989</td>
+          <td class="num">700</td>
+          <td class="num">27.40%</td>
+          <td class="num">18.57%</td>
+          <td class="num neg">−8.83pp</td>
+        </tr>
+        <tr>
+          <td>37531</td>
+          <td>Jurassic Valley Zipline Tour</td>
+          <td class="num">764</td>
+          <td class="num">547</td>
+          <td class="num">16.10%</td>
+          <td class="num">19.38%</td>
+          <td class="num pos">+3.28pp</td>
+        </tr>
+        <tr>
+          <td>39901</td>
+          <td>Ocean Voyage Tour</td>
+          <td class="num">370</td>
+          <td class="num">293</td>
+          <td class="num">18.92%</td>
+          <td class="num">9.90%</td>
+          <td class="num neg">−9.02pp</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      The experience-level pattern rules out a vendor-specific or product-specific root cause. TGID 37530 (Movie Sites) has the second-largest S2C drop (−9pp) yet is fully stocked across all inventory buckets — confirming the drop is demand-driven, not supply-driven. The Zipline Tour (37531) improved, which may reflect a different visitor profile (thrill-seekers, less tied to spring break scheduling) or more recent inventory improvements. The broad decline across TGIDs at different price points and activity types is the signature of a demand cohort exiting, not a product or supply event.
+    </p>
+  </div>
+
+  <!-- Inventory Analysis -->
+  <div class="analysis-block">
+    <div class="block-title">Inventory availability — TGID 37536 (UTV Raptor Tour) and TGID 37530 (Movie Sites)</div>
+    <div class="verdict-line">Supply substantially ruled out. TGID 37530 fully stocked across all buckets; TGID 37536 shows near-term gap for TID 80074 only — isolated, not a sustained collapse, and does not explain CE-wide decline.</div>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">TGID 37536 — UTV Raptor Tour (highest select volume)</p>
+    <p style="font-size:13px;color:#e07b00;margin-bottom:10px;">
+      Pre-period inventory data unavailable — pre period is more than 30 days ago. Current-state snapshot shown.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>TID</th>
+          <th>TID Name</th>
+          <th class="num">Tickets 0–2d</th>
+          <th class="num">Tickets 3–7d</th>
+          <th class="num">Tickets 8–13d</th>
+          <th class="num">Tickets 14–30d</th>
+          <th>Capacity type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight-row">
+          <td>80074</td>
+          <td>UTV Raptor Tour</td>
+          <td class="num neg"><strong>0</strong></td>
+          <td class="num">664</td>
+          <td class="num">931</td>
+          <td class="num">2,454</td>
+          <td>Limited</td>
+        </tr>
+        <tr>
+          <td>80075</td>
+          <td>UTV Raptor Ride-Along</td>
+          <td class="num">232</td>
+          <td class="num">940</td>
+          <td class="num">1,224</td>
+          <td class="num">2,856</td>
+          <td>Limited</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">TGID 37530 — Movie Sites and Ranch Tour</p>
+    <p style="font-size:13px;color:#e07b00;margin-bottom:10px;">
+      Pre-period inventory data unavailable — pre period is more than 30 days ago. Current-state snapshot shown.
+    </p>
+    <table>
+      <thead>
+        <tr>
+          <th>TID</th>
+          <th>TID Name</th>
+          <th class="num">Tickets 0–2d</th>
+          <th class="num">Tickets 3–7d</th>
+          <th class="num">Tickets 8–13d</th>
+          <th class="num">Tickets 14–30d</th>
+          <th>Capacity type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>80066</td>
+          <td>Movie Sights + Ranch Tour</td>
+          <td class="num">1,000</td>
+          <td class="num">1,965</td>
+          <td class="num">2,588</td>
+          <td class="num">5,831</td>
+          <td>Limited</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      TGID 37530 (Movie Sites) is fully stocked across all lead-time buckets, yet shows a −9.04pp S2C drop — definitively ruling out supply as the mechanism for this experience. TID 80074 (UTV Raptor Tour) has zero near-term availability (0-2d = 0) while its peer variant TID 80075 has 232; the daily time-series also shows isolated near-term zeros on Apr 16, Apr 26, Apr 29 with generally available inventory on other days. This is a minor near-term capacity restriction worth a supply team check (see action P3) but does not explain the −6.5pp CE-wide S2C decline.
+    </p>
+  </div>
+
+  <!-- Lead-Time Distribution -->
+  <div class="analysis-block">
+    <div class="block-title">Lead-time distribution — booking horizon pre vs post (MB · Paid checkouts)</div>
+    <div class="verdict-line neutral">Modest near-term shift (−2.2pp 0-2d, +3.9pp 3-7d). Inconsistent with a supply-scarcity hypothesis — confirming behavioral demand exit.</div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Bucket</th>
+          <th class="num">Pre Checkouts</th>
+          <th class="num">Pre %</th>
+          <th class="num">Post Checkouts</th>
+          <th class="num">Post %</th>
+          <th class="num">Δ</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>0 – 2 days</td>
+          <td class="num">928</td><td class="num">37.1%</td>
+          <td class="num">483</td><td class="num">34.9%</td>
+          <td class="num">−2.2pp</td>
+        </tr>
+        <tr>
+          <td>3 – 7 days</td>
+          <td class="num">355</td><td class="num">14.2%</td>
+          <td class="num">250</td><td class="num">18.1%</td>
+          <td class="num">+3.9pp</td>
+        </tr>
+        <tr>
+          <td>8 – 13 days</td>
+          <td class="num">310</td><td class="num">12.4%</td>
+          <td class="num">180</td><td class="num">13.0%</td>
+          <td class="num">+0.6pp</td>
+        </tr>
+        <tr>
+          <td>14 – 30 days</td>
+          <td class="num">478</td><td class="num">19.1%</td>
+          <td class="num">271</td><td class="num">19.6%</td>
+          <td class="num">+0.5pp</td>
+        </tr>
+        <tr>
+          <td>30+ days</td>
+          <td class="num">433</td><td class="num">17.1%</td>
+          <td class="num">199</td><td class="num">14.4%</td>
+          <td class="num">−2.7pp</td>
+        </tr>
+        <tr style="background:#f5f6fa;font-weight:600;">
+          <td><strong>Total</strong></td>
+          <td class="num"><strong>2,504</strong></td><td class="num"></td>
+          <td class="num"><strong>1,383</strong></td><td class="num"></td>
+          <td class="num neg">−1,121 (−44.8%)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:#555;margin-top:12px;">
+      If supply scarcity were the mechanism, users unable to find near-term dates would shift heavily toward longer lead-time buckets — we would expect a dramatic spike in 8-13d or 14-30d share. Instead, the distribution shift is minimal: near-term lost only 2.2pp, and the slight 3-7d gain (+3.9pp) is consistent with fewer same-day/next-day impulse bookers (spring break visitors) relative to advance planners who remain active year-round. The total checkout count dropped 44.8% — matching the traffic decline (−24.4% LP users) plus the S2C decline, confirming this is a CE-wide demand reduction, not a conversion flow problem.
+    </p>
+  </div>
+
+  <!-- Ruled-Out Dimensions -->
+  <div class="analysis-block">
+    <div class="block-title">Dimensions Checked — ruled out as independent drivers</div>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">
+      These dimensions were checked and do not add independent signal beyond what the seasonal spring break wind-down already explains.
+    </p>
+    <ul style="font-size:14px;color:#333;padding-left:18px;">
+      <li style="margin-bottom:8px;"><strong>Language:</strong> 99.9% of sessions are English. No meaningful language segmentation. Ruled out.</li>
+      <li style="margin-bottom:8px;"><strong>Device:</strong> iOS Mweb −7.39pp (10,138→7,221 select users), Desktop −6.48pp (6,221→4,609), Android Mweb −2.32pp (2,031→1,374). All three device types declined proportionally. No device concentration — consistent with an audience-level exit rather than a UX or rendering regression on a specific device type.</li>
+      <li style="margin-bottom:0;"><strong>Mix routing:</strong> Google Ads lost 4.8pp share to Microsoft Ads (90.6% → 85.8%) but both channels show identical rate declines (−1.31pp and −1.32pp respectively). Mix effect is 9× smaller than conversion effect at Level 3. Routing is not the story.</li>
+    </ul>
+  </div>
+
+</div><!-- end container -->
+
+<footer>Generated 2026-05-06 · CVR-RCA run3 · CE 6495 Kualoa Ranch</footer>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PLOTLY SCRIPTS                                                      -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script>
+// ── 90-day CVR trend chart ──────────────────────────────────────────
+const currentDates = [
+  '2026-02-03','2026-02-04','2026-02-05','2026-02-06','2026-02-07','2026-02-08','2026-02-09',
+  '2026-02-10','2026-02-11','2026-02-12','2026-02-13','2026-02-14','2026-02-15','2026-02-16',
+  '2026-02-17','2026-02-18','2026-02-19','2026-02-20','2026-02-21','2026-02-22','2026-02-23',
+  '2026-02-24','2026-02-25','2026-02-26','2026-02-27','2026-02-28',
+  '2026-03-01','2026-03-02','2026-03-03','2026-03-04','2026-03-05','2026-03-06','2026-03-07',
+  '2026-03-08','2026-03-09','2026-03-10','2026-03-11','2026-03-12','2026-03-13','2026-03-14',
+  '2026-03-15','2026-03-16','2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-21',
+  '2026-03-22','2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28',
+  '2026-03-29','2026-03-30','2026-03-31',
+  '2026-04-01','2026-04-02','2026-04-03','2026-04-04','2026-04-05','2026-04-06','2026-04-07',
+  '2026-04-08','2026-04-09','2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14',
+  '2026-04-15','2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21',
+  '2026-04-22','2026-04-23','2026-04-24','2026-04-25','2026-04-26','2026-04-27','2026-04-28',
+  '2026-04-29','2026-04-30',
+  '2026-05-01','2026-05-02','2026-05-03'
+];
+const currentCvr = [
+  0.066062,0.048143,0.066236,0.067241,0.038798,0.065806,0.046703,
+  0.071615,0.067332,0.057107,0.070081,0.056075,0.059839,0.058231,
+  0.073110,0.057692,0.064118,0.061130,0.055952,0.064076,0.064073,
+  0.047414,0.051020,0.053812,0.070618,0.053763,
+  0.073248,0.068226,0.072810,0.064088,0.049645,0.055901,0.061155,
+  0.078194,0.057650,0.058153,0.056095,0.051339,0.040659,0.038239,
+  0.055357,0.063682,0.055055,0.062944,0.067107,0.058824,0.053592,
+  0.056075,0.061151,0.040629,0.062096,0.081991,0.056716,0.057181,
+  0.054842,0.078534,0.067568,
+  0.056558,0.066376,0.078563,0.047511,0.055085,0.049632,0.043103,
+  0.039503,0.035454,0.049875,0.037711,0.038302,0.049625,0.051685,
+  0.033372,0.044578,0.037713,0.033592,0.045926,0.039088,0.038817,
+  0.021186,0.022222,0.035343,0.021978,0.043103,0.030675,0.025424,
+  0.033088,0.020921,
+  0.044643,0.049751,0.030303
+];
+
+// LY data guard — CE had essentially no meaningful Headout volume last year (max 6 users on any LY date)
+// All LY CVR entries are 0 or statistically noise (2 users on Apr 14 @ 0.5 CVR)
+// Setting hasLyData = false to avoid a misleading single-spike overlay
+const hasLyData = false;
+
+const POST_START = '2026-04-04';
+const POST_END   = '2026-05-03';
+const postDatesForAnnot = currentDates.filter(d => d >= POST_START && d <= POST_END);
+const midPostDate = postDatesForAnnot[Math.floor(postDatesForAnnot.length / 2)];
+
+const traces90d = [
+  {
+    type: 'scatter', mode: 'lines', name: 'CVR 2026',
+    x: currentDates, y: currentCvr,
+    line: { color: '#6c8ebf', width: 2 }
+  }
+];
+
+if (!hasLyData) {
+  document.getElementById('trend-90day').innerHTML =
+    '<div style="background:#fff3e0;border-left:4px solid #e65100;padding:8px 12px;font-size:12px;color:#bf360c;margin-bottom:6px;">' +
+    '⚠️ Last-year overlay unavailable — CE 6495 had essentially no Headout booking history in 2025 (max 6 users on any single date). Chart shows current period only.</div>';
+}
+
+Plotly.newPlot('trend-90day', traces90d, {
+  height: 280,
+  yaxis: { tickformat: '.1%', title: 'CVR' },
+  xaxis: { tickformat: '%d %b', dtick: 7 * 86400000, title: '' },
+  plot_bgcolor: '#fff', paper_bgcolor: '#fff',
+  font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color: '#1a1a2e', size: 11 },
+  legend: { orientation: 'h', y: -0.2 },
+  margin: { l: 55, r: 20, t: 30, b: 60 },
+  shapes: [
+    {
+      type: 'rect', x0: POST_START, x1: POST_END, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper',
+      fillcolor: 'rgba(198,40,40,0.06)', line: { width: 0 }
+    },
+    {
+      type: 'line', x0: POST_START, x1: POST_START, y0: 0, y1: 1,
+      xref: 'x', yref: 'paper',
+      line: { color: '#c62828', dash: 'dot', width: 1 }
+    }
+  ],
+  annotations: [{
+    x: midPostDate, y: 0.92, xref: 'x', yref: 'paper',
+    text: 'Post period', font: { color: '#c62828', size: 10 }, showarrow: false
+  }]
+}, { responsive: true });
+</script>
+
+<script>
+// ── Daily S2C trend chart (pre vs post) ─────────────────────────────
+const preDates = [
+  '2026-03-05','2026-03-06','2026-03-07','2026-03-08','2026-03-09','2026-03-10',
+  '2026-03-11','2026-03-12','2026-03-13','2026-03-14','2026-03-15','2026-03-16',
+  '2026-03-17','2026-03-18','2026-03-19','2026-03-20','2026-03-21','2026-03-22',
+  '2026-03-23','2026-03-24','2026-03-25','2026-03-26','2026-03-27','2026-03-28',
+  '2026-03-29','2026-03-30','2026-03-31','2026-04-01','2026-04-02','2026-04-03'
+];
+const preS2C = [
+  0.3480,0.3566,0.2840,0.3246,0.3258,0.3446,
+  0.3067,0.3003,0.3287,0.3053,0.3501,0.3307,
+  0.3147,0.3400,0.3620,0.3491,0.3378,0.3204,
+  0.3297,0.2960,0.3120,0.4016,0.3272,0.3172,
+  0.2968,0.3789,0.3565,0.3366,0.2836,0.3403
+];
+const preMean = preS2C.reduce((a,b) => a+b, 0) / preS2C.length;
+
+const postDates2 = [
+  '2026-04-04','2026-04-05','2026-04-06','2026-04-07','2026-04-08','2026-04-09',
+  '2026-04-10','2026-04-11','2026-04-12','2026-04-13','2026-04-14','2026-04-15',
+  '2026-04-16','2026-04-17','2026-04-18','2026-04-19','2026-04-20','2026-04-21',
+  '2026-04-22','2026-04-23','2026-04-24','2026-04-25','2026-04-26','2026-04-27',
+  '2026-04-28','2026-04-29','2026-04-30','2026-05-01','2026-05-02','2026-05-03'
+];
+const postS2C = [
+  0.2819,0.3208,0.2935,0.2829,0.2605,0.2649,
+  0.2824,0.2596,0.2812,0.3364,0.2933,0.2222,
+  0.2692,0.2305,0.1992,0.2241,0.2304,0.2646,
+  0.1977,0.1688,0.2079,0.1429,0.2081,0.2112,
+  0.2232,0.3165,0.2464,0.1967,0.2364,0.1970
+];
+const postMean = postS2C.reduce((a,b) => a+b, 0) / postS2C.length;
+
+Plotly.newPlot('trend-s2c', [
+  {
+    type: 'scatter', mode: 'lines+markers',
+    name: 'Pre period (Mar 5 – Apr 3)',
+    x: preDates, y: preS2C,
+    line: { color: '#6c8ebf', width: 2.5 },
+    marker: { size: 4, color: '#6c8ebf' }
+  },
+  {
+    type: 'scatter', mode: 'lines+markers',
+    name: 'Post period (Apr 4 – May 3)',
+    x: postDates2, y: postS2C,
+    line: { color: '#c62828', width: 2.5 },
+    marker: { size: 4, color: '#c62828' }
+  }
+], {
+  height: 280,
+  yaxis: { tickformat: '.0%', title: 'S2C rate', range: [0.10, 0.45] },
+  xaxis: { title: '', tickformat: '%d %b' },
+  plot_bgcolor: '#fff', paper_bgcolor: '#fff',
+  font: { family: '-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif', color: '#1a1a2e', size: 11 },
+  legend: { orientation: 'h', y: -0.25 },
+  margin: { l: 55, r: 20, t: 30, b: 60 },
+  shapes: [
+    {
+      type: 'line',
+      x0: preDates[0], x1: preDates[preDates.length - 1],
+      y0: preMean, y1: preMean,
+      line: { color: '#6c8ebf', dash: 'dot', width: 1.5 }
+    },
+    {
+      type: 'line',
+      x0: postDates2[0], x1: postDates2[postDates2.length - 1],
+      y0: postMean, y1: postMean,
+      line: { color: '#c62828', dash: 'dot', width: 1.5 }
+    }
+  ],
+  annotations: [
+    {
+      x: preDates[Math.floor(preDates.length / 2)], y: preMean,
+      text: 'Pre avg ' + (preMean * 100).toFixed(1) + '%',
+      font: { color: '#6c8ebf', size: 11 }, showarrow: false, yshift: 12
+    },
+    {
+      x: postDates2[Math.floor(postDates2.length / 2)], y: postMean,
+      text: 'Post avg ' + (postMean * 100).toFixed(1) + '%',
+      font: { color: '#c62828', size: 11 }, showarrow: false, yshift: -16
+    }
+  ]
+}, { responsive: true });
+</script>
+
+</body>
+</html>
