@@ -194,13 +194,13 @@ This makes the skill easier to maintain: process changes update `SKILL.md`, anal
 
 ### Changes by file
 
-**`SKILL.md`** — c010 / c011
+**`SKILL.md`** (c010 / c011)
 
 - **Step 2b — Structured findings synthesis (c010):** Claude now writes `findings.md` before writing any HTML, with four required sections: Root cause (one sentence), Mechanism (causal chain), Timing (classification + evidence), Evidence inventory (Claim / Supporting data / Source / Confidence). Open items force explicit resolution — query, arithmetic, or explicit acceptance — before Step 3 begins. Step 3 writes from `findings.md` as source of truth, not from raw query outputs.
 - **Evidence inventory Source column (c011):** Every claim must name its data origin: a specific `summary.json` field, a named BQ query result, or a specific report table row. A number with no named source must be derived explicitly or removed — it must not enter the report.
 - **Output paths:** All paths use `<run_dir>` shorthand (`transcript.md`, `findings.md`, `report.html`, `evaluation.md`) consistent with the auto-increment run folder naming from c016.
 
-**`evals/evaluator.md`** — e001
+**`evals/evaluator.md`** (e001)
 
 - **What to review** — Added all four skill reference files (SKILL.md, hypothesis.md, context.md, report_structure.md) as the first pre-read step, before the report and transcript. Required so the evaluator can verify whether an instruction existed before classifying a gap.
 - **Scoring** — Added two new required fields per theme: `Gap` (if score ≤ 4) describing specifically what was missing or wrong; `Why` — a failure mode tag with a grounding citation.
@@ -222,7 +222,7 @@ Two new runs added (`v1.5`):
 
 ### Changes by file
 
-**`references/context.md`** — c012 / c013
+**`references/context.md`** (c012 / c013)
 
 - **c012 — Query fix:** `COUNTIF` replaced with `COUNT(DISTINCT CASE WHEN has_X THEN user_id END)` in cascade Level 2/3 queries and the canonical L2+ template. The funnel table fans out rows when a user views multiple experiences in one session, causing `COUNTIF` numerators to exceed `COUNT(DISTINCT user_id)` denominators and produce rates > 1.0. Also added missing `PERFORMANCE_MAX` exclusion filter to Level 2 and Level 3 cascade queries.
 - **c012 — mix_effect / conversion_effect arithmetic guide:** Step-by-step formula (share_pre/post → Δshare/Δrate → mix_effect = Δshare × pre_rate, conversion_effect = pre_share × Δrate) plus a worked Level 3 example showing the full arithmetic and the fix declaration that follows.
@@ -252,7 +252,7 @@ Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured
 
 ### Changes by file
 
-**`references/context.md`** — c014 / c015
+**`references/context.md`** (c014 / c015)
 
 - **c014 — Inventory query bug fixes:** Fixed two bugs in the existing lead-time bucket query. (1) CE-wide scope bug: the query fetched all `tour_id`s for the CE instead of filtering to the confirmed TGID (`experience_id = '<tgid>'`). (2) Sold-out overcounting: `COUNTIF(total_remaining = 0)` operated at TID × date grain — a date where one TID was sold out but others held capacity was incorrectly counted as zero-inventory. Fixed by adding a `tgid_daily_inventory` CTE that sums remaining across all TIDs per date before bucketing; a date is only zero-inventory when the sum across all TIDs is zero.
 - **c015 — Inventory analysis complete rewrite:** Removed `count_days_available_30d` as the inventory signal across the entire inventory section. Restructured as a **3-step path**:
@@ -263,7 +263,7 @@ Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured
   - **Supply gate:** If Step 2 shows no depletion across limited-capacity TIDs, do not run Step 3 — pivot to pricing or UX investigation instead.
   - **Broad-drop path (Case C):** Run Step 2 for top 3 TGIDs by `users_select`. Same bucket depleted across all three → CE-wide supply constraint. All full → supply is not the mechanism.
 
-**`references/hypothesis.md`** — c016
+**`references/hypothesis.md`** (c016)
 
 - All references to `count_days_available_30d` as the availability signal replaced with `inventory_availability` TID summary table (Step 2 results).
 - **Gradual S2C decline (Pattern 4):** `days_to_first_available_date` added as a fast directional check before running inventory queries — increasing trend confirms supply scarcity direction.
@@ -271,11 +271,11 @@ Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured
 - **Vendor throttling pattern:** Signal updated from `count_days_available_30d` to `days_to_first_available_date` increasing + 0–2d bucket near zero in TID snapshot.
 - **S2C Tier 1 (experience concentrates):** Updated to reference `lost_checkouts_delta` locus computation → Case A/B/C → 3-step inventory path.
 
-**`references/actions.md`** — c017
+**`references/actions.md`** (c017)
 
 - RC2 (Inventory/availability constraint): removed `count_days_available_30d` reference; replaced with `inventory_availability` TID summary table (near-zero ticket counts in one or more lead-time buckets) as primary signal.
 
-**`references/report_structure.md`** — c018
+**`references/report_structure.md`** (c018)
 
 - Inventory section format renamed (from "Inventory lead-time bucket table format").
 - "What belongs in Section 3" table rows updated: "Availability proxy table" and "Inventory lead-time bucket table" replaced with "Inventory TID summary table" (Step 2) and "Inventory daily time-series charts" (Step 3).
@@ -285,11 +285,11 @@ Running reference mapping GTM/Mixpanel events to funnel steps. LP: 15 structured
 - **Daily time-series spec:** four charts (one per bucket); Path B overlays pre/post; Path A post only.
 - HTML pattern replaced: old format (rows per bucket, aggregate columns) replaced with separate Path A and Path B patterns.
 
-**`references/q1_base.sql`** — c019
+**`references/q1_base.sql`** (c019)
 
 - Removed `MAX(CASE WHEN page_type IN (...) THEN 1 ELSE 0 END) AS visited_lp` from SELECT (condition already in WHERE clause). Fixed `GROUP BY 1, 2, 3, 9` → `GROUP BY 1, 2, 3, 8` to reflect the column count change.
 
-**`references/worked_example.md`** — c020
+**`references/worked_example.md`** (c020)
 
 - Removed `count_days_available_30d` from the S2C locus identification section (Example 2). Added TID summary table query result showing `tickets_8_13d` and `tickets_14_30d` → 0 for all TIDs of TGID 8821, confirming the 8+ day window as the affected bucket.
 
