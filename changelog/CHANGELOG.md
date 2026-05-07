@@ -302,4 +302,31 @@ Three new runs added (`v1.7`):
 
 ---
 
+## [v1.8] — 2026-05-07 — context.md/hypothesis.md structural separation + presentation-layer jargon fixes
+
+**Summary:** Two connected changes. First, investigation decision logic was moved out of `context.md` and into `hypothesis.md`, restoring the intended separation: `context.md` owns business vocabulary, table schemas, and SQL queries; `hypothesis.md` owns the investigation decision tree (when to run what, how to interpret results, which branches to open). Second, three presentation-layer bugs were fixed in `report_structure.md` — internal investigation terminology was leaking into HTML reports, and raw date tables were being used where Plotly charts are required.
+
+### Changes by file
+
+**`references/context.md`** (c019)
+
+- **Structural separation:** Removed all investigation decision logic from the inventory section. What moved out: TGID locus identification (Case A/B/C + `lost_checkouts_delta` formula), the Path A/B decision framing, the TID scoping decision block, and the broad-drop path (Case C).
+- **Queries renamed:** "Step 2 — TID summary table" → "TID snapshot query"; "Step 3 — Daily time-series" → "Daily time-series query". The numbered Step labels were investigation-layer jargon, not neutral query names.
+- **Data availability rewritten as facts:** Path A/B information rewritten neutrally ("`inventory_availability` retains a 30-day rolling window — if `pre_start < CURRENT_DATE − 30`, no pre-period rows exist") without decision framing. The decision about what to do with this fact lives in `hypothesis.md`.
+- **Pointer added:** "For TGID selection and the full inventory investigation decision sequence, see `hypothesis.md → S2C → inventory branch`."
+
+**`references/hypothesis.md`** (c007)
+
+- **"If experience concentrates" branch now owns the full inventory investigation sequence:** (1) TGID selection via `lost_checkouts_delta` + three-case classification (Case A ≥60% / Case B multiple ≥10% / Case C uniform drop); (2) data availability check before querying; (3) optional gradual-decline pre-check with `days_to_first_available_date`; (4) TID snapshot query usage (flag unlimited-capacity TIDs, scope the time-series); (5) daily time-series query usage — primary evidence, always run; (6) supply confirm/rule-out decision (healthy throughout post → pivot to pricing; depleted during post → supply is the mechanism).
+- **Broad-drop path (Case C) moved here from `context.md`:** Top 3 TGIDs by `users_select`; same bucket depleted across all three → CE-wide supply constraint; all healthy → supply ruled out.
+- **"Step 2/3" label references removed throughout** — queries referenced by their neutral names.
+
+**`references/report_structure.md`** (c012)
+
+- **Supply gate wording:** Removed "Step 2" reference. Ruled-out verdict now framed in terms of what the time-series showed, not internal step labels. Clarified that Plotly line charts may still be shown in the supply-ruled-out case as positive confirmation (lines staying above zero is visual evidence).
+- **Anti-pattern added — Investigation-internal terminology in HTML:** Step 1/2/3, Path A/B, Case A/B/C, "locus", "lost_checkouts_delta", "candidate TGIDs" must not appear anywhere in the report. In the report: "the three most-affected experiences" not "the Case B candidate TGIDs"; "supply checked and ruled out" not "Step 3 confirmed supply ruled out".
+- **Anti-pattern added — Daily inventory as HTML table:** A 27-row × 4-column date table is unreadable at a glance. Daily inventory time-series must always be Plotly line charts, never HTML tables. The only table in the inventory section is the TID snapshot summary.
+
+---
+
 *Each future entry in this changelog corresponds to one GitHub push. Format: `[vX.Y] — YYYY-MM-DD — Short title` followed by a summary of what changed and why.*

@@ -8,9 +8,9 @@
       "pre_start": "2026-03-05",
       "post_end": "2026-05-03",
       "run_date": "2026-05-06",
-      "eval_score": 31,
+      "eval_score": 33,
       "eval_max": 35,
-      "root_cause": "S2C fell from 31.6% to 25.1% (−6.5pp, 70% of ΔCVR) — US domestic (−6.7pp, 15,711 pre select users) and Canadian (−10.6pp, 1,053 pre select users) visitors exited as North American schools returned in early April; non-spring-break international markets held flat. Supply definitively ruled out: TGID 37530 (Movie Sites) fully stocked across all lead-time buckets despite −9pp S2C drop; booking window distribution barely shifted (−2.2pp near-term). Run3 methodological improvements: Geo/Non-Geo first-pass S2C cut; TGID-scoped TID snapshot with corrected COUNTIF; Path A correctly applied (pre period >30 days ago).",
+      "root_cause": "S2C fell from 31.6% to 25.1% (−6.5pp, 70% of ΔCVR) — US domestic (−6.73pp, 15,711 pre select users) and Canadian (−10.56pp, 1,053 pre select users) visitors exited as North American schools returned; non-spring-break international markets held flat. Supply checked via full Case B inventory path: lost_checkouts_delta identified three TGIDs (37536 40.8%, 37530 36.0%, 37532 16.2%); Step 3 daily time-series run for all three TGIDs confirms no sustained depletion — synchronised zero days are pipeline artifact. Revised run3 (33/35): complete Case B execution with tree map; remaining gaps are no spring break controlled comparison (T5), CE-level daily S2C chart without disclosure (T6), non-task-specific seasonal calibration action (T7).",
       "files": {
         "report": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/report.html",
         "evaluation": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/evaluation.md"

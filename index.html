@@ -798,7 +798,7 @@ const NODES = [
     inputs: ['shapley.S2C contribution', 'headline.delta.s2c', 'trend shape', 'dimension cuts', 'fixed segment filters'],
     outputs: ['mechanism (availability/UX/pricing/vendor)', 'onset: sudden or gradual', 'DRI hypothesis'],
     condition: 'ONLY IF "S2C" in significant_steps.',
-    description: 'Two-tier triage (see hypothesis.md). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: language × S2C, device × S2C, experience × S2C, browsing_country (Geo/Non-Geo) × S2C. If experience concentrates: compute lost_checkouts_delta per TGID (users_select_post × Δs2c_rate) to identify locus — Case A (top TGID ≥60%), Case B (2–3 TGIDs ≥10% each), Case C (uniform drop). 3-step inventory path: Step 1 locus → Step 2 TID snapshot (Path A: pre >30d ago, post-only; Path B: pre within 30d, pre+post comparison) → Step 3 daily time-series (4 charts, one per bucket). Supply gate: if Step 2 shows no depleted limited-capacity TIDs, skip Step 3 and pivot to pricing/UX. Tier 2: if no concentration — check platform-wide availability config or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
+    description: 'Two-tier triage (see hypothesis.md for full decision sequence). All queries filtered to fixed segment. Tier 1 — dimension cuts in parallel: language × S2C, device × S2C, experience × S2C, browsing_country (Geo/Non-Geo) × S2C. If experience concentrates: hypothesis.md owns the inventory investigation sequence — TGID selection via lost_checkouts_delta (Case A/B/C), data availability check, TID snapshot query, daily time-series query, supply confirm/rule-out. context.md provides the TID snapshot and daily time-series queries only. Tier 2: if no concentration — check platform-wide availability config or checkout flow change. DRI: Supply/Inventory, Product, Ops, BDM.',
   },
   {
     id: 'c2o-driver', type: 'analysis', icon: '🔬',
@@ -948,7 +948,7 @@ const NODES = [
     x: 1670, y: 360, phase: 'Reference File',
     usedBy: ['mix-decision', 'step-decision'],
     fileKey: 'context',
-    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'mix/conv effect arithmetic', 'Geo vs Non-Geo query (c013)', 'canonical L2+ template', 'inventory 3-step path (c015)', 'Path A vs Path B', 'supply gate', 'PERF_MAX filter (c012)'],
+    chips: ['Query Principles', 'Q3 Trend Interpretation', 'Mix Cascade queries', 'mix/conv effect arithmetic', 'Geo vs Non-Geo query (c013)', 'canonical L2+ template', 'TID snapshot query (c015)', 'daily time-series query', 'PERF_MAX filter (c012)'],
   },
   {
     id: 'file-hypothesis', type: 'file', icon: '📄',
@@ -1295,17 +1295,13 @@ WHERE combined_entity_id = '<ce_id>'
 
 **Unlimited capacity note:** \`total_remaining = 1\` for unlimited-capacity TIDs — this is a system constant, not actual count. Zero reliably signals sold-out; non-zero from an unlimited TID does not mean scarce supply. Use \`is_fully_unlimited_capacity\` flag from Step 2 query to exclude these TIDs from scarcity analysis.
 
-**Path A vs Path B — determine before running any query:**
-- **Path B** (\`pre_start >= CURRENT_DATE - 30\`): pre-period rows available — run full pre/post comparison.
-- **Path A** (\`pre_start < CURRENT_DATE - 30\`): pre-period rows unavailable — post-only snapshot with explicit data-limitation note in report.
+**Data availability (c019):** \`inventory_availability\` retains a 30-day rolling window. If \`pre_start < CURRENT_DATE − 30\`, no pre-period rows exist — post-only snapshot only. If \`pre_start >= CURRENT_DATE − 30\`, pre+post comparison is available.
 
-**3-step inventory analysis (c015):**
+**TID snapshot query:** Latest \`extracted_date\`. One row per TID. Ticket counts (sum of \`total_remaining\`) in four buckets: 0–2d, 3–7d, 8–13d, 14–30d. \`is_fully_unlimited_capacity = TRUE\` → exclude from scarcity analysis (\`total_remaining = 1\` is a system constant, not actual count).
 
-**Step 1 — Locus:** From Q4 results, compute \`lost_checkouts_delta = users_select_post × (s2c_pre − s2c_post)\` per TGID. Three cases: **Case A** (top TGID ≥60% → single locus), **Case B** (2–3 TGIDs ≥10% each → multiple loci, run Step 2 for each), **Case C** (no TGID ≥10% → uniform drop, broad-drop path: run Step 2 for top 3 TGIDs by \`users_select\`).
+**Daily time-series query:** \`extracted_date\` trend per TID per bucket, rendered as Plotly line charts. When pre-period data is available: overlay pre+post. When not: post only with data-limitation note in report.
 
-**Step 2 — TID snapshot:** Latest \`extracted_date\` only. One row per TID. Ticket counts (sum of \`total_remaining\`) in four buckets: 0–2d, 3–7d, 8–13d, 14–30d. TIDs with \`is_fully_unlimited_capacity = TRUE\` excluded from supply scarcity analysis. **Supply gate:** if no limited-capacity TID shows depletion → supply is not the mechanism; pivot to pricing/UX.
-
-**Step 3 — Daily time-series:** \`extracted_date\` trend per bucket. Path B: pre+post overlaid. Path A: post only. Scope to single TID (if one TID is the locus) or whole TGID (if all TIDs depleted equally). Feeds four line charts in report.
+For TGID selection and the full inventory investigation decision sequence (Case A/B/C, supply gate, broad-drop path), see **hypothesis.md → S2C → inventory branch**.
 
 ---
 
@@ -1374,7 +1370,8 @@ Use \`COUNT(DISTINCT CASE WHEN ... END)\` not COUNTIF — the funnel table fans 
 | c012 | 2026-05-04 | Fixed COUNTIF → COUNT(DISTINCT CASE WHEN) in cascade Level 2/3 and L2+ queries; added PERFORMANCE_MAX filter; added mix_effect/conversion_effect arithmetic guide |
 | c013 | 2026-05-04 | Added Geo vs Non-Geo dimension: CE country pre-step, country-level query, interpretation guide |
 | c014 | 2026-05-05 | Fixed inventory query: TGID scope bug (was CE-wide); fixed sold-out overcounting (tgid_daily_inventory CTE) |
-| c015 | 2026-05-06 | Inventory overhaul: removed count_days_available_30d proxy; 3-step path (locus → TID snapshot → time-series); Path A/B; supply gate; Case A/B/C locus logic; unlimited capacity guard |
+| c015 | 2026-05-06 | Inventory overhaul: removed count_days_available_30d proxy; TID snapshot + daily time-series queries; supply gate; unlimited capacity guard |
+| c019 | 2026-05-07 | Structural separation: investigation decision logic (Case A/B/C, lost_checkouts_delta, supply gate) moved to hypothesis.md; queries renamed to neutral names; pointer added to hypothesis.md |
 `,
 
 hypothesis: `# hypothesis.md — Central Branch Reference (v1.4, two-level)
@@ -1443,12 +1440,18 @@ If a dimension concentrates: run intersection (e.g., French × mobile), drill to
 **Tier 1 — Dimension cuts in parallel:**
 - \`language\` × S2C — single language → localised select-page issue
 - \`device_type\` × S2C — mobile → select-page UX/rendering
-- \`experience_id\` × S2C — specific experiences → supply/pricing. If concentrates: compute \`lost_checkouts_delta\` per TGID → locus (Case A/B/C) → 3-step inventory path (context.md).
+- \`experience_id\` × S2C — specific experiences → supply/pricing. If concentrates: run the inventory branch below.
 - \`browsing_country\` (Geo/Non-Geo) × S2C — use dedicated context.md query. Geo S2C drop → local supply scarcity or pricing shock at variant selection; Non-Geo drop → language/UX friction or international inventory gaps.
 
 If language/device concentrates: drill to intersection, then \`page_url\`. If Geo concentrates: cross-cut with local language + experience_id. If Non-Geo concentrates: cross-cut with experience_id and language.
 
-If experience concentrates: compute \`lost_checkouts_delta\` per TGID, identify Case A/B/C locus, then run Step 2 TID snapshot. Supply gate applies: no depleted limited-capacity TIDs → pivot to pricing/UX, do not run Step 3.
+**Inventory investigation sequence (c007) — if experience concentrates:**
+1. **TGID selection:** Compute \`lost_checkouts_delta = users_select_post × (s2c_pre − s2c_post)\` per TGID from Q4. Case A: top TGID ≥60% of total → single locus. Case B: 2–3 TGIDs ≥10% each → multiple loci. Case C: no TGID ≥10% → broad-drop path (top 3 TGIDs by \`users_select\`).
+2. **Data availability check:** If \`pre_start < CURRENT_DATE − 30\`, pre-period rows unavailable — post-only snapshot only. If within 30d, pre+post comparison available.
+3. **Optional pre-check (gradual decline):** \`days_to_first_available_date\` — if increasing, confirms supply scarcity direction before running full queries.
+4. **TID snapshot query** (context.md): flag \`is_fully_unlimited_capacity = TRUE\` TIDs — exclude from scarcity analysis. Use results to scope the time-series (single TID if one is the locus; whole TGID if all TIDs depleted equally).
+5. **Daily time-series query** (context.md): primary evidence — always run. Healthy throughout post period → supply is not the mechanism, pivot to pricing/UX. Depleted during post → supply is the mechanism.
+6. **Broad-drop path (Case C):** Run TID snapshot + time-series for top 3 TGIDs. Same bucket depleted across all → CE-wide supply constraint. All healthy → supply ruled out.
 
 **Tier 2 — If no concentration:** Did checkout flow or variant selection UI change? Did availability drop uniformly (platform-wide config)?
 

@@ -23,6 +23,12 @@
       "version_date": "2026-05-06",
       "version_summary": "Inventory analysis overhaul — TID-level queries, 3-step path, Path A/B, supply gate, lost_checkouts_delta locus logic",
       "manifest": "runs/v1.7/manifest.json"
+    },
+    {
+      "version": "v1.8",
+      "version_date": "2026-05-07",
+      "version_summary": "context.md/hypothesis.md structural separation — investigation decision logic moved to hypothesis.md; presentation-layer jargon anti-patterns added",
+      "manifest": "runs/v1.8/manifest.json"
     }
   ]
 }

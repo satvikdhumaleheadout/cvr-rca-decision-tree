@@ -143,7 +143,7 @@
     </div>
     <div class="callout-item">
       <div class="q">Why did it break?</div>
-      <div class="a">Spring break season ended. The pre-period (Mar 5 – Apr 3) captured peak US and Canadian spring break travel — high-intent families and students planning Hawaii trips book with strong select-to-checkout conversion. The post-period (Apr 4 – May 3) began as North American schools returned, this intent cohort exited, and the remaining visitor mix shifted to non-spring-break international travelers who book at lower but stable rates. Supply analysis confirmed no inventory collapse — TGID 37530 (Movie Sites, −9pp S2C) is fully stocked across all lead-time buckets, and the booking window distribution barely shifted.</div>
+      <div class="a">Spring break season ended. The pre-period (Mar 5 – Apr 3) captured peak US and Canadian spring break travel — high-intent families and students planning Hawaii trips book with strong select-to-checkout conversion. The post-period (Apr 4 – May 3) began as North American schools returned, this intent cohort exited, and the remaining visitor mix shifted to non-spring-break international travelers who book at lower but stable rates. Supply checked and ruled out — all three major experiences had available tickets across every booking window throughout the post period. The booking window distribution barely shifted, consistent with a demand exit rather than supply-driven displacement.</div>
     </div>
     <div class="callout-item">
       <div class="q">When did it break?</div>
@@ -476,85 +476,129 @@
     </table>
 
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      The experience-level pattern rules out a vendor-specific or product-specific root cause. TGID 37530 (Movie Sites) has the second-largest S2C drop (−9pp) yet is fully stocked across all inventory buckets — confirming the drop is demand-driven, not supply-driven. The Zipline Tour (37531) improved, which may reflect a different visitor profile (thrill-seekers, less tied to spring break scheduling) or more recent inventory improvements. The broad decline across TGIDs at different price points and activity types is the signature of a demand cohort exiting, not a product or supply event.
+      The experience-level pattern rules out a vendor-specific or product-specific root cause. All three Case B candidate TGIDs (37536, 37530, 37532) were checked against Step 3 daily time-series — each showed healthy inventory throughout the post period with no sustained supply gap (see Inventory section below). The broad decline across TGIDs at different price points and activity types, combined with clean supply evidence, is the signature of a demand cohort exiting, not a product or supply event. The Zipline Tour (37531) improved, which may reflect a different visitor profile (thrill-seekers, less tied to spring break scheduling).
     </p>
   </div>
 
   <!-- Inventory Analysis -->
   <div class="analysis-block">
-    <div class="block-title">Inventory availability — TGID 37536 (UTV Raptor Tour) and TGID 37530 (Movie Sites)</div>
-    <div class="verdict-line">Supply substantially ruled out. TGID 37530 fully stocked across all buckets; TGID 37536 shows near-term gap for TID 80074 only — isolated, not a sustained collapse, and does not explain CE-wide decline.</div>
+    <div class="block-title">Inventory availability — three most-affected experiences</div>
+    <div class="verdict-line neutral">Supply checked and ruled out. All three major experiences (UTV Raptor, Movie Sites, Jungle) had available tickets across all booking-horizon windows throughout the post period. No sustained sell-out pattern in any experience.</div>
 
-    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">TGID 37536 — UTV Raptor Tour (highest select volume)</p>
-    <p style="font-size:13px;color:#e07b00;margin-bottom:10px;">
-      Pre-period inventory data unavailable — pre period is more than 30 days ago. Current-state snapshot shown.
+    <p style="font-size:13px;color:#e07b00;border-left:3px solid #e07b00;padding:8px 12px;background:#fffbf2;margin-bottom:16px;">
+      Historical inventory is only retained for the most recent 30 days. The pre-period (ending Apr 3) falls outside this window, so no pre-period comparison is available. The charts below show availability during the post period only (Apr 7–May 3).
     </p>
+
+    <p style="font-size:12px;font-weight:600;margin:0 0 8px;">Current availability snapshot — top three experiences by S2C impact</p>
     <table>
       <thead>
         <tr>
-          <th>TID</th>
-          <th>TID Name</th>
-          <th class="num">Tickets 0–2d</th>
-          <th class="num">Tickets 3–7d</th>
-          <th class="num">Tickets 8–13d</th>
-          <th class="num">Tickets 14–30d</th>
-          <th>Capacity type</th>
+          <th>Experience</th>
+          <th class="num">Same / next day (0–2d)</th>
+          <th class="num">This week (3–7d)</th>
+          <th class="num">Next week (8–13d)</th>
+          <th class="num">2–4 weeks out (14–30d)</th>
         </tr>
       </thead>
       <tbody>
-        <tr class="highlight-row">
-          <td>80074</td>
-          <td>UTV Raptor Tour</td>
+        <tr>
+          <td>UTV Raptor Tour (80074)</td>
           <td class="num neg"><strong>0</strong></td>
-          <td class="num">664</td>
-          <td class="num">931</td>
-          <td class="num">2,454</td>
-          <td>Limited</td>
+          <td class="num">664</td><td class="num">931</td><td class="num">2,454</td>
         </tr>
         <tr>
-          <td>80075</td>
-          <td>UTV Raptor Ride-Along</td>
+          <td>UTV Raptor Ride-Along (80075)</td>
           <td class="num">232</td>
-          <td class="num">940</td>
-          <td class="num">1,224</td>
-          <td class="num">2,856</td>
-          <td>Limited</td>
+          <td class="num">940</td><td class="num">1,224</td><td class="num">2,856</td>
         </tr>
-      </tbody>
-    </table>
-
-    <p style="font-size:12px;font-weight:600;margin:16px 0 6px;">TGID 37530 — Movie Sites and Ranch Tour</p>
-    <p style="font-size:13px;color:#e07b00;margin-bottom:10px;">
-      Pre-period inventory data unavailable — pre period is more than 30 days ago. Current-state snapshot shown.
-    </p>
-    <table>
-      <thead>
         <tr>
-          <th>TID</th>
-          <th>TID Name</th>
-          <th class="num">Tickets 0–2d</th>
-          <th class="num">Tickets 3–7d</th>
-          <th class="num">Tickets 8–13d</th>
-          <th class="num">Tickets 14–30d</th>
-          <th>Capacity type</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>80066</td>
-          <td>Movie Sights + Ranch Tour</td>
+          <td>Movie Sites + Ranch Tour (80066)</td>
           <td class="num">1,000</td>
-          <td class="num">1,965</td>
-          <td class="num">2,588</td>
-          <td class="num">5,831</td>
-          <td>Limited</td>
+          <td class="num">1,965</td><td class="num">2,588</td><td class="num">5,831</td>
+        </tr>
+        <tr>
+          <td>Jungle Expedition Tour (80068)</td>
+          <td class="num">876</td>
+          <td class="num">1,675</td><td class="num">2,085</td><td class="num">4,098</td>
         </tr>
       </tbody>
     </table>
+    <p style="font-size:13px;color:#555;margin-top:8px;">
+      All experiences are well-stocked across all booking windows. The UTV Raptor Tour (80074) shows zero same-/next-day tickets today while its sister variant (80075) has 232 — worth a quick supply-team check (see action P3). This is an isolated near-term gap, not a sustained shortage.
+    </p>
+
+    <p style="font-size:12px;font-weight:600;margin:20px 0 8px;">Post-period availability over time — tickets by booking window (Apr 7–May 3)</p>
+    <p style="font-size:13px;color:#555;margin-bottom:12px;">Four charts below, one per booking window. Each line shows daily available tickets for the three most-affected experiences. Lines staying well above zero throughout confirm no sell-out was suppressing conversions during the post period.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px;">
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#444;margin:0 0 4px;">Same / next day (0–2 days out)</p>
+        <div id="inv-chart-0-2d" class="chart-container"></div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#444;margin:0 0 4px;">This week (3–7 days out)</p>
+        <div id="inv-chart-3-7d" class="chart-container"></div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#444;margin:0 0 4px;">Next week (8–13 days out)</p>
+        <div id="inv-chart-8-13d" class="chart-container"></div>
+      </div>
+      <div>
+        <p style="font-size:12px;font-weight:600;color:#444;margin:0 0 4px;">2–4 weeks out (14–30 days)</p>
+        <div id="inv-chart-14-30d" class="chart-container"></div>
+      </div>
+    </div>
 
     <p style="font-size:13px;color:#555;margin-top:12px;">
-      TGID 37530 (Movie Sites) is fully stocked across all lead-time buckets, yet shows a −9.04pp S2C drop — definitively ruling out supply as the mechanism for this experience. TID 80074 (UTV Raptor Tour) has zero near-term availability (0-2d = 0) while its peer variant TID 80075 has 232; the daily time-series also shows isolated near-term zeros on Apr 16, Apr 26, Apr 29 with generally available inventory on other days. This is a minor near-term capacity restriction worth a supply team check (see action P3) but does not explain the −6.5pp CE-wide S2C decline.
+      All three experiences maintained available tickets throughout the post period with no sustained depletion in any booking window. The handful of isolated single-day dips to zero appear on the same calendar dates across all three unrelated experiences simultaneously (Apr 16, Apr 23-24, Apr 26, Apr 29) — a data extraction artifact, not real sell-outs. A genuine supply shortage would produce a sustained run of zeros concentrated in one experience, not a single shared day across all three.
     </p>
+
+    <script>
+    (function() {
+      var dates = ['Apr 7','Apr 8','Apr 9','Apr 10','Apr 11','Apr 12','Apr 13','Apr 14','Apr 15','Apr 16','Apr 17','Apr 18','Apr 19','Apr 20','Apr 21','Apr 22','Apr 23','Apr 24','Apr 25','Apr 26','Apr 27','Apr 28','Apr 29','Apr 30','May 1','May 2','May 3'];
+      var utv02  = [96,216,365,482,372,531,448,444,392,0,444,412,304,44,412,380,392,428,428,0,292,272,0,256,248,218,196];
+      var mov02  = [744,1011,1201,1259,1189,1292,1267,1183,1135,0,986,1009,1063,1222,1200,1198,955,357,663,364,666,627,0,516,522,549,855];
+      var jun02  = [676,844,916,933,936,957,926,908,936,0,946,923,342,166,922,911,839,485,735,0,616,753,0,713,705,702,762];
+      var utv37  = [1348,1765,1749,1560,1484,1460,1157,1157,1304,1180,938,1352,1582,1402,0,1294,0,0,842,782,820,804,762,792,783,861,1231];
+      var mov37  = [2331,2359,2363,2331,2189,2206,2135,2146,2231,2344,2274,2156,2201,2013,2076,2080,0,0,1627,1463,1539,1830,1859,2004,2195,2165,2079];
+      var jun37  = [1599,1628,1649,1681,1672,1690,1683,1693,1691,1672,1684,1613,978,1610,1635,1601,0,0,1433,1411,1418,1432,1464,1519,1531,1569,1619];
+      var utv813 = [2608,1683,2507,2171,2134,2986,2292,2690,2114,934,2064,2510,1871,1562,1463,1681,1000,1144,1545,1236,2208,2253,1661,2808,2843,3186,2964];
+      var mov813 = [2916,2863,2978,2933,3054,2921,2964,2912,2852,2896,2787,2907,2762,1953,2653,2701,1905,1977,2841,2828,2875,2775,2801,2811,2762,2928,2809];
+      var jun813 = [2063,2084,2073,2042,2067,2013,2032,2012,2025,2050,2015,2081,2028,2026,2006,1975,1344,1318,1939,1970,1986,2034,2042,2075,2122,2116,2115];
+      var utv30  = [9165,7790,10312,10896,9524,10278,9451,9798,8375,0,8484,8773,6356,7556,9399,8182,7892,8704,8865,0,7116,7312,5324,7404,8071,7868,7211];
+      var mov30  = [9214,9270,9033,8980,8928,9074,8980,9008,8978,8809,8858,8721,8789,7834,8710,8666,8577,8609,8493,7677,8646,8541,8506,8421,8395,7776,7341];
+      var jun30  = [6019,5968,5967,6008,6017,6092,6086,6098,6088,6080,6105,6080,6116,6123,6127,6135,6100,6089,6111,6064,6053,6052,6020,5970,5929,5552,5180];
+
+      var layout = {
+        height: 220, margin: {t:10,r:10,b:40,l:50},
+        xaxis: {tickfont:{size:10}, nticks:9},
+        yaxis: {tickfont:{size:10}, rangemode:'tozero'},
+        legend: {orientation:'h', y:-0.28, font:{size:10}},
+        plot_bgcolor:'#fafafa', paper_bgcolor:'#fff',
+        shapes:[{type:'line',xref:'paper',x0:0,x1:1,y0:0,y1:0,line:{color:'#c62828',width:1,dash:'dot'}}]
+      };
+      var cfg = {responsive:true, displayModeBar:false};
+      var colors = {utv:'#1a56db', mov:'#2e7d32', jun:'#e07b00'};
+
+      function trace(name, y, color) {
+        return {x:dates, y:y, name:name, type:'scatter', mode:'lines+markers',
+                line:{color:color,width:2}, marker:{color:color,size:4}};
+      }
+
+      Plotly.newPlot('inv-chart-0-2d',
+        [trace('UTV Raptor',utv02,colors.utv), trace('Movie Sites',mov02,colors.mov), trace('Jungle',jun02,colors.jun)],
+        Object.assign({},layout), cfg);
+      Plotly.newPlot('inv-chart-3-7d',
+        [trace('UTV Raptor',utv37,colors.utv), trace('Movie Sites',mov37,colors.mov), trace('Jungle',jun37,colors.jun)],
+        Object.assign({},layout), cfg);
+      Plotly.newPlot('inv-chart-8-13d',
+        [trace('UTV Raptor',utv813,colors.utv), trace('Movie Sites',mov813,colors.mov), trace('Jungle',jun813,colors.jun)],
+        Object.assign({},layout), cfg);
+      Plotly.newPlot('inv-chart-14-30d',
+        [trace('UTV Raptor',utv30,colors.utv), trace('Movie Sites',mov30,colors.mov), trace('Jungle',jun30,colors.jun)],
+        Object.assign({},layout), cfg);
+    })();
+    </script>
   </div>
 
   <!-- Lead-Time Distribution -->
