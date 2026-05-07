@@ -2,18 +2,19 @@
   "version": "v1.7",
   "runs": [
     {
-      "id": "ce6495_2026-03-05_2026-05-03_run3",
+      "id": "ce6495_2026-03-05_2026-05-03_run4",
       "ce_id": "6495",
       "ce_name": "Kualoa Ranch",
       "pre_start": "2026-03-05",
       "post_end": "2026-05-03",
-      "run_date": "2026-05-06",
-      "eval_score": 33,
+      "run_date": "2026-05-07",
+      "eval_score": 31,
       "eval_max": 35,
-      "root_cause": "S2C fell from 31.6% to 25.1% (−6.5pp, 70% of ΔCVR) — US domestic (−6.73pp, 15,711 pre select users) and Canadian (−10.56pp, 1,053 pre select users) visitors exited as North American schools returned; non-spring-break international markets held flat. Supply checked via full Case B inventory path: lost_checkouts_delta identified three TGIDs (37536 40.8%, 37530 36.0%, 37532 16.2%); Step 3 daily time-series run for all three TGIDs confirms no sustained depletion — synchronised zero days are pipeline artifact. Revised run3 (33/35): complete Case B execution with tree map; remaining gaps are no spring break controlled comparison (T5), CE-level daily S2C chart without disclosure (T6), non-task-specific seasonal calibration action (T7).",
+      "root_cause": "S2C fell −6.5pp (31.6%→25.2%, 70% of ΔCVR) driven by two concurrent forces: (1) UTV Raptor Tour (TGID 37536, 44% of lost checkouts) — near-term inventory sold out throughout the post period (0–2d tickets zero, 3–7d collapsed to near-zero by late April), preventing date selection; ride-along TID 80075 remained available but users did not substitute, supporting committed-buyer interpretation; (2) Movie Sites and Jungle Expedition (TGIDs 37530/37532, 56% of lost checkouts) — healthy inventory confirmed, −9.1–9.2pp S2C drops attributed to spring break demand quality shift as high-intent visitors exited ~Apr 4. Re-scored 31/35 after report revisions: TGID 37536 split into TID-level traces, 8–13d chart removed, P2 close/escalate conditions added, LY badge added.",
       "files": {
-        "report": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/report.html",
-        "evaluation": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run3/evaluation.md"
+        "report": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run4/report.html",
+        "transcript": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run4/transcript.md",
+        "evaluation": "runs/v1.7/ce6495_2026-03-05_2026-05-03_run4/evaluation.md"
       }
     },
     {
